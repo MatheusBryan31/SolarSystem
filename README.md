@@ -1,5 +1,5 @@
 # SolarSystem
-## Descrição
+Descrição
     Software de gestão de monitoramento de usinas fotovoltaicas desenvolvido pelos programadores Atos Marques, Eduardo Jardim e Matheus Bryan.
 
 ## Objetivo
