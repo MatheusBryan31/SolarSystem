@@ -1,6 +1,4 @@
 # SolarSystem
-Projeto desenvolvido para a disciplina de programação Web, cujo objetivo é demonstrar o conhecimento adquirido durante o curso de Análise e Desenvolvimento de Sistemas.
-
 ## Descrição
     Software de gestão de monitoramento de usinas fotovoltaicas desenvolvido pelos programadores Atos Marques, Eduardo Jardim e Matheus Bryan.
 
