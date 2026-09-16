@@ -8,3 +8,7 @@ body{
     width: 45%;
     background-color: #ffffff;
 }
+.formulario-login{
+    max-width: 420px;
+    width: 100%;
+}

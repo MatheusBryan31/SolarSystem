@@ -10,17 +10,17 @@
     <body>
         <main class="d-flex min-vh-100">
             <section class="area-apresentacao"></section>
-            <section class="area-login">
+            <section class="area-login d-flex justify-content-center align-items-center">
                 <form action="" class="formulario-login">
                     <h2>Bem vindo!</h2>
                     <p>Acesse sua conta para continuar</p>
                     <div class="mb-3">
-                        <label for="email"></label>
-                        <input type="email" name="email" id="email" class="form-control" placeholder>
+                        <label for="email" class="form-label">E-mail</label>
+                        <input type="email" name="email" id="email" class="form-control" placeholder="Digite o seu e-mail" required autocomplete="email">
                     </div>
                     <div class="mb-3">
-                        <label for="senha"></label>
-                        <input type="password" name="senha" id="senha" class="form-control" placeholder>
+                        <label for="senha" class="form-label">Senha</label>
+                        <input type="password" name="senha" id="senha" class="form-control" placeholder="Digite a sua senha" required autocomplete="current-password">
                     </div>
                     <button type="submit" class="btn btn-primary w-100">Entrar</button>
                 </form>
