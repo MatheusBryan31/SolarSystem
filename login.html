@@ -4,9 +4,7 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width,initial-scale=1.0">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
-        <!-- MB: https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css -->
-        <!-- BsT: https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css -->
-        <link rel="stylesheet" href="">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
         <link rel="stylesheet" href="assets/css/login.css">
         <title>SolarSystem</title>
     </head>
@@ -23,7 +21,18 @@
                     </div>
                     <div class="mb-3">
                         <label for="senha" class="form-label">Senha</label>
-                        <input type="password" name="senha" id="senha" class="form-control" placeholder="Digite a sua senha" required autocomplete="current-password">
+                        <!-- Div para envolver o input==password para ser possível a visualização da senha -->
+                        <div class="input-group">
+                            <input type="password" name="senha" id="senha" class="form-control" placeholder="Digite a sua senha" required autocomplete="current-password">
+                            <button type="button" id="mostrarSenha" class="btn btn-outline-secondary">
+                                <!-- Ícone -->
+                                 <i class="bi bi-eye" id="iconeSenha"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div>
+                        <!-- Link para recuperação de senha. Como será feita essa recuperação?? -->
+                        <a href="" title="Esqueceu a senha?" class="mb-3 text-end">Esqueci minha senha</a>
                     </div>
                     <button type="submit" class="btn btn-primary w-100" title="Enviar">Entrar</button>
                 </form>
