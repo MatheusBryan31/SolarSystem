@@ -1,0 +1,10 @@
+body{
+    margin: 0;
+}
+.area-apresentacao{
+    width: 55%;
+}
+.area-login{
+    width: 45%;
+    background-color: #ffffff;
+}
