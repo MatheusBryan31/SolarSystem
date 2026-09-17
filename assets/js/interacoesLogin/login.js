@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", function(){
     const campoSenha = document.getElementById("senha");
     const iconeSenha = document.getElementById("iconeSenha");
 
-    addEventListener("click", function(){
-        console.log("Clicou no botão!" /* Isso é um teste, repaziada. */);
+    document.addEventListener("click", function(){
+        console.log("Clicou no botão!");
     });
 }); // Para garantir que o HTML exista antes do JS rodar.
