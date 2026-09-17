@@ -1,0 +1,19 @@
+aside {
+    width: 250px;
+    min-height: 100vh;
+    background-color: #0d2b45;
+    color: white;
+    border-right: 2px solid #ccc;
+}
+
+aside h2{
+    margin-bottom: 30px
+}
+
+aside p{
+    margin-bottom: 15px;
+    font-size: 18px;
+}
+aside h2{
+    font-size: 24px;
+}
