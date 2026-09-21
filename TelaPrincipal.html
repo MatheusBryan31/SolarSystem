@@ -14,7 +14,7 @@
 </head>
 <body>
     <div class="d-flex">
-        <aside class="p-3">
+        <aside class="p-4">
 
             <h2>Sistema Solar</h2>
 
@@ -29,19 +29,19 @@
             <h1>Painel Principal</h1>
 
             <div class="row g-3">
-                <div class="card card col-12 col-md-3 p-3">
+                <div class=" card col-12 col-md-3 p-3 shadow-sm">
                     <h2>6</h2>
                     <p>Usinas Cadastradas</p>
                 </div>
-                <div class="card card col-12 col-md-3 p-3">
+                <div class=" card col-12 col-md-3 p-3 shadow-sm">
                     <h2>4</h2>
                     <p>Usinas online</p>
                 </div>
-                <div class="card card col-12 col-md-3 p-3">
+                <div class=" card col-12 col-md-3 p-3 shadow-sm">
                     <h2>2</h2>
                     <p>Usinas com falha</p>
                 </div>
-                <div class="card card col-12 col-md-3 p-3">
+                <div class=" card col-12 col-md-3 p-3 shadow-sm">
                     <h2>#45 MWh</h2>
                     <p>produção hoje</p>
                 </div>
@@ -49,44 +49,48 @@
 
             <h2 class="mt-4">Usinas Monitoradas</h2>
 
-            <table class="table table-hover align-middle">
-                <thead>
-                    <tr class="table-light">
-                        <th>Usina</th>
-                        <th>Status</th>
-                        <th>Produção hoje</th>
-                    </tr>
-                </thead>
+            <div class="card shadow-sm p-3">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr class="table-light">
+                            <th>Usina</th>
+                            <th>Status</th>
+                            <th>Produção hoje</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Usina Solar 1</td>
+                            <td>Online</td>
+                            <td>%63 kWh</td>
+                        </tr>
+                        <tr>
+                            <td>Usina Solar 2</td>
+                            <td>Offline</td>
+                            <td>%75 KWh</td>
+                        </tr>
+                        <tr>
+                            <td>Usina Solar 2</td>
+                            <td>Offline</td>
+                            <td>%75 KWh</td>
+                        </tr>
+                        <tr>
+                            <td>Usina Solar 2</td>
+                            <td>Offline</td>
+                            <td>%75 KWh</td>
+                        </tr>
+                        <tr>
+                            <td>Usina Solar 2</td>
+                            <td>Offline</td>
+                            <td>%75 KWh</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
 
-                <tbody>
-                    <tr>
-                        <td>Usina Solar 1</td>
-                        <td>Online</td>
-                        <td>%63 kWh</td>
-                    </tr>
-
-                    <tr>
-                        <td>Usina Solar 2</td>
-                        <td>Offline</td>
-                        <td>%75 KWh</td>
-                    </tr>
-                    <tr>
-                        <td>Usina Solar 2</td>
-                        <td>Offline</td>
-                        <td>%75 KWh</td>
-                    </tr>
-                    <tr>
-                        <td>Usina Solar 2</td>
-                        <td>Offline</td>
-                        <td>%75 KWh</td>
-                    </tr>
-                    <tr>
-                        <td>Usina Solar 2</td>
-                        <td>Offline</td>
-                        <td>%75 KWh</td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="text-end mt-">
+                <button class="btn btn-primary">Ver Todas as Usinas</button>
+            </div>
             
         </main>
     </div>
