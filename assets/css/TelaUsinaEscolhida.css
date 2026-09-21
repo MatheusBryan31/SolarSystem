@@ -1,0 +1,9 @@
+aside {
+    width: 270px;
+    min-height: 100vh;
+    background-color: #0d2b45;
+    color: white;
+    border-right: 2px solid #ccc;
+    display: flex;
+    flex-direction: column;
+}
