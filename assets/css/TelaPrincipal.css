@@ -13,13 +13,13 @@ aside h2{
     margin-bottom: 30px
 }
 
-aside p{
+aside p, a{
     margin-bottom: 15px;
     font-size: 18px;
     cursor: pointer;
     font-weight: bold;
 }
-aside p:hover{
+aside a:hover{
     color: #00bfff;
 }
 aside h2{
@@ -31,7 +31,10 @@ aside a{
     text-decoration: none;
     font-size: 18px;
     font-weight: bold;
-    margin-bottom: 15px;
+    margin-bottom: 5px;
+    display: block;
+    width: 100%;
+    padding: 10px;
 }
 
 main h1{
