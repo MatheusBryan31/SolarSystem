@@ -12,3 +12,16 @@ document.addEventListener("DOMContentLoaded", function(){
         }
     });
 }); // Para garantir que o HTML exista antes do JS rodar.
+
+
+function entrar(){
+    const email = document.getElementById("email").value;
+    const senha = document.getElementById("senha").value;
+
+    if(email == "teste@gmail.com" && senha === "12345"){
+        window.location.href = "TelaPrincipal.html";
+    }
+    else{
+        document.getElementById("erro").textContent = "E-mail ou senha incorretos.";
+    }
+}
