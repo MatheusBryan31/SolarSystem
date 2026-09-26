@@ -1,0 +1,30 @@
+aside {
+    width: 270px;
+    min-height: 100vh;
+    background-color: #0d2b45;
+    color: white;
+    border-right: 2px solid #ccc;
+    display: flex;
+    flex-direction: column;
+}
+
+aside h2 {
+    font-size: 24px;
+    margin-bottom: 30px;
+}
+
+aside a {
+    display: block;
+    width: 100%;
+    color: white;
+    text-decoration: none;
+    font-size: 18px;
+    font-weight: bold;
+    padding: 10px;
+    margin-bottom: 5px;
+    cursor: pointer;
+}
+
+aside a:hover {
+    color: #00bfff;
+}
