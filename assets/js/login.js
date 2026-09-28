@@ -6,14 +6,14 @@ document.addEventListener("DOMContentLoaded", function(){
 
     botaoMostrarSenha.addEventListener("click", function(){
         if(campoSenha.type == "password"){
-            campoSenha.type = "text";
             iconeSenha.classList.remove("bi-eye");
             iconeSenha.classList.add("bi");
+            campoSenha.type = "text";
         }
         else{
-            campoSenha.type == "password";
             iconeSenha.classList.remove("bi");
             iconeSenha.classList.add("bi-eye");
+            campoSenha.type == "password";
         }
     });
 }); // Para garantir que o HTML exista antes do JS rodar.
