@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", function(){
             iconeSenha.classList.add("bi-eye-slash");
         }
         else{
-            campoSenha.type == "password";
+            campoSenha.type = "password";
             iconeSenha.classList.remove("bi-eye-slash");
             iconeSenha.classList.add("bi-eye");
         }
