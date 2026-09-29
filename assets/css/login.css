@@ -1,12 +1,8 @@
 body{
     margin: 0;
-    padding: 0;
-    box-sizing: border-box;
 }
-.area-apresentacao {
-    width: 70%;
-    height: 100vh;
-    overflow: hidden;
+.area-apresentacao{
+    width: 55%;
 }
 .area-login{
     width: 45%;
@@ -14,10 +10,6 @@ body{
 }
 .formulario-login{
     max-width: 420px;
-    width: 70%;
+    width: 100%;
 }
 
-.area-login {
-    width: 50%;
-    height: 100vh;
-}
