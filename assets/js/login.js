@@ -8,7 +8,12 @@ document.addEventListener("DOMContentLoaded", function(){
         if(campoSenha.type == "password"){
             campoSenha.type = "text";
             iconeSenha.classList.remove("bi-eye");
-            iconeSenha.classList.add("bi")
+            iconeSenha.classList.add("bi-eye-slash");
+        }
+        else{
+            campoSenha.type = "password";
+            iconeSenha.classList.remove("bi-eye-slash");
+            iconeSenha.classList.add("bi-eye");
         }
     });
 }); // Para garantir que o HTML exista antes do JS rodar.
