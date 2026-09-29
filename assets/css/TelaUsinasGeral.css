@@ -28,3 +28,7 @@ aside a {
 aside a:hover {
     color: #00bfff;
 }
+
+aside a.ativo:hover {
+    color: #0d2b45;
+}
