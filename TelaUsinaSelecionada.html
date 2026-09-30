@@ -13,19 +13,13 @@
 
     <div class="d-flex">
 
-        <aside class="p-4">
-
-            <h2>Sistema Solar</h2>
-            
-            <a href="TelaPrincipal.html">Painel Principal</a>
-            <a href="TelaUsinasGeral.html">Usinas</a>
-            <a href="#">Cadastrar</a>
-            <a href="login.html">Sair</a>
-        </aside>
+        
+        <aside id="sidebar" class="p-4"></aside>
+        
     
         <main class="p-4 flex-grow-1">
 
-             <a href="#" class="btn btn-secondary mb-3">
+             <a href="TelaUsinasGeral.html" class="btn btn-secondary mb-3">
                 Voltar para a lista
             </a>
 
@@ -68,37 +62,14 @@
             <div class="card shadow-sm p-3 mt-4">
 
                 <h2>Produção últimos 4 dias</h2>
-
-                <div class="grafico">
-
-                    <div class="barra">
-                        <div class="valor">1,10 MWh</div>
-                        <div class="barra-valor" style="height: 70%;"></div>
-                        <span>05/09</span>
-                    </div>
-
-                    <div class="barra">
-                        <div class="valor">1,20</div>
-                        <div class="barra-valor" style="height: 85%;"></div>
-                        <span>06/09</span>
-                    </div>
-
-                    <div class="barra">
-                        <div class="valor">1,20</div>
-                        <div class="barra-valor" style="height: 85%;"></div>
-                        <span>06/09</span>
-                    </div>
-
-                    <div class="barra">
-                        <div class="valor">1,20</div>
-                        <div class="barra-valor" style="height: 85%;"></div>
-                        <span>06/09</span>
-                    </div>
-                </div>
+                <div class="grafico" id="grafico"></div>
             </div>
             
                   
         </main>
     </div>
+
+    <script src="assets/js/sidebar.js"></script>
+    <script src="assets/js/TelaUsinaSelecionada.js"></script>
 </body>
 </html>

@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Usinas</title>
+    <title>Lista de Usinas</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
 
@@ -19,15 +19,48 @@
 
             <a href="TelaPrincipal.html">Painel Principal</a>
             <a href="TelaUsinasGeral.html">Usinas</a>
-            <a href="#">Cadastrar</a>
+            <a href="TelaCadastrarUsina.html">Cadastrar</a>
             <a href="login.html">Sair</a>
         </aside>
-    <div>
 
         <main class="p-4 flex-grow-1">
 
-            <h1>Lista de Usinas</h1>
+            <h1>Usinas</h1>
+
+            <div class="d-flex justify-content-between flex-wrap gap-3 mb-4">
+                <input class="form-control busca" type="search" placeholder="Pesquisar usina...">
+                <a href="TelaCadastrarUsina.html" class="btn btn-brand">
+                    <i class="bi bi-plus-circle me-2"></i>Cadastrar usina
+                </a>
+            </div>
+
+            <div class="card shadow-sm p-3 table-responsive">
+
+                <table class="table table-hover align-middle mb-0">
+
+                    <thead>
+                        <tr class="table-light">
+                            <th>Usina</th>
+                            <th>Status</th>
+                            <th>Produção hoje</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+
+                    <tbody  id="listaUsinas"></tbody>
+
+                </table>
+
+            </div>
 
         </main>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="assets/js/sidebar.js"></script>
+    <script src="assets/js/TelaPrincipal.js"></script>
+    
 </body>
 </html>
