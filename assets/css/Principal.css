@@ -1,33 +1,37 @@
+
+body{
+    background-color: redd !important;
+}
 .indicador {
-    border: none;
-    color: white;
+    border: none  !important;
+    color: white !important;
 }
 
-.cadastradas {
-    background-color: #152350;
+.indicador.cadastradas {
+    background-color: #152350 !important;
 }
 
-.online {
-    background-color: #198754;
+.indicador.online {
+    background-color: #198754 !important;
 }
 
-.falhas {
-    background-color: #dc3545;
+.indicador.falhas {
+    background-color: #dc3545 !important;
 }
 
-.producao {
-    background-color: #f7a21b;
+.indicador.producao {
+    background-color: #f7a21b !important;
 }
 
-.indicador h2 {
-    color: white;
+.indicador.indicador h2 {
+    color: white !important;
 }
 
-.cabecalho-tabela {
-    background-color: #152350;
-    color: white;
+.indicador.cabecalho-tabela {
+    background-color: #152350 !important;
+    color: white !important;
 }
 
-.cabecalho-tabela th {
-    color: white;
+.indicador.cabecalho-tabela th {
+    color: white !important;
 }
