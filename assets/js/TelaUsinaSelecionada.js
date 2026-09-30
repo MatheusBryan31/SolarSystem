@@ -6,6 +6,7 @@ const producao = [
 ];
 
 const grafico = document.getElementById("grafico");
+console.log(grafico);
 
 producao.forEach(dia => {
     grafico.innerHTML += `

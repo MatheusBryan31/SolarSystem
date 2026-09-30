@@ -1,0 +1,35 @@
+/* ---------- Gráfico da usina ---------- */
+
+.grafico {
+    height: 250px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-around;
+    padding: 20px;
+    border-bottom: 1px solid #c9ccd1;
+}
+
+.barra {
+    width: 80px;
+    height: 250px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.barra-valor {
+    width: 50px;
+    background-color: var(--cor-marinho);
+    border-radius: 5px 5px 0 0;
+}
+
+.valor {
+    font-size: 13px;
+    margin-bottom: 5px;
+}
+
+.barra span {
+    margin-top: 8px;
+    font-size: 14px;
+}
