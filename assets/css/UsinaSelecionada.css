@@ -1,6 +1,7 @@
 /* ---------- Gráfico da usina ---------- */
 
 .grafico {
+    margin-top: 30px;
     height: 250px;
     display: flex;
     align-items: flex-end;
