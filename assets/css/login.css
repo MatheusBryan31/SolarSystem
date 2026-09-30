@@ -19,7 +19,7 @@ body{
 
 }
 .formulario-login{
-    max-width: 320px;
+    font-family: Poppins;   
+    max-width: 300px;
     width: 100%;
-    
 }
