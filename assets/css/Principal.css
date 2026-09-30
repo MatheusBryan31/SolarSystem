@@ -1,0 +1,33 @@
+.indicador {
+    border: none;
+    color: white;
+}
+
+.cadastradas {
+    background-color: #152350;
+}
+
+.online {
+    background-color: #198754;
+}
+
+.falhas {
+    background-color: #dc3545;
+}
+
+.producao {
+    background-color: #f7a21b;
+}
+
+.indicador h2 {
+    color: white;
+}
+
+.cabecalho-tabela {
+    background-color: #152350;
+    color: white;
+}
+
+.cabecalho-tabela th {
+    color: white;
+}
