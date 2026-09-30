@@ -127,3 +127,249 @@ body {
     .menu-item { font-size: 0.7rem; }
     .topo-marca { letter-spacing: 0.15em; }
 }
+
+/* =====================================================================
+   TELA: CADASTRAR USINA
+   (tudo abaixo foi adicionado; o restante do arquivo não foi alterado)
+   ===================================================================== */
+:root {
+    --cor-azul-botao: #0b4a7a;
+    --cor-azul-botao-hover: #093a61;
+    --cor-azul-claro: #6fa8d6;
+    --cor-campo: #f1f4f8;
+    --cor-borda: #d5dde8;
+    --cor-erro: #c62828;
+    --cor-sucesso: #1b7f4b;
+}
+ 
+/* ---------- Área principal (ao lado do menu) ---------- */
+.area-principal {
+    flex: 1;
+    min-width: 0;
+    padding: 0 clamp(1rem, 4vw, 3rem) 2.5rem;
+}
+ 
+.area-principal *,
+.area-principal *::before,
+.area-principal *::after {
+    box-sizing: border-box;
+}
+ 
+.pagina-migalha {
+    margin: 1.6rem 0 0.25rem;
+    font-size: 0.8rem;
+    color: var(--cor-texto-suave);
+}
+ 
+.pagina-titulo {
+    margin: 0 0 1.4rem;
+    font-size: clamp(1.5rem, 3.2vw, 2.1rem);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--cor-texto);
+}
+ 
+/* ---------- Cartão do formulário ---------- */
+.usina-card {
+    max-width: 980px;
+    padding: clamp(1.25rem, 3.5vw, 2.5rem);
+    background-color: #fff;
+    border: 1px solid var(--cor-borda);
+    border-radius: 24px;
+    box-shadow: 0 10px 30px rgba(21, 35, 80, 0.07);
+}
+ 
+.usina-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.6rem 2rem;
+}
+ 
+/* ---------- Campos ---------- */
+.campo label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+ 
+.campo-obrigatorio {
+    color: var(--cor-erro);
+}
+ 
+.campo-entrada {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+ 
+.campo-entrada input {
+    width: 100%;
+    height: 50px;
+    padding: 0 0.9rem;
+    font: inherit;
+    font-size: 0.95rem;
+    color: var(--cor-texto);
+    background-color: var(--cor-campo);
+    border: 1.5px solid transparent;
+    border-radius: 12px;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s, background-color 0.15s;
+}
+ 
+.campo-entrada input:focus {
+    background-color: #fff;
+    border-color: var(--cor-azul-botao);
+    box-shadow: 0 0 0 4px rgba(111, 168, 214, 0.35);
+}
+ 
+.campo.invalido input {
+    border-color: var(--cor-erro);
+}
+ 
+/* unidade fixa dentro do campo (kWp) */
+.campo-unidade {
+    position: absolute;
+    right: 0.9rem;
+    font-size: 0.85rem;
+    color: var(--cor-texto-suave);
+    pointer-events: none;
+}
+ 
+.campo-entrada.com-unidade input {
+    padding-right: 3.4rem;
+}
+ 
+/* botões − e + da quantidade */
+.campo-passo {
+    position: absolute;
+    right: 6px;
+    display: flex;
+    gap: 4px;
+}
+ 
+.campo-passo button {
+    width: 36px;
+    height: 38px;
+    font-size: 1.2rem;
+    line-height: 1;
+    color: var(--cor-texto);
+    background-color: #fff;
+    border: 1px solid var(--cor-borda);
+    border-radius: 9px;
+    cursor: pointer;
+}
+ 
+.campo-passo button:hover {
+    background-color: var(--cor-borda);
+}
+ 
+.campo-entrada.com-passo input {
+    padding-right: 5.8rem;
+}
+ 
+/* texto de ajuda / erro abaixo do campo */
+.campo-ajuda {
+    min-height: 1.1rem;
+    margin-top: 0.4rem;
+    font-size: 0.78rem;
+    color: var(--cor-texto-suave);
+}
+ 
+.campo.invalido .campo-ajuda {
+    color: var(--cor-erro);
+}
+ 
+/* resumo: potência média por inversor */
+.usina-resumo {
+    grid-column: 1 / -1;
+    display: none;
+    padding: 0.85rem 1rem;
+    font-size: 0.9rem;
+    color: var(--cor-texto-suave);
+    background-color: var(--cor-campo);
+    border-radius: 14px;
+}
+ 
+.usina-resumo.show {
+    display: block;
+}
+ 
+.usina-resumo b {
+    color: var(--cor-texto);
+}
+ 
+/* ---------- Botões ---------- */
+.usina-acoes {
+    max-width: 980px;
+    margin-top: 1.8rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.9rem;
+}
+ 
+.botao {
+    height: 50px;
+    padding: 0 1.9rem;
+    font: inherit;
+    font-size: 0.88rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    border: 0;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background-color 0.15s;
+}
+ 
+.botao:focus-visible {
+    outline: 3px solid var(--cor-sol);
+    outline-offset: 2px;
+}
+ 
+.botao-secundario {
+    color: var(--cor-azul-botao);
+    background-color: var(--cor-campo);
+    border: 1px solid var(--cor-borda);
+}
+ 
+.botao-secundario:hover {
+    background-color: var(--cor-borda);
+}
+ 
+.botao-primario {
+    color: #fff;
+    background-color: var(--cor-azul-botao);
+}
+ 
+.botao-primario:hover {
+    background-color: var(--cor-azul-botao-hover);
+}
+ 
+/* ---------- Aviso de sucesso ---------- */
+.aviso-sucesso {
+    position: fixed;
+    left: 50%;
+    bottom: 1.5rem;
+    transform: translate(-50%, 30px);
+    padding: 0.75rem 1.25rem;
+    font-size: 0.9rem;
+    color: #fff;
+    background-color: var(--cor-sucesso);
+    border-radius: 12px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s, transform 0.3s;
+}
+ 
+.aviso-sucesso.show {
+    opacity: 1;
+    transform: translate(-50%, 0);
+}
+ 
+/* ---------- Celular (formulário) ---------- */
+@media (max-width: 767.98px) {
+    .usina-grid { grid-template-columns: 1fr; }
+    .usina-acoes { flex-direction: column-reverse; }
+    .botao { width: 100%; }
+}
