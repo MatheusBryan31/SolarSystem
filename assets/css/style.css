@@ -1,0 +1,129 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+
+:root {
+    --cor-marinho: #152350;
+    --cor-sol: #f7a21b;
+    --cor-texto: #111111;
+    --cor-texto-suave: #575555;
+
+    --fonte: "Poppins", "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+body {
+    font-family: var(--fonte);
+    color: var(--cor-texto);
+}
+
+/* ---------- Menu lateral (montado por assets/js/sidebar.js) ---------- */
+.menu-lateral {
+    flex: 0 0 104px;
+    width: 104px;
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    padding: 1.25rem 0.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: var(--cor-marinho);
+    color: #fff;
+    border-radius: 0 28px 0 0;
+}
+
+.menu-logo img {
+    width: 64px;
+    height: auto;
+    display: block;
+}
+
+.menu-itens {
+    width: 100%;
+    margin: auto 0;               /* centraliza entre o logo e o "Sair" */
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.menu-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    width: 100%;
+    padding: 0.7rem 0.25rem;
+    border-radius: 12px;
+    color: #fff;
+    font-size: 0.78rem;
+    font-weight: 400;
+    text-decoration: none;
+}
+
+.menu-item i {
+    font-size: 1.6rem;
+    line-height: 1;
+}
+
+.menu-item:hover {
+    background-color: rgba(255, 255, 255, 0.12);
+    color: #fff;
+}
+
+.menu-item.ativo,
+.menu-item.ativo:hover {
+    background-color: #6fa8d6;
+    color: #fff;
+}
+
+.menu-item:focus-visible {
+    outline: 3px solid var(--cor-sol);
+    outline-offset: 2px;
+}
+
+/* ---------- Cabeçalho (montado por sidebar.js em <header id="topo">) ---------- */
+.topo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 0 0.9rem;
+    border-bottom: 2px solid #c9ccd1;
+}
+
+.topo-marca {
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--cor-texto-suave);
+}
+
+.topo-usuario {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.9rem;
+}
+
+.topo-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background-color: #9b9da1;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+}
+
+/* ---------- Celular ---------- */
+@media (max-width: 767.98px) {
+    .menu-lateral {
+        flex-basis: 76px;
+        width: 76px;
+        padding-inline: 0.25rem;
+    }
+
+    .menu-logo img { width: 48px; }
+    .menu-item { font-size: 0.7rem; }
+    .topo-marca { letter-spacing: 0.15em; }
+}
