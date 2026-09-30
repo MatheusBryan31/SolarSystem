@@ -34,3 +34,29 @@
     margin-top: 8px;
     font-size: 14px;
 }
+
+.indicador {
+    border: none;
+    color: white;
+}
+
+.indicador h2,
+.indicador p {
+    color: white;
+}
+
+.status {
+    background-color: #198754;
+}
+
+.producao {
+    background-color: #f7a21b;
+}
+
+.potencia {
+    background-color: #0d6efd;
+}
+
+.falhas {
+    background-color: #dc3545;
+}
