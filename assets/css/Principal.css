@@ -1,37 +1,37 @@
 
 body{
-    background-color: redd !important;
+    background-color: redd ;
 }
 .indicador {
-    border: none  !important;
-    color: white !important;
+    border: none  ;
+    color: white ;
 }
 
 .indicador.cadastradas {
-    background-color: #152350 !important;
+    background-color: #152350 ;
 }
 
 .indicador.online {
-    background-color: #198754 !important;
+    background-color: #198754 ;
 }
 
 .indicador.falhas {
-    background-color: #dc3545 !important;
+    background-color: #dc3545;
 }
 
 .indicador.producao {
-    background-color: #f7a21b !important;
+    background-color: #f7a21b;
 }
 
 .indicador.indicador h2 {
-    color: white !important;
+    color: white ;
 }
 
 .indicador.cabecalho-tabela {
-    background-color: #152350 !important;
-    color: white !important;
+    background-color: #152350;
+    color: white ;
 }
 
 .indicador.cabecalho-tabela th {
-    color: white !important;
+    color: white ;
 }
