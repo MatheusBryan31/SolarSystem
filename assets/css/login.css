@@ -11,7 +11,7 @@ body{
 }
 .area-login{
     width: 38%;
-    background-color: #ffffff;
+    background-color: #00143A;
     border-top-left-radius: 45px;
     border-bottom-left-radius: 45px;
     margin-left: -4%;
@@ -19,7 +19,7 @@ body{
 
 }
 .formulario-login{
-    font-family: Poppins;   
+    font-family: Poppins; 
     max-width: 300px;
     margin-left: 50px;
     margin-bottom: 50px;
