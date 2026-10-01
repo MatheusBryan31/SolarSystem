@@ -1,21 +1,17 @@
-body{
-    margin: 0;
-    /* background-color: #f4f6f9; Foi usado para expor a cor atrás do container das seção de login*/
-}
 .area-apresentacao{
     width: 65%; /* Alinhamento perfeito entre a tela de apresentação e o formulário */
     background-image: url("../img/Autorao-Dois.jpeg");
     background-size: cover;
     background-position: center;
-    background-repeat: no-repeat;
+    /* background-repeat: no-repeat; */ /* Não é necessária a utilização desta linha */
 }
 .area-login{
-    width: 38%;
+    width: 39%;
     background-color: #00143A;
     border-top-left-radius: 45px;
     border-bottom-left-radius: 45px;
     margin-left: -4%;
-    z-index: 1;
+    /* z-index: 1; */ /* Não é necessário utilizar também */
 
 }
 .formulario-login{
