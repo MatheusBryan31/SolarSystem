@@ -17,29 +17,31 @@
             <section class="area-login d-flex justify-content-center align-items-center">
                 <form action="" class="formulario-login">
                     <h2>Bem vindo a SolarSystem</h2>
-                    <p>Acesse sua conta para continuar</p>
-                    <div class="mb-3 fonte">
-                        <label for="email" class="form-label">E-mail</label>
+                    <p style="font-size: 100">Acesse sua conta para continuar</p>
+                    <div class="mb-3">
+                        <!-- <label for="email" class="form-label">E-mail</label> -->
                         <input type="email" name="email" id="email" class="form-control" placeholder="Digite o seu e-mail" required autocomplete="email">
                     </div>
                     <div class="mb-3">
-                        <label for="senha" class="form-label">Senha</label>
+                        <!-- <label for="senha" class="form-label">Senha</label> -->
                         <!-- Div para envolver o input==password para ser possível a visualização da senha -->
                         <div class="input-group">
                             <input type="password" name="senha" id="senha" class="form-control" placeholder="Digite a sua senha" required autocomplete="current-password">
-                            <button type="button" id="mostrarSenha" class="btn btn-outline-secondary">
+                            <button type="button" id="mostrarSenha" class="btn btn-outline-secondary" style="border-left: none;">
                                 <!-- Ícone -->
                                  <i class="bi bi-eye" id="iconeSenha"></i>
                             </button>
                         </div>
                     </div>
-                    <div class="mb-3 text-end">
+                    <div class="mb-3 text-end" style="font-size: 14px;">
                         <!-- Link para recuperação de senha. Como será feita essa recuperação?? -->
-                        <a href="#" title="Esqueceu a senha?" class="text-decoration-none">Esqueci minha senha</a>
+                        <a href="#" title="Esqueceu a senha?" class="text-decoration-none" style="color: white">Esqueci minha senha</a>
                     </div>
-                    <button type="submit" class="btn btn-primary w-100" title="Enviar">
-                        <link rel="" href="TelaPrincipal.html">Entrar <!-- É aqui para continuar, Bryan -->
-                    </button>
+                    <div style="margin-top: 50px">
+                        <button type="submit" class="btn btn-primary w-100" title="Entrar" style="font-size:18px; font-weight:bold">
+                        <a href="TelaPrincipal.html" target="_self" class="text-decoration-none">Entrar</a> <!-- É aqui para continuar, Bryan -->
+                        </button>
+                    </div>
                 </form>
             </section>
         </main>

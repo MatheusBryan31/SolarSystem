@@ -7,7 +7,7 @@
 }
 .area-login{
     width: 39%;
-    background-color: #00040b;
+    background-color: #03001b;
     border-top-left-radius: 45px;
     border-bottom-left-radius: 45px;
     margin-left: -4%;
@@ -15,12 +15,28 @@
 
 }
 .formulario-login{
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Fonte do Formulário */
     color: white;
     max-width: 300px;
     margin-left: 50px;
     margin-bottom: 50px;
 }
-.fonte{
-    font-family: 'Bold';
+#email::placeholder, #senha::placeholder{
+    border-radius: 13px;
+}
+.area-login input{
+    border-radius: 13px;
+}
+.area-login button[type="submit"]{
+    border-radius: 13px;
+    background-color: white;
+}
+.input-group{
+    background-color: white;
+    border-radius: 13px;
+    overflow: hidden;
+}
+.input-group #senha{
+    border: none;
+    border-radius: 13px;
 }
