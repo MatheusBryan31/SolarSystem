@@ -31,18 +31,22 @@
     border-radius: 13px;
     background-color: white;
 }
+/* Une o botão dos olhos e o input senha */
 .input-group{
     background-color: white;
     border-radius: 13px;
     overflow: hidden;
 }
+/* Remove a borda da senha que separaria o botão dos olhos. OBS: Ambas as bordas devem ter arredondamento iguais para que não aja diferença no layout */
 .input-group #senha{
     border: none;
     border-radius: 13px;
 }
-.input-group #senha:focus{
+/* Remove a sombra azul em volta dos inputs */
+.input-group #senha:focus, #email:focus{
     box-shadow: none;
 }
+/* Alinha o tamanho do botão com o tamanho do input */
 #mostrarSenha{
     background-color: transparent !important;
     border: none !important;
