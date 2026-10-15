@@ -43,3 +43,9 @@
 .input-group #senha:focus{
     box-shadow: none;
 }
+#mostrarSenha{
+    background-color: transparent !important;
+    border: none !important;
+    border-radius: 0 13px, 13px, 0 !important;
+    color: #6c757d;
+}
