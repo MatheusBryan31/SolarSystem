@@ -40,3 +40,6 @@
     border: none;
     border-radius: 13px;
 }
+.input-group #senha:focus{
+    box-shadow: none;
+}
