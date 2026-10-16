@@ -7,7 +7,7 @@
 }
 .area-login{
     width: 39%;
-    background-color: #03001b;
+    background-color: #03001b; /* Azul oscuro: #111184 || Azul Naval: #000080 || Azul Indigo (Quase roxo): #2e2955 || Azul da meia noite: #03001b || Azul muito escuro (Quase preto): #0c0066*/
     border-top-left-radius: 45px;
     border-bottom-left-radius: 45px;
     margin-left: -4%;
