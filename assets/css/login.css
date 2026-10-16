@@ -56,11 +56,16 @@
     box-shadow: none;
 }
 
+/* Remoção da linha azul do botão */
+button[type='submit']{
+    box-shadow: none;
+}
+
 /* Alinha o tamanho do botão com o tamanho do input */
 #mostrarSenha{
     background-color: transparent !important;
     border: none !important;
-    border-radius: 0 13px, 13px, 0 !important;
+    border-radius: 0 13px 13px 0 !important;
     color: #70757A;
 }
 
@@ -81,7 +86,7 @@
     font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     font-size: 14px;
     color: #E8EAED;
-    transition: 0.3;
+    transition: 0.3s ease;
 }
 .fontesTerciarias:hover{
     color: #70757A;
