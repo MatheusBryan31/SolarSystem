@@ -106,3 +106,22 @@
 .fontesTerciarias:hover{
     color: #70757A;
 }
+
+.form-check-input{
+    background-color: FFFFFF;
+    border: 1px solid #70757A;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 16px;
+    height: 16px;
+    margin-top: 0;
+}
+.form-check-input:checked{
+    background-color: #03001b;
+    border-color: #FFFFFF;
+}
+.form-check-input:focus{
+    box-shadow: none !important;
+    outline: none !important;
+    border-color: #70757A;
+}   
