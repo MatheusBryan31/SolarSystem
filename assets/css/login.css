@@ -53,12 +53,27 @@
 
 /* Remove a sombra azul em volta dos inputs */
 .input-group #senha:focus, #email:focus{
-    box-shadow: none;
+    box-shadow: none !important;
+    outline: none !important;
+    border: none !important;
 }
 
 /* Remoção da linha azul do botão */
-button[type='submit']{
-    box-shadow: none;
+.area-login button[type="submit"],
+.area-login button[type="submit"]:focus,
+.area-login button[type="submit"]:active,
+.area-login button[type="submit"]:focus-visible{
+    outline: none !important;
+    box-shadow: none !important;
+    border: none !important;
+}
+.area-login button[type="submit"] a,
+.area-login button[type="submit"] a:focus,
+.area-login button[type="submit"] a:active,
+.area-login button[type="submit"] a:focus-visible{
+    outline: none !important;
+    box-shadow: none !important;
+    border: none !important;
 }
 
 /* Alinha o tamanho do botão com o tamanho do input */
