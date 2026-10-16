@@ -25,7 +25,8 @@
 }
 
 #email::placeholder, #senha::placeholder{
-    border-radius: 13px;
+    font-size: 13px;
+    color: #70757A;
 }
 
 .area-login input{
@@ -60,7 +61,7 @@
     background-color: transparent !important;
     border: none !important;
     border-radius: 0 13px, 13px, 0 !important;
-    color: #6c757d;
+    color: #70757A;
 }
 
 .fontesPrimarias{
