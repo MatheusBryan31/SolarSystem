@@ -5,38 +5,47 @@
         <meta name="viewport" content="width=device-width,initial-scale=1.0">
         <link rel="shortcut icon" href="assets/img/favicon/Arturo-Wibawa-Akar-Planet.512 (1).png" type="image/x-icon">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-        
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">        
         <link rel="stylesheet" href="assets/css/login.css">
         <title>SolarSystem</title>
     </head>
     <body>
         <main class="d-flex min-vh-100">
+            <!-- PRIMEIRA SEÇÃO -->
             <section class="area-apresentacao d-flex justify-content-center align-items-center">
             </section>
+
+            <!-- SEGUNDA SEÇÃO -->
             <section class="area-login d-flex justify-content-center align-items-center">
+                <!-- FORMULÁRIO -->
                 <form action="TelaPrincipal.html" class="formulario-login">
                     <h2 class="fontesPrimarias">Bem vindo a SolarSystem</h2>
                     <p class="fontesSecundarias">Acesse sua conta para continuar</p>
+                    
+                    <!-- Input do e-mail -->
                     <div class="mb-3">
-                        <!-- <label for="email" class="form-label">E-mail</label> -->
                         <input type="email" name="email" id="email" class="form-control" placeholder="Digite o seu e-mail" required autocomplete="email">
                     </div>
+
+                    <!-- Input da senha -->
                     <div class="mb-3">
-                        <!-- <label for="senha" class="form-label">Senha</label> -->
                         <!-- Div para envolver o input==password para ser possível a visualização da senha -->
                         <div class="input-group">
                             <input type="password" name="senha" id="senha" class="form-control" placeholder="Digite a sua senha" required autocomplete="current-password">
-                            <button type="button" id="mostrarSenha" class="btn btn-outline-secondary" style="border-left: none;">
+                            <button type="button" id="mostrarSenha" class="btn btn-outline-secondary">
                                 <!-- Ícone -->
                                  <i class="bi bi-eye" id="iconeSenha"></i>
                             </button>
                         </div>
                     </div>
+                    
+                    <!-- Âncora para recuperar a senha -->
                     <div class="mb-3 text-end">
                         <!-- Link para recuperação de senha. Como será feita essa recuperação?? -->
-                        <a href="#" title="Esqueceu a senha?" class="text-decoration-none fontesTerciarias">Esqueci minha senha</a>
+                        <a href="telaRecuperarSenha" target="_blank" title="Recuperar Senha" class="text-decoration-none fontesTerciarias">Esqueci minha senha</a>
                     </div>
+
+                    <!-- Botão para logar -->
                     <div style="margin-top: 50px">
                         <button type="submit" class="btn btn-primary w-100" title="Entrar" style="font-size:18px; font-weight:bold">
                             Entrar
