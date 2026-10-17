@@ -106,6 +106,10 @@
 .fontesTerciarias:hover{
     color: #70757A;
 }
+.fontesQuarternarias{
+    color: #70757A;
+    font-size: 12px;
+}
 
 .form-check-input{
     background-color: FFFFFF;
