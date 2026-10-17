@@ -38,26 +38,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const dropdownServidor = document.querySelectorAll('.topo-direito .dropdown')[0];
     if(dropdownServidor){
         const btnServidor = dropdownServidor.querySelector('.dropdown-toggle');
-        const itemsServidor = dropdownServidor.querySelector('.dropdwn-item');
+        const itemsServidor = dropdownServidor.querySelectorAll('.dropdown-item');
 
         itemsServidor.forEach(item => {
             item.addEventListener('click', (e) =>{
                 e.preventDefault();
                 const textoSelecionado = item.textContent.trim();
 
-                btnServidor.innerHTML = '<i class="bi bi-hdd-rack"></i> ${textoSelecionado}';
+                btnServidor.innerHTML = `<i class="bi bi-hdd-rack"></i> ${textoSelecionado}`;
             });
         });
 
         const servidorSalvo = localStorage.getItem('servidorSelecionado');
         if(servidorSalvo){
-            btnServidor.innerHTML = '<i class="bi bi-hdd-rack"></i> ${servidorSalvo}';
+            btnServidor.innerHTML = `<i class="bi bi-hdd-rack"></i> ${servidorSalvo}`;
         }
     }
 
     // Seleção do Idioma
     const dropdownIdioma = document.querySelectorAll('.topo-direito .dropdown')[1];
-    if(dropdwonIdioma){
+    if(dropdownIdioma){
         const btnIdioma = dropdownIdioma.querySelector('dropdown-toggle');
         const itemsIdioma = dropdownIdioma.querySelectorAll('.dropdown-item');
 
@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 e.preventDefault();
                 const textoSelecionado = item.textContent.trim();
 
-                btnIdioma.innerHTML = '<i class="bi bi-globe"></i> ${textoSelecionado}';
+                btnIdioma.innerHTML = `<i class="bi bi-globe"></i> ${textoSelecionado}`;
                 localStorage.setItem('idiomaSelecionado', textoSelecionado);
             });
         });
