@@ -21,7 +21,7 @@
     color: white; */
     max-width: 300px;
     margin-left: 50px;
-    margin-bottom: 50px;
+    margin-bottom: 0px;
 }
 
 #email::placeholder, #senha::placeholder{
