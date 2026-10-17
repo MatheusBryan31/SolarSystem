@@ -137,10 +137,10 @@
 }
 
 .topo-direito .btn{
-    color: #70757A !important;
+    color: #E8EAED !important;
     transition: color 0.3s ease;
 }
 
 .topo-direito .btn:hover{
-    color: #E8EAED !important;
+    color: #70757A !important;
 }
