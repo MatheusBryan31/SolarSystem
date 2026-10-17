@@ -18,15 +18,40 @@ document.addEventListener("DOMContentLoaded", function(){
     });
 }); // Para garantir que o HTML exista antes do JS rodar.
 
-
+/* Melhore este método, Bryan */
 function entrar(){
     const email = document.getElementById("email").value;
     const senha = document.getElementById("senha").value;
 
-    if(email == "teste@gmail.com" && senha === "12345"){
+    if(email == "@gmail.com" && senha === "12345"){
         window.location.href = "TelaPrincipal.html";
     }
     else{
         document.getElementById("erro").textContent = "E-mail ou senha incorretos.";
     }
 }
+
+/* Método para escolher idioma e servidor do dropdown == lista suspensa */
+document.addEventListener('DOMContentLoaded', () => {
+    
+    // Seleção de Servidor
+    const dropdownServidor = document.querySelectorAll('.topo-direito .dropdown')[0];
+    if(dropdownServidor){
+        const btnServidor = dropdownServidor.querySelector('.dropdown-toggle');
+        const itemsServidor = dropdownServidor.querySelector('.dropdwn-item');
+
+        itemsServidor.forEach(item => {
+            item.addEventListener('click', (e) =>{
+                e.preventDefault();
+                const textoSelecionado = item.textContent.trim();
+
+                btnServidor.innerHTML = '<i class="bi bi-hdd-rack"></i> ${textoSelecionado}';
+            });
+        });
+
+        const servidorSalvo = localStorage.getItem('servidorSelecionado');
+        if(servidorSalvo){
+            btnServidor.innerHTML = '<i class="bi bi-hdd-rack"></i> ${servidorSalvo}';
+        }
+    }  
+})
