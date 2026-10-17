@@ -53,5 +53,22 @@ document.addEventListener('DOMContentLoaded', () => {
         if(servidorSalvo){
             btnServidor.innerHTML = '<i class="bi bi-hdd-rack"></i> ${servidorSalvo}';
         }
-    }  
+    }
+
+    // Seleção do Idioma
+    const dropdownIdioma = document.querySelectorAll('.topo-direito .dropdown')[1];
+    if(dropdwonIdioma){
+        const btnIdioma = dropdownIdioma.querySelector('dropdown-toggle');
+        const itemsIdioma = dropdownIdioma.querySelectorAll('.dropdown-item');
+
+        itemsIdioma.forEach(item =>{
+            item.addEventListener('click', (e) =>{
+                e.preventDefault();
+                const textoSelecionado = item.textContent.trim();
+
+                btnIdioma.innerHTML = '<i class="bi bi-globe"></i> ${textoSelecionado}';
+                localStorage.setItem('idiomaSelecionado', textoSelecionado);
+            });
+        });
+    } 
 })
