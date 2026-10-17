@@ -3,6 +3,9 @@
     background-image: url("../img/Autorao-Dois.jpeg");
     background-size: cover;
     background-position: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between
     /* background-repeat: no-repeat; */ /* Não é necessária a utilização desta linha */
 }
 
@@ -125,4 +128,19 @@
     box-shadow: none !important;
     outline: none !important;
     border-color: #70757A;
+}
+
+.topo-direito{
+    position: absolute;
+    top: 20px;
+    right: 30px;
+}
+
+.topo-direito .btn{
+    color: #70757A !important;
+    transition: color 0.3s ease;
+}
+
+.topo-direito .btn:hover{
+    color: #E8EAED !important;
 }
