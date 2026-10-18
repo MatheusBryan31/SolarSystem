@@ -120,4 +120,24 @@ const traducoes = {
         politicas: 'Privacy Policy',
         direitos: '© SS 2026 all rights reserved.'
     }
+};
+// Função que realmente muda os textos da tela
+function aplicarTraducoes(idioma){
+    const lang = traducoes[idioma] ? idioma : 'Português';
+    const t = traducoes[lang];
+
+    // Atualiza os elementos com o atributo data-i18n
+    document.querySelectorAll('[data-i18n]').forEach(elemento =>{
+        const chave = elemento.getAttribute('data-i18n');
+        if(t[chave]){
+            elemento.textContent = t[chave];
+        }
+    });
+
+    // Atualiza os placeholders dos inputs de e-mail e senha
+    const inputEmail = document.getElementById('email');
+    const inputSenha = document.getElementById('senha');
+
+    if(inputEmail) inputEmail.placeholder = t.placeholderEmail;
+    if(inputSenha) inputSenha.placeholder = t.placeholderSenha;
 }
