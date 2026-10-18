@@ -46,6 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const textoSelecionado = item.textContent.trim();
 
                 btnServidor.innerHTML = `<i class="bi bi-hdd-rack"></i> ${textoSelecionado}`;
+                localStorage.setItem('servidorSelecionado', textoSelecionado);
             });
         });
 
