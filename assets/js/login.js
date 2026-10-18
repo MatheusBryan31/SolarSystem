@@ -78,3 +78,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     } 
 });
+
+/* TRADUÇÃO DA PÁGINA */
+const traducoes = {
+    'Português': {
+        boasVindas: 'Bem vindo a SolarSystem',
+        acesseConta: 'Acesse sua conta para continuar',
+        placeholderEmail: 'Digite o seu e-mail',
+        placeholderSenha: 'Digite a sua senha',
+        lembrarSenha: 'Lembrar Senha',
+        esqueciSenha: 'Esqueci minha senha',
+        entrar: 'Entrar',
+        registrar: 'Registrar',
+        termos: 'Termos de Serviço',
+        politicas: 'Politicas de Privacidade',
+        direitos: '\u00A9 SS 2026 todos os direitos reservados.'
+    }
+}
