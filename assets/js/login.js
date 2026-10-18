@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Seleção do Idioma
     const dropdownIdioma = document.querySelectorAll('.topo-direito .dropdown')[1];
     if(dropdownIdioma){
-        const btnIdioma = dropdownIdioma.querySelector('dropdown-toggle');
+        const btnIdioma = dropdownIdioma.querySelector('.dropdown-toggle');
         const itemsIdioma = dropdownIdioma.querySelectorAll('.dropdown-item');
 
         itemsIdioma.forEach(item =>{
@@ -70,5 +70,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.setItem('idiomaSelecionado', textoSelecionado);
             });
         });
+
+        const idiomaSalvo = localStorage.getItem('idiomaSelecionado');
+        if(idiomaSalvo){
+            btnIdioma.innerHTML = `<i class="bi bi-globe"></i> ${idiomaSalvo}`;
+        }
     } 
-})
+});
