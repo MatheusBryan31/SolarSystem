@@ -106,5 +106,18 @@ const traducoes = {
         termos: 'Términos de servicio',
         politicas: 'Políticas de privacidad',
         direitos: '\u00A9 SS 2026 todos los derechos reservados.'
+    },
+    'Inglês': {
+        boasVindas: 'Welcome to SolarSystem',
+        acesseConta: 'Sign in to your account to continue',
+        placeholderEmail: 'Enter your email',
+        placeholderSenha: 'Enter your password',
+        lembrarSenha: 'Remember me',
+        esqueciSenha: 'Forgot password?',
+        entrar: 'Sign in',
+        registrar: 'Register',
+        termos: 'Terms of Service',
+        politicas: 'Privacy Policy',
+        direitos: '© SS 2026 all rights reserved.'
     }
 }
