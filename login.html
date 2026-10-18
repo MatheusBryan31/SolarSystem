@@ -44,8 +44,8 @@
 
                 <!-- FORMULÁRIO -->
                 <form action="TelaPrincipal.html" class="formulario-login">
-                    <h2 class="fontesPrimarias">Bem vindo a SolarSystem</h2>
-                    <p class="fontesSecundarias">Acesse sua conta para continuar</p>
+                    <h2 class="fontesPrimarias" data-i18n="boaVindas">Bem vindo a SolarSystem</h2>
+                    <p class="fontesSecundarias" data-i18n="acesseConta">Acesse sua conta para continuar</p>
                     
                     <!-- Input do e-mail -->
                     <div class="mb-3">
@@ -68,7 +68,7 @@
                         <!-- Memorizar senha -->
                         <div class="form-check d-flex align-items-center gap-2 m-0 p-0">
                             <input class="form-check-input m-0" type="checkbox" name="lembrarSenha" id="lembrarSenha">
-                            <label class="form-check-label fontesTerciarias" for="lembrarSenha" style="cursor:pointer">
+                            <label class="form-check-label fontesTerciarias" for="lembrarSenha" style="cursor:pointer" data-i18n="lembrarSenha">
                                 Lembrar Senha
                             </label>
                         </div>
@@ -76,33 +76,33 @@
                         <!-- Âncora para recuperar a senha -->
                         <div>
                             <!-- Link para recuperação de senha. Como será feita essa recuperação?? -->
-                            <a href="telaRecuperarSenha.html" target="_blank" title="Recuperar Senha" class="text-decoration-none fontesTerciarias">Esqueci minha senha</a>
+                            <a href="telaRecuperarSenha.html" target="_blank" title="Recuperar Senha" class="text-decoration-none fontesTerciarias" data-i18n="esqueciSenha">Esqueci minha senha</a>
                         </div>
                     </div>
 
                     <!-- Botão para logar -->
                     <div>
                         <div style="margin-top: 50px">
-                        <button type="submit" class="btn btn-primary w-100" title="Entrar">
+                        <button type="submit" class="btn btn-primary w-100" title="Entrar" data-i18n="entrar">
                             Entrar
                         </button>
                         </div>
                         <div class="text-center">
-                            <a href="telaRegistro.html" target="_blank" title="Criar conta" class="fontesTerciarias  text-decoration-none">Registrar</a>
+                            <a href="telaRegistro.html" target="_blank" title="Criar conta" class="fontesTerciarias  text-decoration-none" data-i18n="registrar">Registrar</a>
                         </div>
                     </div>
 
                     <!-- Botões "Termos de Serviço" e "Política de privacidade" -->
                      <div style="transform: translateY(99px)" class="text-center">
-                        <a href="telaTermosDeServico.html" target="_blank" title="Termos de Serviço" class="fontesTerciarias text-decoration-none">Termos de Serviço</a>
+                        <a href="telaTermosDeServico.html" target="_blank" title="Termos de Serviço" class="fontesTerciarias text-decoration-none" data-i18n="termos">Termos de Serviço</a>
                         <span>
                             |
                         </span>
-                        <a href="telaPoliticasDePrivacidade.html" target="_blank" title="Políticas de Privacidade" class="fontesTerciarias text-decoration-none">Políticas de Privacidade</a>
+                        <a href="telaPoliticasDePrivacidade.html" target="_blank" title="Políticas de Privacidade" class="fontesTerciarias text-decoration-none" data-i18n="politicas">Políticas de Privacidade</a>
 
                         <!-- Copyright -->
                         <div class="text-center fontesQuarternarias">
-                            <p>&copy; SS 2026 todos os direitos reservados.</p>
+                            <p data-i18n="direitos">&copy; SS 2026 todos os direitos reservados.</p>
                         </div>
                      </div>
                 </form>
