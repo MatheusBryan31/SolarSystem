@@ -69,12 +69,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 btnIdioma.innerHTML = `<i class="bi bi-globe"></i> ${textoSelecionado}`;
                 localStorage.setItem('idiomaSelecionado', textoSelecionado);
+                aplicarTraducoes(textoSelecionado);
             });
         });
 
         const idiomaSalvo = localStorage.getItem('idiomaSelecionado');
         if(idiomaSalvo){
             btnIdioma.innerHTML = `<i class="bi bi-globe"></i> ${idiomaSalvo}`;
+            aplicarTraducoes(idiomaSalvo);
         }
     } 
 });
@@ -118,7 +120,7 @@ const traducoes = {
         registrar: 'Register',
         termos: 'Terms of Service',
         politicas: 'Privacy Policy',
-        direitos: '© SS 2026 all rights reserved.'
+        direitos: '\u00A9 SS 2026 all rights reserved.'
     }
 };
 // Função que realmente muda os textos da tela
