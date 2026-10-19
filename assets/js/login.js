@@ -30,6 +30,16 @@ function entrar(){
         document.getElementById("erro").textContent = "E-mail ou senha incorretos.";
     }
 }
+/* function entrar() {
+    const email = document.getElementById("email").value;
+    const senha = document.getElementById("senha").value;
+
+    if (email === "@gmail.com" && senha === "12345") {
+        window.location.href = "TelaPrincipal.html";
+    } else {
+        alert("E-mail ou senha incorretos.");
+    }
+} */
 
 /* Método para escolher idioma e servidor do dropdown == lista suspensa */
 document.addEventListener('DOMContentLoaded', () => {
@@ -94,8 +104,11 @@ const traducoes = {
         registrar: 'Registrar',
         termos: 'Termos de Serviço',
         politicas: 'Politicas de Privacidade',
-        direitos: '\u00A9 SS 2026 todos os direitos reservados.'
+        direitos: '\u00A9 SS 2026 todos os direitos reservados.',
+        titleRecuperarSenha: 'Recuperar senha',
+        titlePreenchaEsteCampo: 'Preencha este campo'
     },
+
     'Espanhol': {
         boasVindas: 'Bienvenido a SolarSystem',
         acesseConta: 'Accede a tu cuenta para continuar',
@@ -107,8 +120,11 @@ const traducoes = {
         registrar: 'Registrarse',
         termos: 'Términos de servicio',
         politicas: 'Políticas de privacidad',
-        direitos: '\u00A9 SS 2026 todos los derechos reservados.'
+        direitos: '\u00A9 SS 2026 todos los derechos reservados.',
+        titleRecuperarSenha: 'Olvidé la contraseña',
+        titlePreenchaEsteCampo: 'Rellena este campo'
     },
+
     'Inglês': {
         boasVindas: 'Welcome to SolarSystem',
         acesseConta: 'Sign in to your account to continue',
@@ -120,7 +136,9 @@ const traducoes = {
         registrar: 'Register',
         termos: 'Terms of Service',
         politicas: 'Privacy Policy',
-        direitos: '\u00A9 SS 2026 all rights reserved.'
+        direitos: '\u00A9 SS 2026 all rights reserved.',
+        titleRecuperarSenha: 'I forgot my password',
+        titlePreenchaEsteCampo: 'Fill in this field'
     }
 };
 // Função que realmente muda os textos da tela
@@ -140,6 +158,12 @@ function aplicarTraducoes(idioma){
     const inputEmail = document.getElementById('email');
     const inputSenha = document.getElementById('senha');
 
+    // Atualiza os títulos dos elementos
+    const aEsqueciSenha = document.getElementById('esqueciSenha');
+    const inputPreenchaEsteCampo = document.getElementById('email');
+
     if(inputEmail) inputEmail.placeholder = t.placeholderEmail;
     if(inputSenha) inputSenha.placeholder = t.placeholderSenha;
+    if(aEsqueciSenha) aEsqueciSenha.title = t.titleRecuperarSenha;
+    if(inputCampoEmail) inputCampoEmail.title = t.titlePreenchaEsteCampo;
 }
