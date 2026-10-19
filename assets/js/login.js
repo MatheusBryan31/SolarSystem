@@ -106,7 +106,9 @@ const traducoes = {
         politicas: 'Politicas de Privacidade',
         direitos: '\u00A9 SS 2026 todos os direitos reservados.',
         titleRecuperarSenha: 'Recuperar senha',
-        titlePreenchaEsteCampo: 'Preencha este campo'
+        titlePreenchaEsteCampo: 'Preencha este campo',
+        titleEntrar: 'Entrar',
+        titleCriarConta: 'Criar conta'
     },
 
     'Espanhol': {
@@ -122,7 +124,9 @@ const traducoes = {
         politicas: 'Políticas de privacidad',
         direitos: '\u00A9 SS 2026 todos los derechos reservados.',
         titleRecuperarSenha: 'Olvidé la contraseña',
-        titlePreenchaEsteCampo: 'Rellena este campo'
+        titlePreenchaEsteCampo: 'Rellena este campo',
+        titleEntrar: 'Para entrar',
+        titleCriarConta: 'Crear cuenta'
     },
 
     'Inglês': {
@@ -138,7 +142,9 @@ const traducoes = {
         politicas: 'Privacy Policy',
         direitos: '\u00A9 SS 2026 all rights reserved.',
         titleRecuperarSenha: 'I forgot my password',
-        titlePreenchaEsteCampo: 'Fill in this field'
+        titlePreenchaEsteCampo: 'Fill in this field',
+        titleEntrar: 'To enter',
+        titleCriarConta: 'Create Account'
     }
 };
 // Função que realmente muda os textos da tela
@@ -154,16 +160,24 @@ function aplicarTraducoes(idioma){
         }
     });
 
+    // Atualiza os title com o atibuto data-i18n-title
+    document.querySelectorAll('[data-i18n-title').forEach(elemento =>{
+        const chaveTitle = elemento.getAttribute('data-i18n-title');
+        if(t[chaveTitle]){
+            elemento.title = t[chaveTitle];
+        }
+    })
+
     // Atualiza os placeholders dos inputs de e-mail e senha
     const inputEmail = document.getElementById('email');
     const inputSenha = document.getElementById('senha');
 
     // Atualiza os títulos dos elementos
-    const aEsqueciSenha = document.getElementById('esqueciSenha');
-    const inputPreenchaEsteCampo = document.getElementById('email');
+    /* const aEsqueciSenha = document.getElementById('esqueciSenha');
+    const inputPreenchaEsteCampo = document.getElementById('email'); */
 
     if(inputEmail) inputEmail.placeholder = t.placeholderEmail;
     if(inputSenha) inputSenha.placeholder = t.placeholderSenha;
-    if(aEsqueciSenha) aEsqueciSenha.title = t.titleRecuperarSenha;
-    if(inputCampoEmail) inputCampoEmail.title = t.titlePreenchaEsteCampo;
+    /* if(aEsqueciSenha) aEsqueciSenha.title = t.titleRecuperarSenha;
+    if(inputCampoEmail) inputCampoEmail.title = t.titlePreenchaEsteCampo; */
 }
