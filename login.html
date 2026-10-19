@@ -49,7 +49,7 @@
                     
                     <!-- Input do e-mail -->
                     <div class="mb-3">
-                        <input type="email" name="email" id="email" class="form-control" placeholder="Digite o seu e-mail" required autocomplete="email" title="Preencha este campo" data-i18n="campoEmail">
+                        <input type="email" name="email" id="email" class="form-control" placeholder="Digite o seu e-mail" required autocomplete="email" title="Preencha este campo" data-i18n-title="titlePreenchaEsteCampoEmail">
                     </div>
 
                     <!-- Input da senha -->
@@ -57,7 +57,7 @@
                         <!-- Div para envolver o input==password para ser possível a visualização da senha -->
                         <div class="input-group">
                             <input type="password" name="senha" id="senha" class="form-control" placeholder="Digite a sua senha" required autocomplete="current-password">
-                            <button type="button" id="mostrarSenha" class="btn btn-outline-secondary">
+                            <button type="button" id="mostrarSenha" class="btn btn-outline-secondary" data-i18n-title="titlePreenchaEsteCampoSenha">
                                 <!-- Ícone -->
                                  <i class="bi bi-eye" id="iconeSenha"></i>
                             </button>
@@ -76,29 +76,29 @@
                         <!-- Âncora para recuperar a senha -->
                         <div>
                             <!-- Link para recuperação de senha. Como será feita essa recuperação?? -->
-                            <a href="telaRecuperarSenha.html" target="_blank" title="Recuperar Senha" name="esqueciSenha" id="esqueciSenha" class="text-decoration-none fontesTerciarias" data-i18n="esqueciSenha">Esqueci minha senha</a>
+                            <a href="telaRecuperarSenha.html" target="_blank" title="Recuperar Senha" name="esqueciSenha" id="esqueciSenha" class="text-decoration-none fontesTerciarias" data-i18n="esqueciSenha" data-i18n-title="titleRecuperarSenha">Esqueci minha senha</a>
                         </div>
                     </div>
 
                     <!-- Botão para logar -->
                     <div>
                         <div style="margin-top: 50px">
-                        <button type="submit" class="btn btn-primary w-100" title="Entrar" data-i18n="entrar">
+                        <button type="submit" class="btn btn-primary w-100" title="Entrar" data-i18n="entrar" data-i18n-title="titleEntrar">
                             Entrar
                         </button>
                         </div>
                         <div class="text-center">
-                            <a href="telaRegistro.html" target="_blank" title="Criar conta" class="fontesTerciarias  text-decoration-none" data-i18n="registrar">Registrar</a>
+                            <a href="telaRegistro.html" target="_blank" title="Criar conta" class="fontesTerciarias  text-decoration-none" data-i18n="registrar" data-i18n-title="titleCriarConta">Registrar</a>
                         </div>
                     </div>
 
                     <!-- Botões "Termos de Serviço" e "Política de privacidade" -->
                      <div style="transform: translateY(99px)" class="text-center">
-                        <a href="telaTermosDeServico.html" target="_blank" title="Termos de Serviço" class="fontesTerciarias text-decoration-none" data-i18n="termos">Termos de Serviço</a>
+                        <a href="telaTermosDeServico.html" target="_blank" title="Termos de Serviço" class="fontesTerciarias text-decoration-none" data-i18n="termos" data-i18n-title="termos">Termos de Serviço</a>
                         <span>
                             |
                         </span>
-                        <a href="telaPoliticasDePrivacidade.html" target="_blank" title="Políticas de Privacidade" class="fontesTerciarias text-decoration-none" data-i18n="politicas">Políticas de Privacidade</a>
+                        <a href="telaPoliticasDePrivacidade.html" target="_blank" title="Políticas de Privacidade" class="fontesTerciarias text-decoration-none" data-i18n="politicas" data-i18n-title="politicas">Políticas de Privacidade</a>
 
                         <!-- Copyright -->
                         <div class="text-center fontesQuarternarias">
