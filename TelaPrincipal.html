@@ -1,11 +1,104 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Painel de Monitoramento</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/Principal.css">
 </head>
-<body>
-    
+
+<body class="pagina-principal">
+
+    <div class="estrutura">
+        <aside id="sidebar"></aside>
+
+        <div class="conteudo">
+            <header id="topo"></header>
+
+            <main class="painel">
+                <div class="cabecalho-painle">
+
+                    <div>
+                        <span class="subtitulo">MONITORAMENTO</span>
+                        <h1>Painel de controle</h1>
+                        <p>Acompanhe suas usinas em um só lugar.</p>
+
+                        <a href="TelaUsinasGeral.html" class="botao-azul">
+                            <i class="bi bi-grid"></i> Ver usinas
+                        </a>
+                    </div>
+
+                    <section class="indicadores">
+                        <article class="indicador">
+                            <span class="indicador-icone azul"><i class="bi bi-sun"></i></span>
+                            <div>
+                                <p>Usinas cadastradas</p>
+                                <h2 id="totalUsinas">0</h2>
+                            </div>
+                        </article>
+
+                        <article class="indicador">
+                            <span class="indicador-icone verde"><i class="bi bi-check-circle"></i></span>
+                            <div>
+                                <p>Online</p>
+                                <h2 id="usinasOnline">0</h2>
+                            </div>
+                        </article>
+
+                        <article class="indicador">
+                            <span class="indicador-icone vermelho"><i class="bi bi-exclamation-triangle"></i></span>
+                            <div>
+                                <p>Com falha</p>
+                                <h2 id="usinasFalha">0</h2>
+                            </div>
+                        </article>
+
+                        <article class="indicador">
+                            <span class="indicador-icone amarelo"><i class="bi bi-lightning-charge"></i></span>
+                            <div>
+                                <p>Produção registrada</p>
+                                <h2 id="producaoTotal">0 kWh</h2>
+                            </div>
+                        </article>
+                    </section>
+
+                    <section class="area-central">
+                        <article class="bloco grafico-bloco">
+                            <div class="titulo-bloco">
+                                <div>
+                                    <h2>Produção de energia</h2>
+                                    <p>Exemplo de geração nos últimos 7 dias</p>
+                                </div>
+                                <i class="bi bi-graph-up-arrow"></i>
+                            </div>
+                            <div class="grafico">
+                                <canvas id="graficoProducao"></canvas>
+                            </div>
+                        </article>
+
+                        <article class="bloco alertas-bloco">
+                            <div class="titulo-bloco">
+                                <div>
+                                    <h2>Precisa de atenção</h2>
+                                    <p>Usinas que apresentam falhas</p>
+                                </div>
+                                <i class="bi bi-bell"></i>
+                            </div>
+                            <div id="listaAlertas"></div>
+                        </article>
+                    </section>
+
+                </div>
+            </main>
+        </div>
+
+    </div>
+
 </body>
+
 </html>
