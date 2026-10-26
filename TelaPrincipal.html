@@ -93,12 +93,45 @@
                         </article>
                     </section>
 
+                    <section class="bloco tabela-bloco">
+                        <div class="titulo-bloco">
+                            <div>
+                                <h2>Usinas monitoradas</h2>
+                                <p>Visão geral das instalações cadastradas</p>
+                            </div>
+                            <input type="search" id="buscaUsina" placeholder="Buscar usina...">
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Usina</th>
+                                        <th>Status</th>
+                                        <th>Produção hoje</th>
+                                        <th>Última atualização</th>
+                                        <th>Ação</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="listaUsinas"></tbody>
+                            </table>
+                        </div>
+
+                        <p id="mensagemVazia" hidden>Nenhuma usina encontrada.</p>
+                        <div class="rodape-tabela">
+                            <span id="contadorUsinas">0 usinas</span>
+                            <a href="TelaUsinasGeral.html">Ver todas <i class="bi bi-arrow-right"></i></a>
+                        </div>
+                    </section>
                 </div>
             </main>
         </div>
 
     </div>
-
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+<script src="assets/js/sidebar.js"></script>
+<script src="assets/js/TelaPrincipal.js"></script>
 </body>
 
 </html>

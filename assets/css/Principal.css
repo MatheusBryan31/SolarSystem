@@ -1,37 +1,315 @@
 
-body{
-    background-color: redd ;
-}
-.indicador {
-    border: none  ;
-    color: white ;
-}
-
-.indicador.cadastradas {
-    background-color: #152350 ;
-}
-
-.indicador.online {
-    background-color: #198754 ;
+.pagina-principal {
+    --azul: #1765c0;
+    --azul-escuro: #15365b;
+    --fundo: #f4f7fb;
+    --borda: #e1e8f0;
+    --texto-suave: #718096;
+    background: var(--fundo);
+    color: var(--azul-escuro);
+    font-family: Arial, sans-serif;
 }
 
-.indicador.falhas {
-    background-color: #dc3545;
+.pagina-principal .estrutura {
+    display: flex;
+    min-height: 100vh;
 }
 
-.indicador.producao {
-    background-color: #f7a21b;
+.pagina-principal #sidebar {
+    flex-shrink: 0;
 }
 
-.indicador.indicador h2 {
-    color: white ;
+.pagina-principal .conteudo {
+    flex: 1;
+    min-width: 0;
 }
 
-.indicador.cabecalho-tabela {
-    background-color: #152350;
-    color: white ;
+.pagina-principal .painel {
+    padding: 28px;
+    max-width: 1600px;
+    margin: auto;
 }
 
-.indicador.cabecalho-tabela th {
-    color: white ;
+.pagina-principal .cabecalho-painel,
+.pagina-principal .titulo-bloco,
+.pagina-principal .rodape-tabela {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.pagina-principal .cabecalho-painel {
+    margin-bottom: 24px;
+}
+
+.pagina-principal .subtitulo {
+    color: var(--azul);
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 1.5px;
+}
+
+.pagina-principal h1 {
+    margin: 5px 0;
+    font-size: clamp(25px, 3vw, 34px);
+    font-weight: 700;
+}
+
+.pagina-principal .cabecalho-painel p,
+.pagina-principal .titulo-bloco p {
+    margin: 4px 0 0;
+    color: var(--texto-suave);
+    font-size: 13px;
+}
+
+.pagina-principal .botao-azul {
+    background: var(--azul);
+    color: white;
+    text-decoration: none;
+    padding: 11px 15px;
+    border-radius: 9px;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.pagina-principal .indicadores {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.pagina-principal .indicador,
+.pagina-principal .bloco {
+    background: white;
+    border: 1px solid var(--borda);
+    border-radius: 13px;
+    box-shadow: 0 3px 12px #203c5a08;
+}
+
+.pagina-principal .indicador {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 18px;
+}
+
+.pagina-principal .indicador-icone {
+    width: 43px;
+    height: 43px;
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+    font-size: 21px;
+}
+
+.pagina-principal .indicador-icone.azul {
+    background: #e8f1ff;
+    color: #1765c0;
+}
+
+.pagina-principal .indicador-icone.verde {
+    background: #e5f7ef;
+    color: #13865e;
+}
+
+.pagina-principal .indicador-icone.vermelho {
+    background: #fff0f0;
+    color: #d93649;
+}
+
+.pagina-principal .indicador-icone.amarelo {
+    background: #fff5df;
+    color: #b77908;
+}
+
+.pagina-principal .indicador p {
+    margin: 0 0 5px;
+    color: var(--texto-suave);
+    font-size: 12px;
+}
+
+.pagina-principal .indicador h2 {
+    margin: 0;
+    font-size: 25px;
+    font-weight: 700;
+}
+
+.pagina-principal .area-central {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(270px, 1fr);
+    gap: 18px;
+    margin-bottom: 20px;
+}
+
+.pagina-principal .bloco {
+    padding: 20px;
+    min-width: 0;
+}
+
+.pagina-principal .titulo-bloco {
+    margin-bottom: 18px;
+}
+
+.pagina-principal .titulo-bloco h2 {
+    font-size: 17px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.pagina-principal .titulo-bloco > i {
+    color: var(--azul);
+    font-size: 22px;
+}
+
+.pagina-principal .grafico {
+    height: 220px;
+}
+
+.pagina-principal .alerta {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    padding: 13px 0;
+    border-bottom: 1px solid var(--borda);
+}
+
+.pagina-principal .alerta:last-child {
+    border-bottom: 0;
+}
+
+.pagina-principal .alerta-icone {
+    color: #d93649;
+    background: #fff0f0;
+    border-radius: 9px;
+    padding: 9px;
+}
+
+.pagina-principal .alerta strong {
+    display: block;
+    font-size: 13px;
+}
+
+.pagina-principal .alerta small {
+    color: var(--texto-suave);
+}
+
+.pagina-principal .tabela-bloco {
+    margin-bottom: 18px;
+}
+
+.pagina-principal #buscaUsina {
+    width: 190px;
+    max-width: 45%;
+    padding: 9px 12px;
+    border: 1px solid var(--borda);
+    border-radius: 8px;
+    font-size: 12px;
+}
+
+.pagina-principal .table {
+    margin: 0;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.pagina-principal .table thead th {
+    color: #52677f;
+    background: #f4f7fb;
+    border-bottom: 1px solid var(--borda);
+    font-weight: 600;
+    font-size: 12px;
+}
+
+.pagina-principal .table td,
+.pagina-principal .table th {
+    padding: 13px 10px;
+    border-color: #edf1f6;
+}
+
+.pagina-principal .status {
+    display: inline-block;
+    border-radius: 20px;
+    padding: 5px 10px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.pagina-principal .status.online {
+    color: #087b55;
+    background: #e2f7ee;
+}
+
+.pagina-principal .status.falha {
+    color: #c52c3d;
+    background: #ffe9ec;
+}
+
+.pagina-principal .botao-detalhes {
+    display: inline-block;
+    color: var(--azul);
+    background: #f0f6ff;
+    border: 1px solid #d6e6ff;
+    padding: 6px 10px;
+    border-radius: 7px;
+    text-decoration: none;
+    font-size: 12px;
+}
+
+.pagina-principal .rodape-tabela {
+    margin-top: 15px;
+    color: var(--texto-suave);
+    font-size: 12px;
+}
+
+.pagina-principal .rodape-tabela a {
+    color: var(--azul);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.pagina-principal #mensagemVazia {
+    color: var(--texto-suave);
+    padding: 15px 0;
+}
+
+@media (max-width: 1100px) {
+    .pagina-principal .indicadores {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .pagina-principal .area-central {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 650px) {
+    .pagina-principal .painel {
+        padding: 16px;
+    }
+
+    .pagina-principal .indicadores {
+        grid-template-columns: 1fr;
+    }
+
+    .pagina-principal .cabecalho-painel {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .pagina-principal .titulo-bloco {
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .pagina-principal #buscaUsina {
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .pagina-principal .bloco {
+        padding: 15px;
+    }
 }
