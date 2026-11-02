@@ -1,0 +1,9 @@
+# Arquivos de ambiente com possíveis segredos
+.env
+.env.*
+!.env.example
+
+# Arquivos comuns do sistema operacional
+.DS_Store
+Thumbs.db
+desktop.ini
