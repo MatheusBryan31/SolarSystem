@@ -1,1 +1,87 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>
+      Entrar | Solaris
+    </title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="app.js" defer>
+    </script>
+  </head>
+  <body data-page="login">
+    <main class="login-screen">
+      <section class="login-brand">
+        <a class="brand" href="login.html">
+          <span class="brand-mark">
+            ☀
+          </span>
+          <span class="brand-name">
+            Solaris
+          </span>
+        </a>
+        <div>
+          <h1>
+            Monitore suas usinas em um só lugar
+          </h1>
+          <p>
+            Acompanhe a geração e os indicadores das instalações solares em um painel central.
+          </p>
+          <div class="solar-visual">
+            ☀ ━━━━━━━━━━━━━ ▱ ▱ ▱
+          </div>
+        </div>
+        <small>
+          Protótipo acadêmico
+        </small>
+      </section>
+      <section class="login-panel">
+        <form class="login-form" id="login-form">
+          <h2>
+            Acesse sua conta
+          </h2>
+          <p>
+            Entre para acompanhar suas usinas solares.
+          </p>
+          <div class="form-field">
+            <label for="login-email">
+              E-mail
+            </label>
+            <input id="login-email" name="email" type="email" placeholder="voce@exemplo.com" required>
+          </div>
+          <div class="form-field">
+            <label for="login-password">
+              Senha
+            </label>
+            <input id="login-password" name="password" type="password" placeholder="Sua senha" required>
+          </div>
+          <div class="login-options">
+            <label>
+              <input type="checkbox">
+              Lembrar de mim
+            </label>
+            <button class="inline-link" type="button" data-demo-message="Recuperação de senha será implementada no back-end.">
+              Esqueceu sua senha?
+            </button>
+          </div>
+          <button class="button button-primary" type="submit">
+            Entrar
+          </button>
+          <p style="text-align:center;margin-top:18px">
+            Ainda não tem conta?
+            <button class="inline-link" type="button" data-demo-message="Criação de conta será implementada no back-end.">
+              Criar conta
+            </button>
+          </p>
+          <a class="login-terms" href="#termos">
+            Termos de privacidade
+          </a>
+        </form>
+      </section>
+    </main>
+    <div id="toast" class="toast" role="status">
+    </div>
+  </body>
+</html>
 
