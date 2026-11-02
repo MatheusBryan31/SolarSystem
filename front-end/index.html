@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>
+      Visão geral | Solaris
+    </title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="app.js" defer>
+    </script>
+  </head>
+  <body data-page="overview">
+    <div class="app-shell">
+      <aside class="sidebar">
+        <a class="brand" href="index.html">
+          <span class="brand-mark">
+            ☀
+          </span>
+          <span class="brand-name">
+            Solaris
+          </span>
+        </a>
+        <nav class="nav">
+          <a class="active" href="index.html">
+            Visão geral
+          </a>
+          <a href="usinas.html">
+            Usinas
+          </a>
+          <a href="alarmes.html">
+            Alarmes
+          </a>
+          <a href="relatorios.html">
+            Relatórios
+          </a>
+          <a href="configuracoes.html">
+            Configurações
+          </a>
+        </nav>
+        <div class="sidebar-spacer">
+        </div>
+        <div class="profile">
+          <span class="avatar">
+            T
+          </span>
+          <div>
+            Técnico
+            <small>
+              Solaris
+            </small>
+          </div>
+        </div>
+      </aside>
+      <main class="main">
+        <div class="topbar">
+          <span class="eyebrow">
+            Monitoramento de usinas solares
+          </span>
+          <div class="top-actions">
+            <a class="icon-button" href="usinas.html">
+              ⌕
+            </a>
+            <a class="icon-button" href="alarmes.html">
+              ♧
+            </a>
+            <a class="user-chip" href="login.html">
+              Sair
+            </a>
+          </div>
+        </div>
+        <div class="page-heading">
+          <div>
+            <h1>
+              Visão geral
+            </h1>
+            <p class="subheading">
+              Acompanhe o desempenho das suas usinas fotovoltaicas.
+            </p>
+          </div>
+        </div>
+        <section class="grid kpi-grid">
+          <article class="card kpi">
+            <span class="kpi-icon">
+              ▦
+            </span>
+            <div>
+              <div class="kpi-label">
+                Usinas monitoradas
+              </div>
+              <div class="kpi-value" id="metric-plants">
+                0
+              </div>
+            </div>
+          </article>
+          <article class="card kpi">
+            <span class="kpi-icon">
+              ϟ
+            </span>
+            <div>
+              <div class="kpi-label">
+                Potência instalada
+              </div>
+              <div class="kpi-value" id="metric-capacity">
+                0 kWp
+              </div>
+            </div>
+          </article>
+          <article class="card kpi">
+            <span class="kpi-icon">
+              ϟ
+            </span>
+            <div>
+              <div class="kpi-label">
+                Energia hoje
+              </div>
+              <div class="kpi-value">
+                4,26 MWh
+              </div>
+              <div class="kpi-note">
+                Valor demonstrativo
+              </div>
+            </div>
+          </article>
+          <article class="card kpi">
+            <span class="kpi-icon amber">
+              △
+            </span>
+            <div>
+              <div class="kpi-label">
+                Alarmes ativos
+              </div>
+              <div class="kpi-value" id="metric-alarms">
+                0
+              </div>
+            </div>
+          </article>
+        </section>
+        <section class="grid overview-grid">
+          <article class="card map-card">
+            <h2>
+              Localização das usinas
+            </h2>
+            <div class="map-illustration">
+              <svg viewBox="0 0 700 240" aria-label="Mapa ilustrativo de Minas Gerais">
+                <path d="M110 25 185 14l43 24 67-6 44 24 54-5 39 30 62 3 39 31-12 40-45 14-30 38-57-10-35 19-43-18-44 4-28-24-59 1-24-31-48-8 15-45-20-35z" fill="#dff0e5" stroke="#94c7a3" stroke-width="3"/>
+                <text x="280" y="124" fill="#557460" font-size="18" font-weight="700">
+                  MINAS GERAIS
+                </text>
+                <g fill="#159447" stroke="#fff" stroke-width="3">
+                  <circle cx="175" cy="90" r="8"/>
+                  <circle cx="275" cy="68" r="8"/>
+                  <circle cx="335" cy="132" r="8"/>
+                  <circle cx="450" cy="92" r="8"/>
+                  <circle cx="520" cy="160" r="8"/>
+                </g>
+              </svg>
+            </div>
+          </article>
+          <article class="card card-pad">
+            <h2>
+              Status das usinas
+            </h2>
+            <div class="status-list">
+              <div class="status-row online">
+                <span class="status-label online-text">
+                  ● Online
+                </span>
+                <strong class="status-count" id="count-online">
+                  0
+                </strong>
+              </div>
+              <div class="status-row attention">
+                <span class="status-label attention-text">
+                  ● Atenção
+                </span>
+                <strong class="status-count" id="count-attention">
+                  0
+                </strong>
+              </div>
+              <div class="status-row offline">
+                <span class="status-label offline-text">
+                  ● Offline
+                </span>
+                <strong class="status-count" id="count-offline">
+                  0
+                </strong>
+              </div>
+            </div>
+          </article>
+        </section>
+        <article class="card card-pad">
+          <h2>
+            Usinas recentes
+            <a class="inline-link" href="usinas.html">
+              Ver todas
+            </a>
+          </h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>
+                    Usina
+                  </th>
+                  <th>
+                    Localização
+                  </th>
+                  <th>
+                    Status
+                  </th>
+                  <th>
+                    Potência
+                  </th>
+                  <th>
+                    Inversores
+                  </th>
+                  <th>
+                    Ação
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="recent-plants">
+              </tbody>
+            </table>
+          </div>
+        </article>
+      </main>
+    </div>
+    <div id="toast" class="toast" role="status" aria-live="polite">
+    </div>
+  </body>
+</html>
