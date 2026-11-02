@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>
+      Usinas | Solaris
+    </title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="app.js" defer>
+    </script>
+  </head>
+  <body data-page="plants">
+    <div class="app-shell">
+      <aside class="sidebar">
+        <a class="brand" href="index.html">
+          <span class="brand-mark">
+            ☀
+          </span>
+          <span class="brand-name">
+            Solaris
+          </span>
+        </a>
+        <nav class="nav">
+          <a href="index.html">
+            Visão geral
+          </a>
+          <a class="active" href="usinas.html">
+            Usinas
+          </a>
+          <a href="alarmes.html">
+            Alarmes
+          </a>
+          <a href="relatorios.html">
+            Relatórios
+          </a>
+          <a href="configuracoes.html">
+            Configurações
+          </a>
+        </nav>
+        <div class="sidebar-spacer">
+        </div>
+        <div class="profile">
+          <span class="avatar">
+            T
+          </span>
+          <div>
+            Técnico
+            <small>
+              Solaris
+            </small>
+          </div>
+        </div>
+      </aside>
+      <main class="main">
+        <div class="topbar">
+          <span class="eyebrow">
+            Monitoramento de usinas solares
+          </span>
+          <a class="user-chip" href="login.html">
+            Sair
+          </a>
+        </div>
+        <div class="page-heading">
+          <div>
+            <h1>
+              Usinas
+            </h1>
+            <p class="subheading">
+              Gerencie e monitore todas as instalações.
+            </p>
+          </div>
+          <a class="button button-primary" href="cadastro.html">
+            ＋ Nova usina
+          </a>
+        </div>
+        <div class="toolbar">
+          <label class="search-field">
+            <input id="plant-search" class="field-control" type="search" placeholder="Buscar por nome ou número de série">
+          </label>
+          <select id="status-filter" class="field-control">
+            <option value="">
+              Todos os status
+            </option>
+            <option>
+              Online
+            </option>
+            <option>
+              Atenção
+            </option>
+            <option>
+              Offline
+            </option>
+          </select>
+        </div>
+        <section class="grid summary-grid">
+          <article class="card summary-tile">
+            <div>
+              <span>
+                Todas
+              </span>
+              <strong id="total-count">
+                0
+              </strong>
+            </div>
+          </article>
+          <article class="card summary-tile">
+            <div>
+              <span>
+                Online
+              </span>
+              <strong id="online-count">
+                0
+              </strong>
+            </div>
+          </article>
+          <article class="card summary-tile">
+            <div>
+              <span>
+                Atenção
+              </span>
+              <strong id="attention-count">
+                0
+              </strong>
+            </div>
+          </article>
+          <article class="card summary-tile">
+            <div>
+              <span>
+                Offline
+              </span>
+              <strong id="offline-count">
+                0
+              </strong>
+            </div>
+          </article>
+        </section>
+        <article class="card card-pad">
+          <div class="pagination">
+            <span id="result-count">
+            </span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>
+                    Usina / N/S
+                  </th>
+                  <th>
+                    Localização
+                  </th>
+                  <th>
+                    Status
+                  </th>
+                  <th>
+                    Potência
+                  </th>
+                  <th>
+                    Inversores
+                  </th>
+                  <th>
+                    Ação
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="plant-rows">
+              </tbody>
+            </table>
+          </div>
+        </article>
+      </main>
+    </div>
+    <div id="toast" class="toast" role="status">
+    </div>
+  </body>
+</html>

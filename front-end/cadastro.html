@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>
+      Cadastrar usina | Solaris
+    </title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="app.js" defer>
+    </script>
+  </head>
+  <body data-page="form">
+    <div class="app-shell">
+      <aside class="sidebar">
+        <a class="brand" href="index.html">
+          <span class="brand-mark">
+            ☀
+          </span>
+          <span class="brand-name">
+            Solaris
+          </span>
+        </a>
+        <nav class="nav">
+          <a href="index.html">
+            Visão geral
+          </a>
+          <a class="active" href="usinas.html">
+            Usinas
+          </a>
+          <a href="alarmes.html">
+            Alarmes
+          </a>
+          <a href="relatorios.html">
+            Relatórios
+          </a>
+          <a href="configuracoes.html">
+            Configurações
+          </a>
+        </nav>
+        <div class="sidebar-spacer">
+        </div>
+        <div class="profile">
+          <span class="avatar">
+            T
+          </span>
+          <div>
+            Técnico
+            <small>
+              Solaris
+            </small>
+          </div>
+        </div>
+      </aside>
+      <main class="main">
+        <div class="breadcrumb">
+          <a href="usinas.html">
+            Usinas
+          </a>
+          / Nova usina
+        </div>
+        <div class="page-heading">
+          <div>
+            <h1 id="form-title">
+              Cadastrar usina
+            </h1>
+            <p class="subheading">
+              Informe os dados do cliente e da instalação.
+            </p>
+          </div>
+        </div>
+        <form id="plant-form">
+          <section class="card form-card">
+            <h2>
+              ▦ Dados da usina
+            </h2>
+            <div class="form-grid">
+              <div class="form-field span-2">
+                <label for="name">
+                  Nome da planta *
+                </label>
+                <input id="name" name="name" required>
+              </div>
+              <div class="form-field span-2">
+                <label for="type">
+                  Tipo de usina *
+                </label>
+                <select id="type" name="type" required>
+                  <option value="">
+                    Selecione
+                  </option>
+                  <option>
+                    Solo
+                  </option>
+                  <option>
+                    Telhado
+                  </option>
+                  <option>
+                    Híbrida
+                  </option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label for="capacity">
+                  Capacidade solar (kWp) *
+                </label>
+                <input id="capacity" name="capacity" type="number" min="0" step="0.01" required>
+              </div>
+              <div class="form-field">
+                <label for="tilt">
+                  Inclinação dos módulos (°) *
+                </label>
+                <input id="tilt" name="tilt" type="number" min="0" max="90" step="0.1" required>
+              </div>
+              <div class="form-field">
+                <label for="nominal">
+                  Potência nominal (kW) *
+                </label>
+                <input id="nominal" name="nominal" type="number" min="0" step="0.01" required>
+              </div>
+              <div class="form-field">
+                <label for="startDate">
+                  Início da operação *
+                </label>
+                <input id="startDate" name="startDate" type="date" required>
+              </div>
+              <div class="form-field span-4">
+                <label for="notes">
+                  Observações
+                </label>
+                <textarea id="notes" name="notes">
+                </textarea>
+              </div>
+            </div>
+          </section>
+          <section class="card form-card">
+            <h2>
+              ⌖ Localização
+            </h2>
+            <div class="form-grid">
+              <div class="form-field">
+                <label for="cep">
+                  CEP *
+                </label>
+                <input id="cep" name="cep" required>
+              </div>
+              <div class="form-field span-2">
+                <label for="street">
+                  Logradouro *
+                </label>
+                <input id="street" name="street" required>
+              </div>
+              <div class="form-field">
+                <label for="number">
+                  Número *
+                </label>
+                <input id="number" name="number" required>
+              </div>
+              <div class="form-field span-2">
+                <label for="complement">
+                  Complemento
+                </label>
+                <input id="complement" name="complement">
+              </div>
+              <div class="form-field">
+                <label for="city">
+                  Cidade *
+                </label>
+                <input id="city" name="city" required>
+              </div>
+              <div class="form-field">
+                <label for="state">
+                  Estado *
+                </label>
+                <select id="state" name="state" required>
+                  <option value="">
+                    Selecione
+                  </option>
+                  <option>
+                    MG
+                  </option>
+                  <option>
+                    SP
+                  </option>
+                  <option>
+                    RJ
+                  </option>
+                  <option>
+                    ES
+                  </option>
+                  <option>
+                    BA
+                  </option>
+                  <option>
+                    GO
+                  </option>
+                </select>
+              </div>
+            </div>
+          </section>
+          <section class="card form-card">
+            <h2>
+              ♙ Contato do cliente
+            </h2>
+            <div class="form-grid cols-2">
+              <div class="form-field">
+                <label for="client">
+                  Nome do cliente *
+                </label>
+                <input id="client" name="client" required>
+              </div>
+              <div class="form-field">
+                <label for="email">
+                  E-mail do cliente *
+                </label>
+                <input id="email" name="email" type="email" required>
+              </div>
+            </div>
+          </section>
+          <section class="card form-card">
+            <h2>
+              ϟ Inversor principal
+            </h2>
+            <div class="form-grid cols-2">
+              <div class="form-field">
+                <label for="brand">
+                  Marca *
+                </label>
+                <select id="brand" name="brand" required>
+                  <option value="">
+                    Selecione
+                  </option>
+                  <option>
+                    Huawei
+                  </option>
+                  <option>
+                    SMA
+                  </option>
+                  <option>
+                    Growatt
+                  </option>
+                  <option>
+                    Fronius
+                  </option>
+                  <option>
+                    Solis
+                  </option>
+                  <option>
+                    Outra
+                  </option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label for="model">
+                  Modelo *
+                </label>
+                <input id="model" name="model" required>
+              </div>
+              <div class="form-field">
+                <label for="serial">
+                  Número de série *
+                </label>
+                <input id="serial" name="serial" required>
+              </div>
+            </div>
+          </section>
+          <div class="form-actions">
+            <a class="button button-outline" href="usinas.html">
+              Cancelar
+            </a>
+            <button class="button button-primary" type="submit">
+              Salvar usina
+            </button>
+          </div>
+        </form>
+      </main>
+    </div>
+    <div id="toast" class="toast" role="status">
+    </div>
+  </body>
+</html>

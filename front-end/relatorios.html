@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>
+      Relatórios | Solaris
+    </title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="app.js" defer>
+    </script>
+  </head>
+  <body data-page="reports">
+    <div class="app-shell">
+      <aside class="sidebar">
+        <a class="brand" href="index.html">
+          <span class="brand-mark">
+            ☀
+          </span>
+          <span class="brand-name">
+            Solaris
+          </span>
+        </a>
+        <nav class="nav">
+          <a href="index.html">
+            Visão geral
+          </a>
+          <a href="usinas.html">
+            Usinas
+          </a>
+          <a href="alarmes.html">
+            Alarmes
+          </a>
+          <a class="active" href="relatorios.html">
+            Relatórios
+          </a>
+          <a href="configuracoes.html">
+            Configurações
+          </a>
+        </nav>
+        <div class="sidebar-spacer">
+        </div>
+        <div class="profile">
+          <span class="avatar">
+            T
+          </span>
+          <div>
+            Técnico
+            <small>
+              Solaris
+            </small>
+          </div>
+        </div>
+      </aside>
+      <main class="main">
+        <div class="topbar">
+          <span class="eyebrow">
+            Monitoramento de usinas solares
+          </span>
+          <a class="user-chip" href="login.html">
+            Sair
+          </a>
+        </div>
+        <div class="page-heading">
+          <div>
+            <h1>
+              Relatórios
+            </h1>
+            <p class="subheading">
+              Resumo demonstrativo da operação.
+            </p>
+          </div>
+        </div>
+        <section class="grid kpi-grid">
+          <article class="card kpi">
+            <div>
+              <div class="kpi-label">
+                Usinas cadastradas
+              </div>
+              <div id="report-plants" class="kpi-value">
+                0
+              </div>
+            </div>
+          </article>
+          <article class="card kpi">
+            <div>
+              <div class="kpi-label">
+                Capacidade total
+              </div>
+              <div id="report-capacity" class="kpi-value">
+                0 kWp
+              </div>
+            </div>
+          </article>
+          <article class="card kpi">
+            <div>
+              <div class="kpi-label">
+                Alarmes registrados
+              </div>
+              <div id="report-alarms" class="kpi-value">
+                0
+              </div>
+            </div>
+          </article>
+          <article class="card kpi">
+            <div>
+              <div class="kpi-label">
+                Período
+              </div>
+              <div class="kpi-value">
+                30 dias
+              </div>
+            </div>
+          </article>
+        </section>
+        <article class="card card-pad">
+          <h2>
+            Resumo por usina
+          </h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>
+                    Usina
+                  </th>
+                  <th>
+                    Localização
+                  </th>
+                  <th>
+                    Status
+                  </th>
+                  <th>
+                    Potência
+                  </th>
+                  <th>
+                    Inversores
+                  </th>
+                  <th>
+                    Ação
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="report-rows">
+              </tbody>
+            </table>
+          </div>
+        </article>
+      </main>
+    </div>
+    <div id="toast" class="toast" role="status">
+    </div>
+  </body>
+</html>
