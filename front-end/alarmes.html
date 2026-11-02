@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>
+      Alarmes | Solaris
+    </title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="app.js" defer>
+    </script>
+  </head>
+  <body data-page="alarms">
+    <div class="app-shell">
+      <aside class="sidebar">
+        <a class="brand" href="index.html">
+          <span class="brand-mark">
+            ☀
+          </span>
+          <span class="brand-name">
+            Solaris
+          </span>
+        </a>
+        <nav class="nav">
+          <a href="index.html">
+            Visão geral
+          </a>
+          <a href="usinas.html">
+            Usinas
+          </a>
+          <a class="active" href="alarmes.html">
+            Alarmes
+          </a>
+          <a href="relatorios.html">
+            Relatórios
+          </a>
+          <a href="configuracoes.html">
+            Configurações
+          </a>
+        </nav>
+        <div class="sidebar-spacer">
+        </div>
+        <div class="profile">
+          <span class="avatar">
+            T
+          </span>
+          <div>
+            Técnico
+            <small>
+              Solaris
+            </small>
+          </div>
+        </div>
+      </aside>
+      <main class="main">
+        <div class="topbar">
+          <span class="eyebrow">
+            Monitoramento de usinas solares
+          </span>
+          <a class="user-chip" href="login.html">
+            Sair
+          </a>
+        </div>
+        <div class="page-heading">
+          <div>
+            <h1>
+              Alarmes
+            </h1>
+            <p class="subheading">
+              Ocorrências registradas nas usinas.
+            </p>
+          </div>
+        </div>
+        <article class="card card-pad">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>
+                    Data e hora
+                  </th>
+                  <th>
+                    Usina
+                  </th>
+                  <th>
+                    Alarme
+                  </th>
+                  <th>
+                    Severidade
+                  </th>
+                  <th>
+                    Status
+                  </th>
+                  <th>
+                    Ação
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="alarm-rows">
+              </tbody>
+            </table>
+          </div>
+        </article>
+      </main>
+    </div>
+    <div id="toast" class="toast" role="status">
+    </div>
+  </body>
+</html>
