@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>
+      Detalhes da usina | Solaris
+    </title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="app.js" defer>
+    </script>
+  </head>
+  <body data-page="details">
+    <div class="app-shell">
+      <aside class="sidebar">
+        <a class="brand" href="index.html">
+          <span class="brand-mark">
+            ☀
+          </span>
+          <span class="brand-name">
+            Solaris
+          </span>
+        </a>
+        <nav class="nav">
+          <a href="index.html">
+            Visão geral
+          </a>
+          <a class="active" href="usinas.html">
+            Usinas
+          </a>
+          <a href="alarmes.html">
+            Alarmes
+          </a>
+          <a href="relatorios.html">
+            Relatórios
+          </a>
+          <a href="configuracoes.html">
+            Configurações
+          </a>
+        </nav>
+        <div class="sidebar-spacer">
+        </div>
+        <div class="profile">
+          <span class="avatar">
+            T
+          </span>
+          <div>
+            Técnico
+            <small>
+              Solaris
+            </small>
+          </div>
+        </div>
+      </aside>
+      <main class="main">
+        <div class="breadcrumb">
+          <a href="usinas.html">
+            Usinas
+          </a>
+          /
+          <span id="plant-title">
+            Usina
+          </span>
+        </div>
+        <div class="page-heading">
+          <div>
+            <div class="detail-heading">
+              <h1 id="plant-heading">
+                Detalhes da usina
+              </h1>
+              <span id="plant-status" class="badge online">
+                Online
+              </span>
+            </div>
+            <p class="plant-location" id="plant-location">
+            </p>
+          </div>
+          <a id="edit-plant" class="button button-outline" href="cadastro.html">
+            Editar usina
+          </a>
+        </div>
+        <div class="tabs">
+          <button class="tab active" data-tab-target="painel">
+            Painel
+          </button>
+          <button class="tab" data-tab-target="dispositivos">
+            Dispositivos
+          </button>
+          <button class="tab" data-tab-target="alarmes">
+            Alarmes
+          </button>
+        </div>
+        <section id="painel" class="detail-panel">
+          <section class="grid detail-kpis">
+            <article class="card kpi">
+              <div>
+                <div class="kpi-label">
+                  Energia hoje
+                </div>
+                <div class="kpi-value">
+                  1,72 MWh
+                </div>
+              </div>
+            </article>
+            <article class="card kpi">
+              <div>
+                <div class="kpi-label">
+                  Potência atual
+                </div>
+                <div class="kpi-value">
+                  248 kW
+                </div>
+              </div>
+            </article>
+            <article class="card kpi">
+              <div>
+                <div class="kpi-label">
+                  Potência instalada
+                </div>
+                <div class="kpi-value" id="capacity-value">
+                  0 kWp
+                </div>
+              </div>
+            </article>
+            <article class="card kpi">
+              <div>
+                <div class="kpi-label">
+                  Desempenho
+                </div>
+                <div class="kpi-value">
+                  96%
+                </div>
+              </div>
+            </article>
+          </section>
+          <section class="grid detail-grid">
+            <article class="card chart-card">
+              <div class="chart-head">
+                <h2>
+                  Curva de potência de hoje
+                </h2>
+                <select class="field-control">
+                  <option>
+                    Hoje
+                  </option>
+                  <option>
+                    Últimos 7 dias
+                  </option>
+                </select>
+              </div>
+              <svg class="chart" viewBox="0 0 720 270" role="img" aria-label="Curva ilustrativa de potência">
+                <path d="M48 20v210M48 230h650M48 178h650M48 126h650M48 74h650M48 22h650" fill="none" stroke="#e7ecef"/>
+                <path d="M49 228 C95 227 111 211 143 190 S194 151 230 119 S285 86 323 78 S380 60 420 67 S479 83 510 91 S557 132 585 157 S627 206 652 220 S680 228 698 229" fill="none" stroke="#159447" stroke-width="4"/>
+              </svg>
+            </article>
+            <article class="card card-pad">
+              <h2>
+                Dados da usina
+              </h2>
+              <div class="detail-list">
+                <div class="detail-item">
+                  <span>
+                    Tipo
+                  </span>
+                  <strong id="type-value">
+                  </strong>
+                </div>
+                <div class="detail-item">
+                  <span>
+                    Capacidade
+                  </span>
+                  <strong id="capacity-side">
+                  </strong>
+                </div>
+                <div class="detail-item">
+                  <span>
+                    Data de operação
+                  </span>
+                  <strong id="date-value">
+                  </strong>
+                </div>
+                <div class="detail-item">
+                  <span>
+                    Localização
+                  </span>
+                  <strong id="location-value">
+                  </strong>
+                </div>
+              </div>
+            </article>
+          </section>
+        </section>
+        <section id="dispositivos" class="detail-panel card card-pad" hidden>
+          <div class="page-heading">
+            <div>
+              <h2>
+                Inversores (
+                <span id="device-count">
+                  0
+                </span>
+                )
+              </h2>
+            </div>
+            <button id="add-inverter" class="button button-primary">
+              ＋ Adicionar inversor
+            </button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>
+                    Marca
+                  </th>
+                  <th>
+                    Modelo
+                  </th>
+                  <th>
+                    Número de série
+                  </th>
+                  <th>
+                    Status
+                  </th>
+                  <th>
+                    Ação
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="device-rows">
+              </tbody>
+            </table>
+          </div>
+        </section>
+        <section id="alarmes" class="detail-panel card card-pad" hidden>
+          <h2>
+            Alarmes da usina
+          </h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>
+                    Data e hora
+                  </th>
+                  <th>
+                    Alarme
+                  </th>
+                  <th>
+                    Severidade
+                  </th>
+                  <th>
+                    Status
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="detail-alarm-rows">
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+    <div id="toast" class="toast" role="status">
+    </div>
+  </body>
+</html>
