@@ -155,8 +155,8 @@ tr:last-child td { border-bottom: 0; }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 .login-screen { align-items: stretch; background: #fff; display: grid; grid-template-columns: minmax(280px, .8fr) minmax(420px, 1.2fr); min-height: 100vh; }
 .login-brand { align-items: flex-start; background: var(--navy); color: #fff; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; padding: clamp(28px, 5vw, 72px); position: relative; }
-.login-brand:after { background: radial-gradient(circle, rgba(244,179,35,.9), transparent 32%); bottom: -160px; content: ""; height: 400px; left: 25%; opacity: .5; position: absolute; width: 550px; }
-.login-brand h1 { font-size: clamp(28px, 4vw, 48px); margin-top: 60px; max-width: 450px; }
+.login-screen { align-items: stretch; background: #fff; display: grid; grid-template-columns: minmax(420px, 1.2fr) minmax(280px, .8fr); min-height: 100vh; }
+.login-brand { align-items: flex-start; background: url("imgs/foto_login.jpeg") center / cover no-repeat; color: #fff; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; padding: clamp(28px, 5vw, 72px); position: relative; }
 .login-brand p { color: #d2dce4; line-height: 1.6; max-width: 400px; }
 .solar-visual { align-self: center; color: #cbd9e4; font-size: 12px; margin-top: 35px; position: relative; z-index: 1; }
 .login-panel { align-items: center; display: flex; justify-content: center; padding: 30px; }
