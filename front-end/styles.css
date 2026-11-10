@@ -130,21 +130,6 @@ tr:last-child td { border-bottom: 0; }
 .empty-state { color: var(--muted); padding: 28px; text-align: center; }
 .toast { background: var(--navy); border-radius: 9px; bottom: 20px; box-shadow: var(--shadow); color: white; left: 50%; opacity: 0; padding: 12px 16px; pointer-events: none; position: fixed; transform: translate(-50%,12px); transition: .2s ease; z-index: 20; }
 .toast.show { opacity: 1; transform: translate(-50%,0); }
-.login-screen { align-items: stretch; background: #fff; display: grid; grid-template-columns: minmax(420px,1.2fr) minmax(280px,.8fr); min-height: 100vh; }
-.login-brand { align-items: flex-start; background: url("imgs/foto_login.jpeg") center / cover no-repeat; color: #fff; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; padding: clamp(28px,5vw,72px); position: relative; }
-.login-brand p { color: #d2dce4; line-height: 1.6; max-width: 400px; }
-.solar-visual { align-self: center; color: #cbd9e4; font-size: 12px; margin-top: 35px; position: relative; z-index: 1; }
-.login-panel { align-items: center; display: flex; justify-content: center; padding: 30px; }
-.login-form { max-width: 430px; width: 100%; }
-.login-form h2 { font-size: 28px; margin-bottom: 8px; }
-.login-form > p { color: var(--muted); margin-bottom: 26px; }
-.login-form .form-field { margin: 16px 0; }
-.login-form .form-field input { min-height: 48px; }
-.login-options { align-items: center; display: flex; font-size: 13px; justify-content: space-between; margin: 17px 0 21px; }
-.login-options a,.login-terms { color: var(--green-dark); }
-.login-form .button { width: 100%; }
-.login-terms { display: block; font-size: 12px; margin-top: 22px; text-align: center; }
-.inline-link { background: none; border: 0; color: var(--green-dark); font-weight: 700; padding: 0; }
 .mobile-menu { display: none; }
 @media (max-width:1050px) {
   .kpi-grid,.detail-kpis { grid-template-columns: repeat(2,minmax(0,1fr)); }
@@ -167,12 +152,6 @@ tr:last-child td { border-bottom: 0; }
   .kpi-value { font-size: 19px; }
   .form-grid,.form-grid.cols-2 { grid-template-columns: repeat(2,minmax(0,1fr)); }
   .form-field.span-4 { grid-column: span 2; }
-  .login-screen { grid-template-columns: 1fr; }
-  .login-brand { min-height: 210px; padding: 24px; }
-  .login-brand h1 { font-size: 27px; margin: 18px 0 8px; }
-  .login-brand p { margin-bottom: 0; }
-  .solar-visual { display: none; }
-  .login-panel { padding: 30px 22px; }
 }
 @media (max-width:460px) {
   .kpi-grid,.detail-kpis,.summary-grid { grid-template-columns: 1fr 1fr; }
@@ -182,10 +161,4 @@ tr:last-child td { border-bottom: 0; }
   .form-card { padding: 15px; }
   .page-heading { flex-direction: column; }
   .alert-item { align-items: flex-start; grid-template-columns: 1fr; gap: 5px; }
-  .login-options { align-items: flex-start; flex-direction: column; gap: 12px; }
 }
-.login-brand { padding-top: 30px; }
-.login-brand .brand { margin-top: 0; }
-.login-logo { width: 240px; max-width: 100%; height: auto; display: block; }
-.login-brand h1 { font-family: "DM Sans",sans-serif; font-weight: 700; color: white; text-shadow: 2px 3px 8px rgba(0,0,0,0.9); }
-.login-brand p { font-family: "Manrope",sans-serif; color: white; text-shadow: 2px 3px 6px rgba(0,0,0,0.9); }
