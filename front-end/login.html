@@ -1,86 +1,190 @@
+
 <!doctype html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>
-      Entrar | SolarSystem
-    </title>
-    <link rel="stylesheet" href="styles.css">
-    <script src="app.js" defer>
-    </script>
-  </head>
-  <body data-page="login">
-    <main class="login-screen">
-      <section class="login-brand">
-        
-        <a class="brand" href="login.html">
-          <img
-            src="imgs/logo.png"
-            alt="Logo SolarSystem"
-            class="login-logo"
-          >
-        </a>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f9fb">
+  <title>Entrar | SolarSystem</title>
 
-        <div>
+  <link rel="stylesheet" href="login.css">
+  <script src="app.js" defer></script>
+</head>
+
+<body data-page="login" class="login-page">
+
+  <header class="login-header">
+    <a class="login-logo" href="login.html" aria-label="SolarSystem">
+      <span>Solar</span><strong>System</strong>
+    </a>
+
+    <div class="header-info">
+      <span>Monitoramento inteligente de energia</span>
+      <span class="language">Português (Brasil)</span>
+    </div>
+  </header>
+
+  <main class="login-main">
+    <article class="login-card">
+
+      <!-- Imagem do lado esquerdo -->
+      <section class="login-hero" aria-label="Energia solar">
+        <div class="hero-content">
+          <span class="hero-tag">SOLARSYSTEM</span>
+
           <h1>
-            Monitore suas usinas em um só lugar
+            Sua energia.
+            <br>
+            Nosso compromisso.
           </h1>
+
           <p>
-            Acompanhe a geração e os indicadores das instalações solares em um painel central.
+            Monitore suas usinas solares,
+            acompanhe indicadores e tenha
+            tudo sob controle em um só lugar.
           </p>
-          <div class="solar-visual">
-            ☀ ━━━━━━━━━━━━━ ▱ ▱ ▱
-          </div>
         </div>
-      
+
+        <div class="hero-footer">
+          Tecnologia para um futuro sustentável.
+        </div>
       </section>
-      <section class="login-panel">
-        <form class="login-form" id="login-form">
-          <h2>
-            Acesse sua conta
-          </h2>
-          <p>
-            Entre para acompanhar suas usinas solares.
-          </p>
+
+      <!-- Formulário do lado direito -->
+      <section class="login-content">
+
+        <div class="form-heading">
+          <span class="welcome-label">BEM-VINDO DE VOLTA</span>
+          <h2>Acesse sua conta</h2>
+          <p>Entre com seus dados para continuar.</p>
+        </div>
+
+        <form id="login-form">
+
           <div class="form-field">
-            <label for="login-email">
-              E-mail
-            </label>
-            <input id="login-email" name="email" type="email" placeholder="voce@exemplo.com" required>
+            <label for="login-email">E-mail</label>
+            <input
+              id="login-email"
+              name="email"
+              type="email"
+              placeholder="seuemail@exemplo.com"
+              autocomplete="username"
+              required
+            >
           </div>
+
           <div class="form-field">
-            <label for="login-password">
-              Senha
-            </label>
-            <input id="login-password" name="password" type="password" placeholder="Sua senha" required>
+            <label for="login-password">Senha</label>
+
+            <div class="password-wrapper">
+              <input
+                id="login-password"
+                name="password"
+                type="password"
+                placeholder="Digite sua senha"
+                autocomplete="current-password"
+                required
+              >
+
+              <button
+                id="toggle-password"
+                class="password-toggle"
+                type="button"
+                aria-controls="login-password"
+                aria-pressed="false"
+              >
+                Mostrar
+              </button>
+            </div>
           </div>
+
           <div class="login-options">
-            <label>
-              <input type="checkbox">
-              Lembrar de mim
+            <label class="remember-label">
+              <input id="remember-email" type="checkbox">
+              Lembrar e-mail
             </label>
-            <button class="inline-link" type="button" data-demo-message="Recuperação de senha será implementada no back-end.">
-              Esqueceu sua senha?
+
+            <button
+              type="button"
+              class="text-link"
+              data-demo-message="A recuperação de senha será implementada no back-end."
+            >
+              Esqueceu a senha?
             </button>
           </div>
-          <button class="button button-primary" type="submit">
+
+          <button class="login-submit" type="submit">
             Entrar
           </button>
-          <p style="text-align:center;margin-top:18px">
-            Ainda não tem conta?
-            <button class="inline-link" type="button" data-demo-message="Criação de conta será implementada no back-end.">
-              Criar conta
+
+          <p class="register-text">
+            Ainda não possui uma conta?
+            <button
+              type="button"
+              class="text-link"
+              data-demo-message="O cadastro de usuários será implementado no back-end."
+            >
+              Solicitar acesso
             </button>
           </p>
-          <a class="login-terms" href="#termos">
-            Termos de privacidade
-          </a>
+
+          <p class="demo-notice">
+            Versão demonstrativa — autenticação ainda não implementada.
+          </p>
+
         </form>
       </section>
-    </main>
-    <div id="toast" class="toast" role="status">
-    </div>
-  </body>
-</html>
 
+    </article>
+  </main>
+
+  <footer class="login-footer">
+    <span>© 2026 SolarSystem. Todos os direitos reservados.</span>
+    <span>Monitoramento inteligente de usinas solares</span>
+  </footer>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const passwordInput = document.getElementById('login-password');
+    const passwordButton = document.getElementById('toggle-password');
+    const rememberCheckbox = document.getElementById('remember-email');
+    const emailInput = document.getElementById('login-email');
+
+    passwordButton.addEventListener('click', () => {
+      const showPassword = passwordInput.type === 'password';
+
+      passwordInput.type = showPassword ? 'text' : 'password';
+      passwordButton.textContent = showPassword ? 'Ocultar' : 'Mostrar';
+      passwordButton.setAttribute('aria-pressed', String(showPassword));
+    });
+
+    try {
+      const savedEmail = localStorage.getItem('solarsystem.rememberedEmail');
+
+      if (savedEmail) {
+        emailInput.value = savedEmail;
+        rememberCheckbox.checked = true;
+      }
+    } catch {
+      // A página continua funcional se o armazenamento estiver bloqueado.
+    }
+
+    document.getElementById('login-form').addEventListener('submit', () => {
+      try {
+        if (rememberCheckbox.checked) {
+          localStorage.setItem(
+            'solarsystem.rememberedEmail',
+            emailInput.value.trim()
+          );
+        } else {
+          localStorage.removeItem('solarsystem.rememberedEmail');
+        }
+      } catch {
+        // Não impede o envio demonstrativo do formulário.
+      }
+    });
+  </script>
+
+</body>
+</html>
