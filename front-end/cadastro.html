@@ -10,48 +10,7 @@
     <script src="app.js" defer>
     </script>
   </head>
-  <body data-page="form">
-    <div class="app-shell">
-      <aside class="sidebar">
-        <a class="brand" href="index.html">
-          <span class="brand-mark">
-            ☀
-          </span>
-          <span class="brand-name">
-            SolarSystem
-          </span>
-        </a>
-        <nav class="nav">
-          <a href="index.html">
-            Visão geral
-          </a>
-          <a class="active" href="usinas.html">
-            Usinas
-          </a>
-          <a href="alarmes.html">
-            Alarmes
-          </a>
-          <a href="relatorios.html">
-            Relatórios
-          </a>
-          <a href="configuracoes.html">
-            Configurações
-          </a>
-        </nav>
-        <div class="sidebar-spacer">
-        </div>
-        <div class="profile">
-          <span class="avatar">
-            T
-          </span>
-          <div>
-            Técnico
-            <small>
-              SolarSystem
-            </small>
-          </div>
-        </div>
-      </aside>
+      <aside class="sidebar" id="sidebar-container"></aside>
       <main class="main">
         <div class="breadcrumb">
           <a href="usinas.html">
@@ -277,5 +236,6 @@
     </div>
     <div id="toast" class="toast" role="status">
     </div>
+    <script src="sidebar.js"></script>
   </body>
 </html>
