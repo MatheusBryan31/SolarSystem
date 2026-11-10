@@ -1,9 +1,3 @@
-
-/* =========================================
-   SOLARSYSTEM - TELA DE LOGIN
-   Estilos isolados das demais páginas
-========================================= */
-
 :root {
   --navy: #10243a;
   --green: #159447;
@@ -454,5 +448,54 @@ input:focus-visible {
   .login-footer {
     padding: 15px 20px 25px;
     font-size: 11px;
+  }
+}
+
+@media (min-width: 651px) {
+
+  body.login-page {
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .login-header {
+    padding-top: 14px;
+    padding-bottom: 14px;
+    flex-shrink: 0;
+  }
+
+  .login-main {
+    min-height: 0;
+    padding: 12px 24px;
+  }
+
+  .login-card {
+    min-height: 0;
+    height: 100%;
+    max-height: 550px;
+  }
+
+  .login-hero {
+    min-height: 0;
+  }
+
+  .login-content {
+    min-height: 0;
+    padding: 20px 36px;
+  }
+
+  .form-heading {
+    margin-bottom: 18px;
+  }
+
+  .form-field {
+    margin-bottom: 12px;
+  }
+
+  .login-footer {
+    padding: 10px 24px 14px;
+    flex-shrink: 0;
   }
 }
