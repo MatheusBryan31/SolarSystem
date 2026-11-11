@@ -1,4 +1,3 @@
-/* Estruturas das telas ficam nos HTML; este arquivo concentra os comportamentos. */
 const STORAGE_KEY = 'solaris.plants.v1';
 const examples = [
   { id: 'plant-1', name: 'Fazenda Sol Nascente', type: 'Solo', city: 'Uberlândia', state: 'MG', capacity: 320, tilt: 12, nominal: 300, startDate: '2023-03-15', notes: '', client: 'Energia Solar Ltda.', email: 'contato@energiasolar.example', cep: '38400-000', street: 'Estrada Solar', number: '1200', complement: '', inverters: [{ id: 'inv-1', brand: 'Huawei', model: 'SUN2000-100KTL', serial: 'SN-HW-001245', status: 'Online' }, { id: 'inv-2', brand: 'SMA', model: 'Sunny Tripower', serial: 'SN-SMA-004321', status: 'Online' }], alarms: [{ id: 'alarm-1', severity: 'Baixa', title: 'Comunicação intermitente', description: 'Perda momentânea de comunicação com o inversor INV-03.', date: 'Hoje, 13:47', status: 'Aberto' }] },
