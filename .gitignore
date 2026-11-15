@@ -1,9 +1,17 @@
-# Arquivos de ambiente com possíveis segredos
+# Dependências (baixadas pelo nmp; nunca vão para o Git)
+node_modules/
+
+# Arquivos gerados pelo build
+dist/
+coverage/
+*.tsbuildinfo
+
+# Variáveis de ambiente - contêm as SENHAS
 .env
 .env.*
 !.env.example
 
-# Arquivos comuns do sistema operacional
-.DS_Store
+# Logs e lixo do sistema
+*.log
 Thumbs.db
-desktop.ini
+.DS_Store
