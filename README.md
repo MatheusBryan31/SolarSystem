@@ -1,29 +1,12 @@
-# Projeto Web
+# SolarSystem
 
-Projeto acadêmico da disciplina Programação Web II.
+O softaware "SolarSystem" foi desenvolvido para centralizar o monitoramento de usinas fotovoltaicas de clientes de empresas do ramo de energia solar.
 
-## Descrição do projeto
+> Construção do projeto
+[Roteiro](#roteiro).
 
-A definir.
+## Funcionalidades
 
-## Objetivo e público
-
-A definir.
-
-## Tecnologias
-
-A definir.
-
-## Documentação e organização
-
-O código-fonte e o histórico de alterações ficam neste repositório GitHub. Os documentos de planejamento, requisitos, protótipos, arquitetura, testes e apresentação ficam na pasta do projeto no Google Drive.
-
-[ Abrir a pasta Projeto_Web no Google Drive](https://drive.google.com/drive/folders/1iK8CsfqZvplIEW2MK4BNLVu6-fB2WOsP)
-
-## Como executar
-
-A definir após a escolha das tecnologias e a implementação inicial.
-
-## Integrantes
-
-A definir.
+- Coleta de produção das usinas;
+- Emissão de alarmes;
+- Emissão de perda de rede Wi-Fi (ocorre quando o inversor perde a conexão com a rede Wi-Fi)
