@@ -1,0 +1,10 @@
+{
+    "recommendations": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "prisma.prisma",
+        "editorconfig.editorconfig"
+    ]
+}
+
+// Extensões instaladas para o projeto.
