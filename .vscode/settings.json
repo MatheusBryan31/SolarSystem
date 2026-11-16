@@ -6,12 +6,3 @@
   "files.insertFinalNewline": true,
   "files.trimTrailingWhitespace": true
 }
-
-/*
-    CONFIGURAÇÕES DO EDITOR PARA ESTE PROJETO
-        formatOnSave == Formata o arquivo sempre que salvar
-        defaultFormatter == Declara quem é o responsável em formatar: Prettier
-        tabSize: 2 == Identa 2 vezes os espaços. É o padrão para tecnologias como JS e TS.
-        files.eol: "\n" == Estiliza o fim de linha no padrão Linux, porque o Windows mistura \r\n e gera problemas. Devido os servidores serem Linux é preciso realizar essa configuração.
-        insertFinalNewLine / trimTrailingWhitespace == Linha vazia no fim do arquivo e sem espaço.
-*/
