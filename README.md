@@ -1,16 +1,18 @@
 # SolarSystem
 
-O softaware "SolarSystem" foi desenvolvido para centralizar o monitoramento de usinas fotovoltaicas de clientes de empresas do ramo de energia solar.
+O software "SolarSystem" centraliza o monitoramento de usinas fotovoltaicas de clientes de empresas do ramo de energia solar.
 
 > Construção do projeto
 [Roteiro](#roteiro).
 
-## Funcionalidades
+## Funcionalidades (planejadas)
 
-- Coleta de produção das usinas;
-- Emissão de alarmes;
-- Emissão de perda de rede Wi-Fi (ocorre quando o inversor perde a conexão com a rede Wi-Fi)
-- ?
+- Coleta automática dos dados de várias plataformas (Sungrow, Growatt, Huawei, Deye/Solarman e GoodWe) em um só lugar
+- Painel com potência atual, energia gerada (dia, mês e total), economia estimada em R$ e CO₂ evitado
+- Alertas de usina sem comunicação (ex.: inversor desconectado do Wi-Fi), falha no inversor, geração zerada em horário de sol e desempenho abaixo das outras usinas
+- Avisos por e-mail quando um alerta é aberto ou resolvido
+- Cadastro de clientes e vínculo de cada usina ao seu dono
+- Portal do cliente: cada cliente vê apenas as próprias usinas
 
 ## Tecnologias
 
