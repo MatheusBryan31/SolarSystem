@@ -1,65 +1,40 @@
 <!doctype html>
 <html lang="pt-BR">
   <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>
-      Configurações | SolarSystem
-    </title>
-    <link rel="stylesheet" href="styles.css">
-    <script src="app.js" defer>
-    </script>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Configurações | SolarSystem</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="app.js" defer></script>
   </head>
-    <body data-page="settings">
-      <div class="app-shell">
+  <body data-page="settings">
+    <div class="app-shell">
+      <aside class="sidebar" id="sidebar-container"></aside>
 
-        <aside class="sidebar" id="sidebar-container"></aside>
-        
-        <main class="main">
+      <main class="main">
         <div class="topbar">
-          <span class="eyebrow">
-            Monitoramento de usinas solares
-          </span>
-          <a class="user-chip" href="login.html">
-            Sair
-          </a>
+          <span class="eyebrow"> Monitoramento de usinas solares </span>
+          <a class="user-chip" href="login.html"> Sair </a>
         </div>
         <div class="page-heading">
           <div>
-            <h1>
-              Configurações
-            </h1>
-            <p class="subheading">
-              Preferências desta demonstração.
-            </p>
+            <h1>Configurações</h1>
+            <p class="subheading">Preferências desta demonstração.</p>
           </div>
         </div>
         <article class="card card-pad">
-          <h2>
-            Identidade visual SolarSystem
-          </h2>
-          <p class="subheading">
-            Azul-marinho para navegação, verde para ações e amarelo para destaques.
-          </p>
-          <div class="toolbar" style="margin-top:18px">
-            <span class="badge online">
-              Verde · #159447
-            </span>
-            <span class="badge low">
-              Azul · #10243A
-            </span>
-            <span class="badge attention">
-              Amarelo · #F4B323
-            </span>
+          <h2>Identidade visual SolarSystem</h2>
+          <p class="subheading">Azul-marinho para navegação, verde para ações e amarelo para destaques.</p>
+          <div class="toolbar" style="margin-top: 18px">
+            <span class="badge online"> Verde · #159447 </span>
+            <span class="badge low"> Azul · #10243A </span>
+            <span class="badge attention"> Amarelo · #F4B323 </span>
           </div>
-          <button id="reset-demo" class="button button-outline">
-            Restaurar dados demonstrativos
-          </button>
+          <button id="reset-demo" class="button button-outline">Restaurar dados demonstrativos</button>
         </article>
       </main>
     </div>
-    <div id="toast" class="toast" role="status">
-    </div>
+    <div id="toast" class="toast" role="status"></div>
     <script src="sidebar.js"></script>
   </body>
 </html>
