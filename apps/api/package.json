@@ -1,8 +1,7 @@
 {
-  "name": "@solarsystem",
+  "name": "@solarsystem/api",
   "version": "0.1.0",
-  "description": "",
-  "author": "",
+  "description": "API REST do SolarSystem (NestJS + PostgreSQL)",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {

@@ -3,6 +3,8 @@ import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  await app.listen(process.env.PORT ?? 3000);
+  app.setGlobalPrefix('api'); // todas as rotas começam com /api
+  await app.listen(3333); // porta do gabarito
+  console.log('SolarSystem API em http://localhost:3333/api');
 }
-bootstrap();
+void bootstrap();
