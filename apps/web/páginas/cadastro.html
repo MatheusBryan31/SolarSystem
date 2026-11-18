@@ -1,76 +1,243 @@
 <!doctype html>
 <html lang="pt-BR">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#071e3d">
-  <title>Cadastrar usina | SolarSystem</title>
-  <link rel="stylesheet" href="../estilos/styles.css">
-  <link rel="stylesheet" href="../estilos/internal.css">
-  <script src="../scripts/app.js" defer></script>
-  <script src="../scripts/internal.js" defer></script>
-</head>
-<body class="dashboard-page internal-page" data-page="form">
-<div class="app-shell">
-  <div id="internal-shell"></div>
-  <main class="main dash-main internal-main" id="conteudo" tabindex="-1">
-    <div class="dash-heading-row internal-heading">
-      <div>
-        <nav class="dash-breadcrumb" aria-label="Navegação estrutural"><a href="index.html">Usinas</a><span aria-hidden="true">/</span><strong>Cadastrar usina</strong></nav>
-        <h1 id="form-title">Cadastrar usina</h1>
-        <p>Informe os dados técnicos, a localização e o responsável.</p>
-      </div>
-      <span class="dash-demo-label"><span aria-hidden="true">●</span> Cadastro armazenado localmente</span>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#071e3d" />
+    <title>Cadastrar usina | SolarSystem</title>
+    <link rel="stylesheet" href="../estilos/styles.css" />
+    <link rel="stylesheet" href="../estilos/internal.css" />
+    <script src="../scripts/app.js" defer></script>
+    <script src="../scripts/internal.js" defer></script>
+  </head>
+  <body class="dashboard-page internal-page" data-page="form">
+    <div class="app-shell">
+      <div id="internal-shell"></div>
+      <main class="main dash-main internal-main" id="conteudo" tabindex="-1">
+        <div class="dash-heading-row internal-heading">
+          <div>
+            <nav class="dash-breadcrumb" aria-label="Navegação estrutural">
+              <a href="index.html">Usinas</a><span aria-hidden="true">/</span><strong>Cadastrar usina</strong>
+            </nav>
+            <h1 id="form-title">Cadastrar usina</h1>
+            <p>Informe os dados técnicos, a localização e o responsável.</p>
+          </div>
+          <span class="dash-demo-label"
+            ><span aria-hidden="true">●</span> Cadastro armazenado localmente</span
+          >
+        </div>
+        <div class="internal-form-intro">
+          <span class="internal-step">01</span
+          ><span
+            >Preencha as informações obrigatórias identificadas com <strong>*</strong>. Os dados serão salvos
+            somente neste navegador.</span
+          >
+        </div>
+        <form id="plant-form" class="internal-plant-form">
+          <section class="dash-card internal-form-card">
+            <div class="internal-section-heading">
+              <span class="internal-section-icon">▦</span>
+              <div>
+                <h2>Dados da usina</h2>
+                <p>Identificação e características técnicas da instalação.</p>
+              </div>
+            </div>
+            <div class="internal-form-grid">
+              <div class="form-field span-2">
+                <label for="name">Nome da usina <span class="required">*</span></label
+                ><input
+                  id="name"
+                  name="name"
+                  autocomplete="organization"
+                  maxlength="120"
+                  required
+                  placeholder="Ex.: Usina Boa Vista"
+                />
+              </div>
+              <div class="form-field span-2">
+                <label for="type">Tipo de instalação <span class="required">*</span></label
+                ><select id="type" name="type" required>
+                  <option value="">Selecione o tipo</option>
+                  <option>Solo</option>
+                  <option>Telhado</option>
+                  <option>Híbrida</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label for="capacity">Potência instalada (kWp) <span class="required">*</span></label
+                ><input
+                  id="capacity"
+                  name="capacity"
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  placeholder="350"
+                  required
+                />
+              </div>
+              <div class="form-field">
+                <label for="nominal">Potência nominal (kW) <span class="required">*</span></label
+                ><input
+                  id="nominal"
+                  name="nominal"
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  placeholder="300"
+                  required
+                />
+              </div>
+              <div class="form-field">
+                <label for="tilt">Inclinação dos módulos (°) <span class="required">*</span></label
+                ><input
+                  id="tilt"
+                  name="tilt"
+                  type="number"
+                  min="0"
+                  max="90"
+                  step="0.1"
+                  placeholder="15"
+                  required
+                />
+              </div>
+              <div class="form-field">
+                <label for="startDate">Início da operação <span class="required">*</span></label
+                ><input id="startDate" name="startDate" type="date" required />
+              </div>
+              <div class="form-field span-4">
+                <label for="notes">Observações</label
+                ><textarea
+                  id="notes"
+                  name="notes"
+                  rows="3"
+                  maxlength="1000"
+                  placeholder="Informações adicionais (opcional)"
+                ></textarea>
+              </div>
+            </div>
+          </section>
+          <section class="dash-card internal-form-card">
+            <div class="internal-section-heading">
+              <span class="internal-section-icon">⌖</span>
+              <div>
+                <h2>Localização</h2>
+                <p>Endereço da usina para cadastro e identificação.</p>
+              </div>
+            </div>
+            <div class="internal-form-grid">
+              <div class="form-field">
+                <label for="cep">CEP <span class="required">*</span></label
+                ><input
+                  id="cep"
+                  name="cep"
+                  inputmode="numeric"
+                  maxlength="10"
+                  placeholder="00000-000"
+                  required
+                />
+              </div>
+              <div class="form-field span-2">
+                <label for="street">Logradouro <span class="required">*</span></label
+                ><input id="street" name="street" maxlength="150" required />
+              </div>
+              <div class="form-field">
+                <label for="number">Número <span class="required">*</span></label
+                ><input id="number" name="number" maxlength="20" required />
+              </div>
+              <div class="form-field span-2">
+                <label for="complement">Complemento</label
+                ><input id="complement" name="complement" maxlength="100" />
+              </div>
+              <div class="form-field">
+                <label for="city">Cidade <span class="required">*</span></label
+                ><input id="city" name="city" maxlength="90" required />
+              </div>
+              <div class="form-field">
+                <label for="state">Estado <span class="required">*</span></label
+                ><select id="state" name="state" required>
+                  <option value="">Selecione</option>
+                  <option>MG</option>
+                  <option>SP</option>
+                  <option>RJ</option>
+                  <option>ES</option>
+                  <option>BA</option>
+                  <option>GO</option>
+                </select>
+              </div>
+            </div>
+          </section>
+          <div class="internal-form-pair">
+            <section class="dash-card internal-form-card">
+              <div class="internal-section-heading">
+                <span class="internal-section-icon">♙</span>
+                <div>
+                  <h2>Contato do cliente</h2>
+                  <p>Dados do responsável pela instalação.</p>
+                </div>
+              </div>
+              <div class="internal-form-grid narrow">
+                <div class="form-field span-2">
+                  <label for="client">Nome do cliente <span class="required">*</span></label
+                  ><input id="client" name="client" maxlength="120" autocomplete="name" required />
+                </div>
+                <div class="form-field span-2">
+                  <label for="email">E-mail do cliente <span class="required">*</span></label
+                  ><input
+                    id="email"
+                    name="email"
+                    type="email"
+                    maxlength="150"
+                    autocomplete="email"
+                    placeholder="contato@exemplo.com"
+                    required
+                  />
+                </div>
+              </div>
+            </section>
+            <section class="dash-card internal-form-card">
+              <div class="internal-section-heading">
+                <span class="internal-section-icon">ϟ</span>
+                <div>
+                  <h2>Inversor principal</h2>
+                  <p>Equipamento de monitoramento vinculado.</p>
+                </div>
+              </div>
+              <div class="internal-form-grid narrow">
+                <div class="form-field">
+                  <label for="brand">Marca <span class="required">*</span></label
+                  ><select id="brand" name="brand" required>
+                    <option value="">Selecione</option>
+                    <option>Huawei</option>
+                    <option>SMA</option>
+                    <option>Growatt</option>
+                    <option>Fronius</option>
+                    <option>Solis</option>
+                    <option>Outra</option>
+                  </select>
+                </div>
+                <div class="form-field">
+                  <label for="model">Modelo <span class="required">*</span></label
+                  ><input id="model" name="model" maxlength="100" required />
+                </div>
+                <div class="form-field span-2">
+                  <label for="serial">Número de série <span class="required">*</span></label
+                  ><input id="serial" name="serial" maxlength="100" required />
+                </div>
+              </div>
+            </section>
+          </div>
+          <div class="internal-form-actions">
+            <a class="internal-button button-light" href="usinas.html">Cancelar</a
+            ><button class="internal-button button-primary" type="submit">Salvar usina</button>
+          </div>
+        </form>
+        <footer class="dash-footer">
+          SolarSystem • Dados locais de demonstração • Sem monitoramento em tempo real
+        </footer>
+      </main>
     </div>
-    <div class="internal-form-intro"><span class="internal-step">01</span><span>Preencha as informações obrigatórias identificadas com <strong>*</strong>. Os dados serão salvos somente neste navegador.</span></div>
-<form id="plant-form" class="internal-plant-form">
-  <section class="dash-card internal-form-card">
-    <div class="internal-section-heading"><span class="internal-section-icon">▦</span><div><h2>Dados da usina</h2><p>Identificação e características técnicas da instalação.</p></div></div>
-    <div class="internal-form-grid">
-      <div class="form-field span-2"><label for="name">Nome da usina <span class="required">*</span></label><input id="name" name="name" autocomplete="organization" maxlength="120" required placeholder="Ex.: Usina Boa Vista"></div>
-      <div class="form-field span-2"><label for="type">Tipo de instalação <span class="required">*</span></label><select id="type" name="type" required><option value="">Selecione o tipo</option><option>Solo</option><option>Telhado</option><option>Híbrida</option></select></div>
-      <div class="form-field"><label for="capacity">Potência instalada (kWp) <span class="required">*</span></label><input id="capacity" name="capacity" type="number" min="0.01" step="0.01" placeholder="350" required></div>
-      <div class="form-field"><label for="nominal">Potência nominal (kW) <span class="required">*</span></label><input id="nominal" name="nominal" type="number" min="0.01" step="0.01" placeholder="300" required></div>
-      <div class="form-field"><label for="tilt">Inclinação dos módulos (°) <span class="required">*</span></label><input id="tilt" name="tilt" type="number" min="0" max="90" step="0.1" placeholder="15" required></div>
-      <div class="form-field"><label for="startDate">Início da operação <span class="required">*</span></label><input id="startDate" name="startDate" type="date" required></div>
-      <div class="form-field span-4"><label for="notes">Observações</label><textarea id="notes" name="notes" rows="3" maxlength="1000" placeholder="Informações adicionais (opcional)"></textarea></div>
-    </div>
-  </section>
-  <section class="dash-card internal-form-card">
-    <div class="internal-section-heading"><span class="internal-section-icon">⌖</span><div><h2>Localização</h2><p>Endereço da usina para cadastro e identificação.</p></div></div>
-    <div class="internal-form-grid">
-      <div class="form-field"><label for="cep">CEP <span class="required">*</span></label><input id="cep" name="cep" inputmode="numeric" maxlength="10" placeholder="00000-000" required></div>
-      <div class="form-field span-2"><label for="street">Logradouro <span class="required">*</span></label><input id="street" name="street" maxlength="150" required></div>
-      <div class="form-field"><label for="number">Número <span class="required">*</span></label><input id="number" name="number" maxlength="20" required></div>
-      <div class="form-field span-2"><label for="complement">Complemento</label><input id="complement" name="complement" maxlength="100"></div>
-      <div class="form-field"><label for="city">Cidade <span class="required">*</span></label><input id="city" name="city" maxlength="90" required></div>
-      <div class="form-field"><label for="state">Estado <span class="required">*</span></label><select id="state" name="state" required><option value="">Selecione</option><option>MG</option><option>SP</option><option>RJ</option><option>ES</option><option>BA</option><option>GO</option></select></div>
-    </div>
-  </section>
-  <div class="internal-form-pair">
-    <section class="dash-card internal-form-card">
-      <div class="internal-section-heading"><span class="internal-section-icon">♙</span><div><h2>Contato do cliente</h2><p>Dados do responsável pela instalação.</p></div></div>
-      <div class="internal-form-grid narrow">
-        <div class="form-field span-2"><label for="client">Nome do cliente <span class="required">*</span></label><input id="client" name="client" maxlength="120" autocomplete="name" required></div>
-        <div class="form-field span-2"><label for="email">E-mail do cliente <span class="required">*</span></label><input id="email" name="email" type="email" maxlength="150" autocomplete="email" placeholder="contato@exemplo.com" required></div>
-      </div>
-    </section>
-    <section class="dash-card internal-form-card">
-      <div class="internal-section-heading"><span class="internal-section-icon">ϟ</span><div><h2>Inversor principal</h2><p>Equipamento de monitoramento vinculado.</p></div></div>
-      <div class="internal-form-grid narrow">
-        <div class="form-field"><label for="brand">Marca <span class="required">*</span></label><select id="brand" name="brand" required><option value="">Selecione</option><option>Huawei</option><option>SMA</option><option>Growatt</option><option>Fronius</option><option>Solis</option><option>Outra</option></select></div>
-        <div class="form-field"><label for="model">Modelo <span class="required">*</span></label><input id="model" name="model" maxlength="100" required></div>
-        <div class="form-field span-2"><label for="serial">Número de série <span class="required">*</span></label><input id="serial" name="serial" maxlength="100" required></div>
-      </div>
-    </section>
-  </div>
-  <div class="internal-form-actions"><a class="internal-button button-light" href="usinas.html">Cancelar</a><button class="internal-button button-primary" type="submit">Salvar usina</button></div>
-</form>
-    <footer class="dash-footer">SolarSystem • Dados locais de demonstração • Sem monitoramento em tempo real</footer>
-  </main>
-</div>
-<div id="toast" class="toast" role="status" aria-live="polite"></div>
-<script src="../scripts/internal-shell.js"></script>
-<script src="../scripts/sidebar.js"></script>
-</body>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script src="../scripts/internal-shell.js"></script>
+    <script src="../scripts/sidebar.js"></script>
+  </body>
 </html>

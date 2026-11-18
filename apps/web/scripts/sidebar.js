@@ -11,14 +11,14 @@
     details: 'usinas.html',
     alarms: 'alarmes.html',
     reports: 'relatorios.html',
-    settings: 'configuracoes.html'
+    settings: 'configuracoes.html',
   };
   const items = [
     { label: 'Visão geral', href: 'index.html' },
     { label: 'Usinas', href: 'usinas.html' },
     { label: 'Alarmes', href: 'alarmes.html' },
     { label: 'Relatórios', href: 'relatorios.html' },
-    { label: 'Configurações', href: 'configuracoes.html' }
+    { label: 'Configurações', href: 'configuracoes.html' },
   ];
 
   const brand = document.createElement('a');

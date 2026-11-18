@@ -1,47 +1,124 @@
 <!doctype html>
 <html lang="pt-BR">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#071e3d">
-  <title>Alarmes | SolarSystem</title>
-  <link rel="stylesheet" href="../estilos/styles.css">
-  <script src="../scripts/app.js" defer></script>
-  <script src="../scripts/internal.js" defer></script>
-</head>
-<body class="dashboard-page internal-page" data-page="alarms">
-<div class="app-shell">
-  <div id="internal-shell"></div>
-  <main class="main dash-main internal-main" id="conteudo" tabindex="-1">
-    <div class="dash-heading-row internal-heading">
-      <div>
-        <nav class="dash-breadcrumb" aria-label="Navegação estrutural"><a href="index.html">Monitoramento</a><span aria-hidden="true">/</span><strong>Alarmes</strong></nav>
-        <h1>Alarmes</h1>
-        <p>Monitore e gerencie as ocorrências registradas nas usinas.</p>
-      </div>
-      <span class="dash-demo-label"><span aria-hidden="true">●</span> Dados de cadastro locais • Sem API conectada</span>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#071e3d" />
+    <title>Alarmes | SolarSystem</title>
+    <link rel="stylesheet" href="../estilos/styles.css" />
+    <script src="../scripts/app.js" defer></script>
+    <script src="../scripts/internal.js" defer></script>
+  </head>
+  <body class="dashboard-page internal-page" data-page="alarms">
+    <div class="app-shell">
+      <div id="internal-shell"></div>
+      <main class="main dash-main internal-main" id="conteudo" tabindex="-1">
+        <div class="dash-heading-row internal-heading">
+          <div>
+            <nav class="dash-breadcrumb" aria-label="Navegação estrutural">
+              <a href="index.html">Monitoramento</a><span aria-hidden="true">/</span><strong>Alarmes</strong>
+            </nav>
+            <h1>Alarmes</h1>
+            <p>Monitore e gerencie as ocorrências registradas nas usinas.</p>
+          </div>
+          <span class="dash-demo-label"
+            ><span aria-hidden="true">●</span> Dados de cadastro locais • Sem API conectada</span
+          >
+        </div>
+        <section class="internal-kpis" aria-label="Resumo dos alarmes">
+          <article class="dash-card internal-kpi">
+            <span class="internal-kpi-icon red">!</span>
+            <div>
+              <span>Alarmes em aberto</span><strong id="internal-open-alarms">0</strong
+              ><small>Requerem acompanhamento</small>
+            </div>
+          </article>
+          <article class="dash-card internal-kpi">
+            <span class="internal-kpi-icon red">▲</span>
+            <div>
+              <span>Alta severidade</span><strong id="internal-critical-alarms">0</strong
+              ><small>Ocorrências abertas</small>
+            </div>
+          </article>
+          <article class="dash-card internal-kpi">
+            <span class="internal-kpi-icon amber">△</span>
+            <div>
+              <span>Média severidade</span><strong id="internal-medium-alarms">0</strong
+              ><small>Ocorrências abertas</small>
+            </div>
+          </article>
+          <article class="dash-card internal-kpi">
+            <span class="internal-kpi-icon green">✓</span>
+            <div>
+              <span>Resolvidos</span><strong id="internal-resolved-alarms">0</strong
+              ><small>Histórico local</small>
+            </div>
+          </article>
+        </section>
+        <section class="dash-card internal-section">
+          <div class="internal-card-title">
+            <div>
+              <h2>Central de alarmes</h2>
+              <p>Consulte e conclua as ocorrências das usinas.</p>
+            </div>
+            <span class="internal-demo-pill">Dados locais</span>
+          </div>
+          <div class="internal-toolbar">
+            <label class="internal-field internal-grow"
+              ><span class="sr-only">Buscar alarmes</span
+              ><input
+                id="internal-alarm-search"
+                type="search"
+                placeholder="Buscar por usina, alarme ou descrição"
+            /></label>
+            <label class="internal-field"
+              ><span>Severidade</span
+              ><select id="internal-severity-filter">
+                <option value="">Todas</option>
+                <option>Alta</option>
+                <option>Média</option>
+                <option>Baixa</option>
+              </select></label
+            >
+            <label class="internal-field"
+              ><span>Status</span
+              ><select id="internal-alarm-status-filter">
+                <option value="">Todos</option>
+                <option>Aberto</option>
+                <option>Resolvido</option>
+              </select></label
+            >
+            <button type="button" id="internal-alarms-clear" class="internal-button button-light">
+              Limpar
+            </button>
+          </div>
+          <div class="table-wrap internal-table-wrap">
+            <table class="internal-table">
+              <thead>
+                <tr>
+                  <th>Data e hora</th>
+                  <th>Usina</th>
+                  <th>Descrição do alarme</th>
+                  <th>Severidade</th>
+                  <th>Status</th>
+                  <th>Ação</th>
+                </tr>
+              </thead>
+              <tbody id="alarm-rows"></tbody>
+            </table>
+          </div>
+          <div class="internal-table-footer">
+            <span id="internal-alarms-count" aria-live="polite">0 ocorrências</span
+            ><span>Use “Concluir” para marcar um alarme como resolvido.</span>
+          </div>
+        </section>
+        <footer class="dash-footer">
+          SolarSystem • Dados locais de demonstração • Sem monitoramento em tempo real
+        </footer>
+      </main>
     </div>
-    <section class="internal-kpis" aria-label="Resumo dos alarmes">
-  <article class="dash-card internal-kpi"><span class="internal-kpi-icon red">!</span><div><span>Alarmes em aberto</span><strong id="internal-open-alarms">0</strong><small>Requerem acompanhamento</small></div></article>
-  <article class="dash-card internal-kpi"><span class="internal-kpi-icon red">▲</span><div><span>Alta severidade</span><strong id="internal-critical-alarms">0</strong><small>Ocorrências abertas</small></div></article>
-  <article class="dash-card internal-kpi"><span class="internal-kpi-icon amber">△</span><div><span>Média severidade</span><strong id="internal-medium-alarms">0</strong><small>Ocorrências abertas</small></div></article>
-  <article class="dash-card internal-kpi"><span class="internal-kpi-icon green">✓</span><div><span>Resolvidos</span><strong id="internal-resolved-alarms">0</strong><small>Histórico local</small></div></article>
-</section>
-<section class="dash-card internal-section"><div class="internal-card-title"><div><h2>Central de alarmes</h2><p>Consulte e conclua as ocorrências das usinas.</p></div><span class="internal-demo-pill">Dados locais</span></div>
-  <div class="internal-toolbar">
-    <label class="internal-field internal-grow"><span class="sr-only">Buscar alarmes</span><input id="internal-alarm-search" type="search" placeholder="Buscar por usina, alarme ou descrição"></label>
-    <label class="internal-field"><span>Severidade</span><select id="internal-severity-filter"><option value="">Todas</option><option>Alta</option><option>Média</option><option>Baixa</option></select></label>
-    <label class="internal-field"><span>Status</span><select id="internal-alarm-status-filter"><option value="">Todos</option><option>Aberto</option><option>Resolvido</option></select></label>
-    <button type="button" id="internal-alarms-clear" class="internal-button button-light">Limpar</button>
-  </div>
-  <div class="table-wrap internal-table-wrap"><table class="internal-table"><thead><tr><th>Data e hora</th><th>Usina</th><th>Descrição do alarme</th><th>Severidade</th><th>Status</th><th>Ação</th></tr></thead><tbody id="alarm-rows"></tbody></table></div>
-  <div class="internal-table-footer"><span id="internal-alarms-count" aria-live="polite">0 ocorrências</span><span>Use “Concluir” para marcar um alarme como resolvido.</span></div>
-</section>
-    <footer class="dash-footer">SolarSystem • Dados locais de demonstração • Sem monitoramento em tempo real</footer>
-  </main>
-</div>
-<div id="toast" class="toast" role="status" aria-live="polite"></div>
-<script src="../scripts/internal-shell.js"></script>
-<script src="../scripts/sidebar.js"></script>
-</body>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script src="../scripts/internal-shell.js"></script>
+    <script src="../scripts/sidebar.js"></script>
+  </body>
 </html>

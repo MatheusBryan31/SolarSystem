@@ -33,15 +33,19 @@
   }
 
   // Persistimos somente o e-mail e nunca a senha. Captura antes do redirecionamento demo.
-  form.addEventListener('submit', () => {
-    try {
-      if (rememberCheckbox.checked) {
-        localStorage.setItem(STORAGE_KEY, emailInput.value.trim());
-      } else {
-        localStorage.removeItem(STORAGE_KEY);
+  form.addEventListener(
+    'submit',
+    () => {
+      try {
+        if (rememberCheckbox.checked) {
+          localStorage.setItem(STORAGE_KEY, emailInput.value.trim());
+        } else {
+          localStorage.removeItem(STORAGE_KEY);
+        }
+      } catch {
+        // Falha de armazenamento não bloqueia o fluxo demonstrativo.
       }
-    } catch {
-      // Falha de armazenamento não bloqueia o fluxo demonstrativo.
-    }
-  }, { capture: true });
+    },
+    { capture: true },
+  );
 })();

@@ -1,51 +1,148 @@
 <!doctype html>
 <html lang="pt-BR">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#071e3d">
-  <title>Relatórios | SolarSystem</title>
-  <link rel="stylesheet" href="../estilos/styles.css">
-  <link rel="stylesheet" href="../estilos/internal.css">
-  <script src="../scripts/app.js" defer></script>
-  <script src="../scripts/internal.js" defer></script>
-</head>
-<body class="dashboard-page internal-page" data-page="reports">
-<div class="app-shell">
-  <div id="internal-shell"></div>
-  <main class="main dash-main internal-main" id="conteudo" tabindex="-1">
-    <div class="dash-heading-row internal-heading">
-      <div>
-        <nav class="dash-breadcrumb" aria-label="Navegação estrutural"><a href="index.html">Monitoramento</a><span aria-hidden="true">/</span><strong>Relatórios</strong></nav>
-        <h1>Relatórios</h1>
-        <p>Consulte indicadores, compare instalações e exporte cadastros.</p>
-      </div>
-      <span class="dash-demo-label"><span aria-hidden="true">●</span> Dados de cadastro locais • Sem API conectada</span>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#071e3d" />
+    <title>Relatórios | SolarSystem</title>
+    <link rel="stylesheet" href="../estilos/styles.css" />
+    <link rel="stylesheet" href="../estilos/internal.css" />
+    <script src="../scripts/app.js" defer></script>
+    <script src="../scripts/internal.js" defer></script>
+  </head>
+  <body class="dashboard-page internal-page" data-page="reports">
+    <div class="app-shell">
+      <div id="internal-shell"></div>
+      <main class="main dash-main internal-main" id="conteudo" tabindex="-1">
+        <div class="dash-heading-row internal-heading">
+          <div>
+            <nav class="dash-breadcrumb" aria-label="Navegação estrutural">
+              <a href="index.html">Monitoramento</a><span aria-hidden="true">/</span
+              ><strong>Relatórios</strong>
+            </nav>
+            <h1>Relatórios</h1>
+            <p>Consulte indicadores, compare instalações e exporte cadastros.</p>
+          </div>
+          <span class="dash-demo-label"
+            ><span aria-hidden="true">●</span> Dados de cadastro locais • Sem API conectada</span
+          >
+        </div>
+        <nav class="internal-tabs report-tabs" aria-label="Visualizações dos relatórios">
+          <button
+            type="button"
+            class="internal-report-tab active"
+            data-report-tab="capacidade"
+            aria-pressed="true"
+          >
+            Capacidade instalada
+          </button>
+          <button type="button" class="internal-report-tab" data-report-tab="alarmes" aria-pressed="false">
+            Alarmes
+          </button>
+          <button type="button" class="internal-report-tab" data-report-tab="producao" aria-pressed="false">
+            Produção (simulada)
+          </button>
+        </nav>
+        <section class="internal-kpis" aria-label="Indicadores dos relatórios">
+          <article class="dash-card internal-kpi">
+            <span class="internal-kpi-icon blue">▦</span>
+            <div>
+              <span>Usinas cadastradas</span><strong id="report-plants">0</strong><small>Base local</small>
+            </div>
+          </article>
+          <article class="dash-card internal-kpi">
+            <span class="internal-kpi-icon green">ϟ</span>
+            <div>
+              <span>Capacidade total</span><strong id="report-capacity">0 kWp</strong
+              ><small>Potência instalada</small>
+            </div>
+          </article>
+          <article class="dash-card internal-kpi">
+            <span class="internal-kpi-icon amber">!</span>
+            <div>
+              <span>Alarmes registrados</span><strong id="report-alarms">0</strong
+              ><small>Abertos e resolvidos</small>
+            </div>
+          </article>
+          <article class="dash-card internal-kpi">
+            <span class="internal-kpi-icon blue">⌁</span>
+            <div>
+              <span>Produção energética</span><strong>—</strong><small>API ainda não integrada</small>
+            </div>
+          </article>
+        </section>
+        <section class="dash-card internal-section" aria-label="Painel analítico">
+          <div class="internal-card-title">
+            <div>
+              <h2 id="internal-report-chart-title">Capacidade instalada por usina</h2>
+              <p id="internal-report-chart-note">Potências cadastradas, em kWp.</p>
+            </div>
+            <span class="internal-demo-pill" id="internal-report-data-type">Dados cadastrados</span>
+          </div>
+          <div
+            id="internal-report-chart"
+            class="internal-report-chart"
+            role="img"
+            aria-label="Gráfico comparativo de capacidade instalada por usina"
+          ></div>
+        </section>
+        <section class="dash-card internal-section">
+          <div class="internal-card-title">
+            <div>
+              <h2>Resumo por usina</h2>
+              <p>Informações cadastradas no navegador.</p>
+            </div>
+            <button type="button" class="internal-button button-outline" id="internal-export-csv">
+              ↓ Exportar CSV
+            </button>
+          </div>
+          <div class="internal-toolbar">
+            <label class="internal-field internal-grow"
+              ><span class="sr-only">Buscar uma usina no relatório</span
+              ><input
+                type="search"
+                id="internal-report-search"
+                placeholder="Buscar usina pelo nome ou cidade" /></label
+            ><label class="internal-field"
+              ><span>Estado</span
+              ><select id="internal-report-state">
+                <option value="">Todos</option>
+                <option>MG</option>
+                <option>SP</option>
+                <option>RJ</option>
+                <option>ES</option>
+                <option>BA</option>
+                <option>GO</option>
+              </select></label
+            >
+          </div>
+          <div class="table-wrap internal-table-wrap">
+            <table class="internal-table">
+              <thead>
+                <tr>
+                  <th>Usina</th>
+                  <th>Localização</th>
+                  <th>Status</th>
+                  <th>Potência</th>
+                  <th>Inversores</th>
+                  <th>Ação</th>
+                </tr>
+              </thead>
+              <tbody id="report-rows"></tbody>
+            </table>
+          </div>
+          <div class="internal-table-footer">
+            <span id="internal-report-count">0 usinas</span
+            ><span>Exportação de cadastro local (não contém dados de geração)</span>
+          </div>
+        </section>
+        <footer class="dash-footer">
+          SolarSystem • Dados locais de demonstração • Sem monitoramento em tempo real
+        </footer>
+      </main>
     </div>
-    <nav class="internal-tabs report-tabs" aria-label="Visualizações dos relatórios">
-  <button type="button" class="internal-report-tab active" data-report-tab="capacidade" aria-pressed="true">Capacidade instalada</button>
-  <button type="button" class="internal-report-tab" data-report-tab="alarmes" aria-pressed="false">Alarmes</button>
-  <button type="button" class="internal-report-tab" data-report-tab="producao" aria-pressed="false">Produção (simulada)</button>
-</nav>
-<section class="internal-kpis" aria-label="Indicadores dos relatórios">
-  <article class="dash-card internal-kpi"><span class="internal-kpi-icon blue">▦</span><div><span>Usinas cadastradas</span><strong id="report-plants">0</strong><small>Base local</small></div></article>
-  <article class="dash-card internal-kpi"><span class="internal-kpi-icon green">ϟ</span><div><span>Capacidade total</span><strong id="report-capacity">0 kWp</strong><small>Potência instalada</small></div></article>
-  <article class="dash-card internal-kpi"><span class="internal-kpi-icon amber">!</span><div><span>Alarmes registrados</span><strong id="report-alarms">0</strong><small>Abertos e resolvidos</small></div></article>
-  <article class="dash-card internal-kpi"><span class="internal-kpi-icon blue">⌁</span><div><span>Produção energética</span><strong>—</strong><small>API ainda não integrada</small></div></article>
-</section>
-<section class="dash-card internal-section" aria-label="Painel analítico"><div class="internal-card-title"><div><h2 id="internal-report-chart-title">Capacidade instalada por usina</h2><p id="internal-report-chart-note">Potências cadastradas, em kWp.</p></div><span class="internal-demo-pill" id="internal-report-data-type">Dados cadastrados</span></div>
- <div id="internal-report-chart" class="internal-report-chart" role="img" aria-label="Gráfico comparativo de capacidade instalada por usina"></div>
-</section>
-<section class="dash-card internal-section"><div class="internal-card-title"><div><h2>Resumo por usina</h2><p>Informações cadastradas no navegador.</p></div><button type="button" class="internal-button button-outline" id="internal-export-csv">↓ Exportar CSV</button></div>
-  <div class="internal-toolbar"><label class="internal-field internal-grow"><span class="sr-only">Buscar uma usina no relatório</span><input type="search" id="internal-report-search" placeholder="Buscar usina pelo nome ou cidade"></label><label class="internal-field"><span>Estado</span><select id="internal-report-state"><option value="">Todos</option><option>MG</option><option>SP</option><option>RJ</option><option>ES</option><option>BA</option><option>GO</option></select></label></div>
-  <div class="table-wrap internal-table-wrap"><table class="internal-table"><thead><tr><th>Usina</th><th>Localização</th><th>Status</th><th>Potência</th><th>Inversores</th><th>Ação</th></tr></thead><tbody id="report-rows"></tbody></table></div>
-  <div class="internal-table-footer"><span id="internal-report-count">0 usinas</span><span>Exportação de cadastro local (não contém dados de geração)</span></div>
-</section>
-    <footer class="dash-footer">SolarSystem • Dados locais de demonstração • Sem monitoramento em tempo real</footer>
-  </main>
-</div>
-<div id="toast" class="toast" role="status" aria-live="polite"></div>
-<script src="../scripts/internal-shell.js"></script>
-<script src="../scripts/sidebar.js"></script>
-</body>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script src="../scripts/internal-shell.js"></script>
+    <script src="../scripts/sidebar.js"></script>
+  </body>
 </html>

@@ -6,9 +6,11 @@
   const $ = (id) => document.getElementById(id);
   const allPlants = typeof plants !== 'undefined' && Array.isArray(plants) ? plants : [];
   const page = document.body.dataset.page;
-  const format = (number, digits = 0) => Number(number || 0).toLocaleString('pt-BR', {
-    minimumFractionDigits: digits, maximumFractionDigits: digits,
-  });
+  const format = (number, digits = 0) =>
+    Number(number || 0).toLocaleString('pt-BR', {
+      minimumFractionDigits: digits,
+      maximumFractionDigits: digits,
+    });
   const statusOfPlant = (plant) => {
     const statuses = (plant.inverters || []).map((inv) => inv.status);
     if (statuses.includes('Offline')) return 'Offline';
@@ -60,8 +62,12 @@
     };
     menuButton.addEventListener('click', () => setMenu(!document.body.classList.contains('menu-open')));
     backdrop.addEventListener('click', () => setMenu(false));
-    document.addEventListener('keydown', (event) => { if (event.key === 'Escape') setMenu(false); });
-    document.querySelectorAll('#sidebar-container .nav a').forEach((link) => link.addEventListener('click', () => setMenu(false)));
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') setMenu(false);
+    });
+    document
+      .querySelectorAll('#sidebar-container .nav a')
+      .forEach((link) => link.addEventListener('click', () => setMenu(false)));
   }
 
   const headerSearch = $('dash-search');
@@ -72,9 +78,15 @@
       headerResults.replaceChildren();
       headerResults.hidden = !term;
       if (!term) return;
-      const matches = allPlants.filter((plant) => normalize([
-        plant.name, plant.city, plant.state, ...(plant.inverters || []).map((inv) => inv.serial),
-      ].join(' ')).includes(term)).slice(0, 7);
+      const matches = allPlants
+        .filter((plant) =>
+          normalize(
+            [plant.name, plant.city, plant.state, ...(plant.inverters || []).map((inv) => inv.serial)].join(
+              ' ',
+            ),
+          ).includes(term),
+        )
+        .slice(0, 7);
       if (!matches.length) headerResults.append(make('p', 'Nenhuma usina encontrada.', 'dash-search-empty'));
       matches.forEach((plant) => {
         const link = make('a', plant.name);
@@ -83,7 +95,9 @@
         headerResults.append(link);
       });
     });
-    headerSearch.addEventListener('focus', () => { if (headerSearch.value.trim()) headerResults.hidden = false; });
+    headerSearch.addEventListener('focus', () => {
+      if (headerSearch.value.trim()) headerResults.hidden = false;
+    });
     document.addEventListener('click', (event) => {
       if (!event.target.closest('.dash-search-wrap')) headerResults.hidden = true;
     });
@@ -99,8 +113,17 @@
     tr.append(td);
     return tr;
   };
-  const td = (row, label) => { const cell = make('td', label); row.append(cell); return cell; };
-  const badgeFor = (status) => make('span', status, `badge ${status === 'Online' ? 'online' : status === 'Offline' ? 'offline' : 'attention'}`);
+  const td = (row, label) => {
+    const cell = make('td', label);
+    row.append(cell);
+    return cell;
+  };
+  const badgeFor = (status) =>
+    make(
+      'span',
+      status,
+      `badge ${status === 'Online' ? 'online' : status === 'Offline' ? 'offline' : 'attention'}`,
+    );
 
   if (page === 'plants') {
     const search = $('plant-search');
@@ -112,8 +135,12 @@
       const term = normalize(search.value.trim());
       const matches = allPlants.filter((plant) => {
         const searchable = [plant.name, ...(plant.inverters || []).map((inv) => inv.serial)].join(' ');
-        return normalize(searchable).includes(term) && (!status.value || statusOfPlant(plant) === status.value)
-          && (!type.value || plant.type === type.value) && (!state.value || plant.state === state.value);
+        return (
+          normalize(searchable).includes(term) &&
+          (!status.value || statusOfPlant(plant) === status.value) &&
+          (!type.value || plant.type === type.value) &&
+          (!state.value || plant.state === state.value)
+        );
       });
       table.replaceChildren();
       if (!matches.length) table.append(emptyRow(6, 'Nenhuma usina corresponde aos filtros.'));
@@ -121,7 +148,13 @@
         const row = make('tr');
         const name = td(row, plant.name);
         name.className = 'plant-name';
-        name.append(make('small', (plant.inverters || []).map((inv) => inv.serial).join(', ') || 'Sem inversor', 'muted row-note'));
+        name.append(
+          make(
+            'small',
+            (plant.inverters || []).map((inv) => inv.serial).join(', ') || 'Sem inversor',
+            'muted row-note',
+          ),
+        );
         td(row, `${plant.city || '—'} / ${plant.state || '—'}`);
         td(row).append(badgeFor(statusOfPlant(plant)));
         td(row, `${format(plant.capacity)} kWp`);
@@ -157,9 +190,13 @@
       $('internal-detail-client').textContent = `Cliente: ${plant.client || 'Não informado'}`;
       $('internal-detail-client-value').textContent = plant.client || 'Não informado';
       $('internal-detail-inverters').textContent = String((plant.inverters || []).length);
-      $('internal-detail-alerts').textContent = String((plant.alarms || []).filter((alarm) => alarm.status === 'Aberto').length);
+      $('internal-detail-alerts').textContent = String(
+        (plant.alarms || []).filter((alarm) => alarm.status === 'Aberto').length,
+      );
     }
-    document.querySelectorAll('.detail-panel[hidden]').forEach((section) => { section.style.display = 'none'; });
+    document.querySelectorAll('.detail-panel[hidden]').forEach((section) => {
+      section.style.display = 'none';
+    });
     document.querySelectorAll('[data-tab-target]').forEach((tab) => {
       tab.addEventListener('click', () => {
         for (const section of document.querySelectorAll('.detail-panel')) {
@@ -175,7 +212,9 @@
     $('internal-open-alarms').textContent = String(opened.length);
     $('internal-critical-alarms').textContent = String(opened.filter((a) => a.severity === 'Alta').length);
     $('internal-medium-alarms').textContent = String(opened.filter((a) => a.severity === 'Média').length);
-    $('internal-resolved-alarms').textContent = String(allAlarms.filter((a) => a.status === 'Resolvido').length);
+    $('internal-resolved-alarms').textContent = String(
+      allAlarms.filter((a) => a.status === 'Resolvido').length,
+    );
     const search = $('internal-alarm-search');
     const severity = $('internal-severity-filter');
     const status = $('internal-alarm-status-filter');
@@ -185,7 +224,16 @@
         const cell = row.cells[column];
         if (!cell) continue;
         const value = cell.textContent.trim();
-        const tone = column === 4 ? (value === 'Aberto' ? 'offline' : 'online') : (value === 'Alta' ? 'offline' : value === 'Média' ? 'attention' : 'low');
+        const tone =
+          column === 4
+            ? value === 'Aberto'
+              ? 'offline'
+              : 'online'
+            : value === 'Alta'
+              ? 'offline'
+              : value === 'Média'
+                ? 'attention'
+                : 'low';
         cell.replaceChildren(make('span', value, `badge ${tone}`));
       }
       const button = row.querySelector('[data-alarm]');
@@ -194,10 +242,16 @@
     const filter = () => {
       let shown = 0;
       rows.forEach((row) => {
-        const text = normalize([...row.cells].slice(0, 3).map((cell) => cell.textContent).join(' '));
-        const matching = text.includes(normalize(search.value.trim()))
-          && (!severity.value || row.cells[3]?.textContent.trim() === severity.value)
-          && (!status.value || row.cells[4]?.textContent.trim() === status.value);
+        const text = normalize(
+          [...row.cells]
+            .slice(0, 3)
+            .map((cell) => cell.textContent)
+            .join(' '),
+        );
+        const matching =
+          text.includes(normalize(search.value.trim())) &&
+          (!severity.value || row.cells[3]?.textContent.trim() === severity.value) &&
+          (!status.value || row.cells[4]?.textContent.trim() === status.value);
         row.hidden = !matching;
         if (matching) shown++;
       });
@@ -206,7 +260,10 @@
     search.addEventListener('input', filter);
     for (const select of [severity, status]) select.addEventListener('change', filter);
     $('internal-alarms-clear').addEventListener('click', () => {
-      search.value = ''; severity.value = ''; status.value = ''; filter();
+      search.value = '';
+      severity.value = '';
+      status.value = '';
+      filter();
     });
     if (!rows.length) $('alarm-rows').append(emptyRow(6, 'Nenhum alarme registrado.'));
     filter();
@@ -222,42 +279,74 @@
     const reportExamples = [16, 27, 39, 29, 45, 35, 30];
     const drawChart = (kind) => {
       bars.replaceChildren();
-      const items = kind === 'producao'
-        ? reportExamples.map((value, i) => ({ label: `Dia ${i + 1}`, value, units: 'kWh' }))
-        : allPlants.slice(0, 8).map((plant) => ({
-          label: plant.name,
-          value: kind === 'alarmes' ? (plant.alarms || []).length : Number(plant.capacity || 0),
-          units: kind === 'alarmes' ? 'ocorrências' : 'kWp',
-        }));
-      title.textContent = kind === 'producao' ? 'Produção de energia ilustrativa' : kind === 'alarmes' ? 'Alarmes por usina' : 'Capacidade instalada por usina';
-      note.textContent = kind === 'producao' ? 'Série fictícia de sete dias, apenas para demonstrar a interface.' : kind === 'alarmes' ? 'Quantidade de alarmes do cadastro local.' : 'Potências cadastradas no navegador.';
+      const items =
+        kind === 'producao'
+          ? reportExamples.map((value, i) => ({ label: `Dia ${i + 1}`, value, units: 'kWh' }))
+          : allPlants.slice(0, 8).map((plant) => ({
+              label: plant.name,
+              value: kind === 'alarmes' ? (plant.alarms || []).length : Number(plant.capacity || 0),
+              units: kind === 'alarmes' ? 'ocorrências' : 'kWp',
+            }));
+      title.textContent =
+        kind === 'producao'
+          ? 'Produção de energia ilustrativa'
+          : kind === 'alarmes'
+            ? 'Alarmes por usina'
+            : 'Capacidade instalada por usina';
+      note.textContent =
+        kind === 'producao'
+          ? 'Série fictícia de sete dias, apenas para demonstrar a interface.'
+          : kind === 'alarmes'
+            ? 'Quantidade de alarmes do cadastro local.'
+            : 'Potências cadastradas no navegador.';
       dataType.textContent = kind === 'producao' ? 'Simulação' : 'Dados cadastrados';
-      bars.setAttribute('aria-label', `${title.textContent}. ${kind === 'producao' ? 'Dados simulados.' : 'Dados cadastrados.'}`);
-      if (!items.length) { bars.append(make('p', 'Cadastre usinas para visualizar o gráfico.', 'internal-empty-chart')); return; }
+      bars.setAttribute(
+        'aria-label',
+        `${title.textContent}. ${kind === 'producao' ? 'Dados simulados.' : 'Dados cadastrados.'}`,
+      );
+      if (!items.length) {
+        bars.append(make('p', 'Cadastre usinas para visualizar o gráfico.', 'internal-empty-chart'));
+        return;
+      }
       const max = Math.max(1, ...items.map((item) => item.value));
       items.forEach((item) => {
         const line = make('div', undefined, 'internal-chart-row');
         line.append(make('span', item.label, 'internal-chart-name'));
         const track = make('div', undefined, 'internal-chart-track');
         const fill = make('span', undefined, 'internal-chart-fill');
-        fill.style.width = `${Math.max(item.value > 0 ? 2 : 0, item.value / max * 100)}%`;
+        fill.style.width = `${Math.max(item.value > 0 ? 2 : 0, (item.value / max) * 100)}%`;
         track.append(fill);
-        line.append(track, make('strong', `${format(item.value, kind === 'producao' ? 1 : 0)} ${item.units}`, 'internal-chart-value'));
+        line.append(
+          track,
+          make(
+            'strong',
+            `${format(item.value, kind === 'producao' ? 1 : 0)} ${item.units}`,
+            'internal-chart-value',
+          ),
+        );
         bars.append(line);
       });
     };
-    tabs.forEach((tab) => tab.addEventListener('click', () => {
-      tabs.forEach((item) => { item.classList.toggle('active', item === tab); item.setAttribute('aria-pressed', String(item === tab)); });
-      drawChart(tab.dataset.reportTab);
-    }));
+    tabs.forEach((tab) =>
+      tab.addEventListener('click', () => {
+        tabs.forEach((item) => {
+          item.classList.toggle('active', item === tab);
+          item.setAttribute('aria-pressed', String(item === tab));
+        });
+        drawChart(tab.dataset.reportTab);
+      }),
+    );
     drawChart('capacidade');
     const filter = () => {
       const text = normalize($('internal-report-search').value.trim());
       const state = $('internal-report-state').value;
-      currentPlants = allPlants.filter((p) => normalize(`${p.name} ${p.city} ${p.state}`).includes(text) && (!state || p.state === state));
+      currentPlants = allPlants.filter(
+        (p) => normalize(`${p.name} ${p.city} ${p.state}`).includes(text) && (!state || p.state === state),
+      );
       // Tabela originalmente renderizada por app.js; apenas ocultamos os resultados não correspondentes.
       const names = new Set(currentPlants.map((p) => p.name));
-      for (const row of $('report-rows').rows) row.hidden = !names.has(row.cells[0]?.firstChild?.textContent?.trim());
+      for (const row of $('report-rows').rows)
+        row.hidden = !names.has(row.cells[0]?.firstChild?.textContent?.trim());
       $('internal-report-count').textContent = `${currentPlants.length} usina(s) encontrada(s)`;
     };
     $('internal-report-search').addEventListener('input', filter);
@@ -270,13 +359,23 @@
       return `"${str.replaceAll('"', '""')}"`;
     };
     $('internal-export-csv').addEventListener('click', () => {
-      const header = ['Usina','Cidade','UF','Status','Potência (kWp)','Inversores'];
-      const body = currentPlants.map((p) => [p.name,p.city,p.state,statusOfPlant(p),Number(p.capacity || 0), (p.inverters || []).length]);
-      const csv = '\uFEFF' + [header,...body].map((line) => line.map(safeCSV).join(';')).join('\r\n');
+      const header = ['Usina', 'Cidade', 'UF', 'Status', 'Potência (kWp)', 'Inversores'];
+      const body = currentPlants.map((p) => [
+        p.name,
+        p.city,
+        p.state,
+        statusOfPlant(p),
+        Number(p.capacity || 0),
+        (p.inverters || []).length,
+      ]);
+      const csv = '\uFEFF' + [header, ...body].map((line) => line.map(safeCSV).join(';')).join('\r\n');
       const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
       const link = make('a');
-      link.href = url; link.download = 'solarsystem-usinas.csv';
-      document.body.append(link); link.click(); link.remove();
+      link.href = url;
+      link.download = 'solarsystem-usinas.csv';
+      document.body.append(link);
+      link.click();
+      link.remove();
       window.setTimeout(() => URL.revokeObjectURL(url), 1000);
     });
   }
