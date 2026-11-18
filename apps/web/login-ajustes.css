@@ -39,6 +39,81 @@
   .login-content { padding: 24px 20px; }
 }
 @media (max-height: 790px) and (min-width: 721px) {
-  .login-card { min-height: 480px; }
-  .login-main { padding-block: 14px 10px; }
+  .login-card { min-height: 0; }
+  .login-header, .login-header-inner { min-height: 60px; }
+  body.login-page::before { top: 60px; }
+  .login-main { padding-block: 12px; }
+  .login-content { padding-block: 20px; }
+  .login-intro { margin-bottom: 16px; }
+  .login-intro h2 { font-size: 28px; }
+  .form-field { margin-bottom: 12px; }
+  .form-field label { margin-bottom: 6px; }
+  .input-wrapper input { height: 44px; }
+  .login-options { margin-block: 0 14px; }
+  .login-submit { height: 44px; }
+  .login-bottom-links { margin-top: 12px; }
+  .demo-notice { margin-top: 10px; }
+  .login-footer { gap: 6px; padding-block: 6px 10px; }
+}
+
+/* No celular, a apresentação ocupa menos espaço para priorizar o formulário. */
+@media (max-width: 720px) {
+  .login-header, .login-header-inner { min-height: 56px; }
+  body.login-page::before { top: 56px; }
+  .login-main { padding: 10px 15px; }
+  .login-hero { min-height: 0; padding: 16px 22px; }
+  .hero-accent { height: 4px; margin: 0 0 10px; }
+  .login-hero h1 { font-size: 20px; margin-bottom: 8px; }
+  .login-hero p { font-size: 12px; line-height: 1.4; }
+  .login-content { padding: 18px 22px; }
+  .login-intro { margin-bottom: 14px; }
+  .login-intro h2 { font-size: 22px; margin-bottom: 6px; }
+  .login-intro p { font-size: 13px; line-height: 1.4; }
+  .form-field { margin-bottom: 12px; }
+  .form-field label { margin-bottom: 6px; }
+  .input-wrapper input { height: 44px; font-size: 16px; }
+  .login-options { margin-block: 0 14px; }
+  .login-submit { height: 44px; }
+  .login-bottom-links { margin-top: 12px; }
+  .demo-notice { margin-top: 10px; }
+  .login-footer { gap: 6px; padding: 6px 18px 10px; }
+  .login-footer nav { gap: 8px 12px; }
+  .login-footer nav span { display: none; }
+}
+
+/* Janelas baixas dispensam o painel ilustrativo, mantendo todos os controles. */
+@media (max-width: 720px) and (max-height: 740px) {
+  .login-hero { display: none; }
+}
+
+@media (max-width: 900px) and (max-height: 620px) {
+  .login-card { grid-template-columns: 1fr; max-width: 520px; }
+  .login-hero { display: none; }
+  .login-content { padding: 12px 16px; }
+  .login-intro { margin-bottom: 10px; }
+  .login-intro h2 { font-size: 22px; }
+  .login-intro p { font-size: 13px; line-height: 1.4; }
+  .form-field { margin-bottom: 10px; }
+  .login-main { padding-block: 8px; }
+  .login-footer, .login-footer p { font-size: 11px; }
+}
+
+/* Em paisagem, os campos ficam lado a lado para caber em pouca altura. */
+@media (min-width: 600px) and (max-height: 500px) {
+  .login-header, .login-header-inner { min-height: 48px; }
+  body.login-page::before { top: 48px; }
+  .login-card { grid-template-columns: 1fr; max-width: 970px; min-height: 0; }
+  .login-hero { display: none; }
+  .login-content { display: grid; grid-template-columns: .8fr 1.4fr; align-items: center; gap: 24px; padding: 12px 22px; }
+  .login-intro { margin: 0; }
+  .login-intro h2 { font-size: 22px; }
+  .login-intro p { font-size: 13px; }
+  .login-form { display: grid; grid-template-columns: 1fr 1fr; column-gap: 14px; }
+  .form-field { min-width: 0; margin-bottom: 8px; }
+  .login-options, .login-submit, .login-bottom-links, .demo-notice { grid-column: 1 / -1; }
+  .login-options { margin-bottom: 8px; }
+  .login-bottom-links { margin-top: 8px; }
+  .demo-notice { margin-top: 6px; }
+  .login-main { padding-block: 8px; }
+  .login-footer { gap: 4px; padding-block: 4px 8px; }
 }
