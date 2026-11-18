@@ -49,14 +49,11 @@ a { color: inherit; }
 .login-header-inner { width: min(1520px,100%); min-height: 76px; padding: 0 clamp(22px,4vw,65px); margin: auto; display: flex; justify-content: space-between; align-items: center; gap: 20px; }
 .login-logo { font-size: clamp(25px,2.15vw,34px); font-weight: 800; letter-spacing: -1.5px; white-space: nowrap; }
 .login-logo span { color: #22ce69; }
-.login-header-actions { display: flex; align-items: center; gap: 20px; }
-.header-language,.header-download { display: inline-flex; align-items: center; justify-content: center; gap: 10px; color: #f8fbff; font-size: 14px; font-weight: 600; background: transparent; border: none; min-height: 40px; border-radius: 9px; padding: 7px 8px; }
-.header-language:hover,.header-download:hover { background: rgba(255,255,255,.1); }
+.login-header-actions { display: flex; align-items: center; }
+.header-language { display: inline-flex; align-items: center; justify-content: center; gap: 10px; color: #f8fbff; font-size: 14px; font-weight: 600; background: transparent; border: none; min-height: 40px; border-radius: 9px; padding: 7px 8px; }
+.header-language:hover { background: rgba(255,255,255,.1); }
 .header-language .icon { width: 18px; height: 18px; }
 .header-language .icon-chevron { width: 15px; height: 15px; }
-.header-divider { height: 28px; width: 1px; background: rgba(255,255,255,.48); }
-.header-download { padding: 9px 14px; border: 1px solid rgba(255,255,255,.78); }
-.header-download .icon { height: 18px; width: 18px; }
 
 /* Cartão central e fotografia */
 .login-main { width: 100%; flex: 1; display: grid; align-items: center; justify-items: center; padding: 27px 22px 18px; }
@@ -147,8 +144,6 @@ button.login-tab:hover { color: #0878ed; }
   .login-header-inner { padding-inline: 18px; }
   .login-logo { font-size: 24px; }
   .header-language { font-size: 12px; }
-  .header-download { display: none; }
-  .header-divider { display: none; }
   .login-main { padding: 22px 15px; }
   .login-card { grid-template-columns: 1fr; max-width: 520px; min-height: 0; border-radius: 17px; }
   .login-hero { min-height: 226px; padding: 28px; background-position: center,center 60%,center; }
