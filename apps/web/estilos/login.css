@@ -76,7 +76,7 @@ a { color: inherit; }
   color: #fff;
   background:
     linear-gradient(180deg,rgba(5,46,94,.80) 0%,rgba(6,63,117,.73) 35%,rgba(12,73,132,.05) 79%),
-    url('imgs/login-solar-premium.webp') center center / cover no-repeat,
+    url('../imgs/foto_login.jpeg') center center / cover no-repeat,
     #07508e;
 }
 .login-hero-copy { position: relative; z-index: 1; max-width: 425px; }

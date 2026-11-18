@@ -11,7 +11,7 @@
 .login-hero {
   background:
     linear-gradient(180deg, rgba(5, 46, 94, .77) 0%, rgba(6, 63, 117, .65) 35%, rgba(12, 73, 132, .10) 79%),
-    url('imgs/foto_login.jpeg') center center / cover no-repeat,
+    url('../imgs/foto_login.jpeg') center center / cover no-repeat,
     #07508e;
   padding-inline: clamp(30px, 4vw, 54px);
 }
