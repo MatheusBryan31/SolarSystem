@@ -1,0 +1,44 @@
+/* Ajustes visuais do login Premium Blue.
+   Sobrescreve apenas estilos da tela de acesso, preservando o CSS original. */
+
+/* Cartão aproximadamente 12% mais estreito e 9% mais baixo. */
+.login-card {
+  width: min(970px, 100%);
+  min-height: 510px;
+}
+
+/* Fotografia já presente no repositório SolarSystem. */
+.login-hero {
+  background:
+    linear-gradient(180deg, rgba(5, 46, 94, .77) 0%, rgba(6, 63, 117, .65) 35%, rgba(12, 73, 132, .10) 79%),
+    url('imgs/foto_login.jpeg') center center / cover no-repeat,
+    #07508e;
+  padding-inline: clamp(30px, 4vw, 54px);
+}
+
+/* Formulário mais compacto, com acesso somente por e-mail. */
+.login-content {
+  padding: 34px clamp(25px, 3.3vw, 42px) 30px;
+}
+.login-intro { margin-bottom: 28px; }
+.login-bottom-links { justify-content: flex-end; margin-top: 17px; }
+.demo-notice { margin-top: 14px; }
+
+@media (max-width: 900px) {
+  .login-card { min-height: 490px; }
+  .login-hero { padding-inline: 30px; }
+}
+@media (max-width: 720px) {
+  .login-card { max-width: 520px; min-height: 0; }
+  .login-hero { min-height: 210px; padding: 28px; }
+  .login-content { padding: 27px 27px 25px; }
+  .login-intro { margin-bottom: 25px; }
+}
+@media (max-width: 420px) {
+  .login-hero { padding: 25px 22px; }
+  .login-content { padding: 24px 20px; }
+}
+@media (max-height: 790px) and (min-width: 721px) {
+  .login-card { min-height: 480px; }
+  .login-main { padding-block: 14px 10px; }
+}
