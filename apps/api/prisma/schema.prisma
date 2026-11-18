@@ -1,0 +1,46 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Localidade do banco
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+}
+
+// Perfis de acesso (empresa + clientes)
+enum Role {
+  ADMIN
+  OPERATOR
+  CLIENT
+}
+
+model Client {
+  id String @id @default(uuid())
+  name String
+  document String? @unique // CPF/CNPJ, opcional (?), mas sem repetição
+  email String?
+  phone String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  users User[] // Um cliente pode ter vários usuários
+
+  @@map("clients")
+}
+
+model User {
+  id String @id @default(uuid())
+  name String
+  email String @unique
+  passwordHash String @map("password_hash") // Não é a senha real
+  role Role @default(OPERATOR)
+  active Boolean @default(true)
+  clientId String? @map("client_id") // só usuários clientes têm
+  client Client? @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([clientId])
+  @@map("users")
+}

@@ -1,44 +1,111 @@
 <!doctype html>
 <html lang="pt-BR">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#071e3d">
-  <title>Configurações | SolarSystem</title>
-  <link rel="stylesheet" href="../estilos/styles.css">
-  <link rel="stylesheet" href="../estilos/internal.css">
-  <script src="../scripts/app.js" defer></script>
-  <script src="../scripts/internal.js" defer></script>
-</head>
-<body class="dashboard-page internal-page" data-page="settings">
-<div class="app-shell">
-  <div id="internal-shell"></div>
-  <main class="main dash-main internal-main" id="conteudo" tabindex="-1">
-    <div class="dash-heading-row internal-heading">
-      <div>
-        <nav class="dash-breadcrumb" aria-label="Navegação estrutural"><a href="index.html">Monitoramento</a><span aria-hidden="true">/</span><strong>Configurações</strong></nav>
-        <h1>Configurações</h1>
-        <p>Ajustes e informações da demonstração SolarSystem.</p>
-      </div>
-      <span class="dash-demo-label"><span aria-hidden="true">●</span> Dados de cadastro locais • Sem API conectada</span>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#071e3d" />
+    <title>Configurações | SolarSystem</title>
+    <link rel="stylesheet" href="../estilos/styles.css" />
+    <link rel="stylesheet" href="../estilos/internal.css" />
+    <script src="../scripts/app.js" defer></script>
+    <script src="../scripts/internal.js" defer></script>
+  </head>
+  <body class="dashboard-page internal-page" data-page="settings">
+    <div class="app-shell">
+      <div id="internal-shell"></div>
+      <main class="main dash-main internal-main" id="conteudo" tabindex="-1">
+        <div class="dash-heading-row internal-heading">
+          <div>
+            <nav class="dash-breadcrumb" aria-label="Navegação estrutural">
+              <a href="index.html">Monitoramento</a><span aria-hidden="true">/</span
+              ><strong>Configurações</strong>
+            </nav>
+            <h1>Configurações</h1>
+            <p>Ajustes e informações da demonstração SolarSystem.</p>
+          </div>
+          <span class="dash-demo-label"
+            ><span aria-hidden="true">●</span> Dados de cadastro locais • Sem API conectada</span
+          >
+        </div>
+        <div class="settings-layout">
+          <nav class="dash-card settings-menu" aria-label="Categorias de configuração">
+            <h2>Configurações</h2>
+            <a href="#settings-geral" class="settings-menu-item active">⚙ <span>Geral</span></a
+            ><a href="#settings-integracoes" class="settings-menu-item">⛓ <span>Integrações</span></a
+            ><a href="#settings-notificacoes" class="settings-menu-item">♧ <span>Notificações</span></a
+            ><a href="#settings-dados" class="settings-menu-item">▤ <span>Dados demonstrativos</span></a>
+          </nav>
+          <div class="settings-content">
+            <section class="dash-card internal-section" id="settings-geral">
+              <div class="internal-card-title">
+                <div>
+                  <h2>Geral</h2>
+                  <p>Identidade visual e informações do SolarSystem.</p>
+                </div>
+              </div>
+              <div class="settings-row"><span>Nome do sistema</span><strong>SolarSystem</strong></div>
+              <div class="settings-row"><span>Tema de interface</span><strong>Premium Blue</strong></div>
+              <div class="settings-row"><span>Idioma</span><strong>Português (Brasil)</strong></div>
+              <div class="settings-row">
+                <span>Modo de dados</span><strong class="internal-demo-pill">Demonstração local</strong>
+              </div>
+              <div class="settings-colors" aria-label="Cores do sistema">
+                <div><span style="background: #081f41"></span> Azul-marinho</div>
+                <div><span style="background: #0878ed"></span> Azul</div>
+                <div><span style="background: #13b450"></span> Verde</div>
+                <div><span style="background: #ffa916"></span> Alerta</div>
+              </div>
+            </section>
+            <section class="dash-card internal-section" id="settings-integracoes">
+              <div class="internal-card-title">
+                <div>
+                  <h2>Integrações</h2>
+                  <p>Conexões com plataformas solares e inversores.</p>
+                </div>
+                <span class="internal-demo-pill">Planejado</span>
+              </div>
+              <p class="settings-explanation">
+                O backend ainda não está conectado a Sungrow, Growatt, Huawei, Solarman ou outros provedores.
+                Nenhuma conexão está ativa nesta demonstração.
+              </p>
+            </section>
+            <section class="dash-card internal-section" id="settings-notificacoes">
+              <div class="internal-card-title">
+                <div>
+                  <h2>Notificações</h2>
+                  <p>Avisos de falha e comunicação.</p>
+                </div>
+                <span class="internal-demo-pill">Planejado</span>
+              </div>
+              <p class="settings-explanation">
+                O envio automático de e-mails, avisos e alertas em tempo real será implementado posteriormente
+                com o backend.
+              </p>
+            </section>
+            <section class="dash-card internal-section" id="settings-dados">
+              <div class="internal-card-title">
+                <div>
+                  <h2>Dados demonstrativos</h2>
+                  <p>Controle dos dados usados durante os testes.</p>
+                </div>
+              </div>
+              <p class="settings-explanation">
+                As usinas cadastradas nesta versão ficam salvas no armazenamento local do navegador. Restaurar
+                a demonstração substitui os seus cadastros locais pelos exemplos iniciais.
+              </p>
+              <button type="button" id="reset-demo" class="internal-button button-danger">
+                Restaurar dados demonstrativos
+              </button>
+            </section>
+          </div>
+        </div>
+        <footer class="dash-footer">
+          SolarSystem • Dados locais de demonstração • Sem monitoramento em tempo real
+        </footer>
+      </main>
     </div>
-    <div class="settings-layout">
-  <nav class="dash-card settings-menu" aria-label="Categorias de configuração"><h2>Configurações</h2><a href="#settings-geral" class="settings-menu-item active">⚙ <span>Geral</span></a><a href="#settings-integracoes" class="settings-menu-item">⛓ <span>Integrações</span></a><a href="#settings-notificacoes" class="settings-menu-item">♧ <span>Notificações</span></a><a href="#settings-dados" class="settings-menu-item">▤ <span>Dados demonstrativos</span></a></nav>
-  <div class="settings-content">
-    <section class="dash-card internal-section" id="settings-geral"><div class="internal-card-title"><div><h2>Geral</h2><p>Identidade visual e informações do SolarSystem.</p></div></div>
-      <div class="settings-row"><span>Nome do sistema</span><strong>SolarSystem</strong></div><div class="settings-row"><span>Tema de interface</span><strong>Premium Blue</strong></div><div class="settings-row"><span>Idioma</span><strong>Português (Brasil)</strong></div><div class="settings-row"><span>Modo de dados</span><strong class="internal-demo-pill">Demonstração local</strong></div>
-      <div class="settings-colors" aria-label="Cores do sistema"><div><span style="background:#081f41"></span> Azul-marinho</div><div><span style="background:#0878ed"></span> Azul</div><div><span style="background:#13b450"></span> Verde</div><div><span style="background:#ffa916"></span> Alerta</div></div>
-    </section>
-    <section class="dash-card internal-section" id="settings-integracoes"><div class="internal-card-title"><div><h2>Integrações</h2><p>Conexões com plataformas solares e inversores.</p></div><span class="internal-demo-pill">Planejado</span></div><p class="settings-explanation">O backend ainda não está conectado a Sungrow, Growatt, Huawei, Solarman ou outros provedores. Nenhuma conexão está ativa nesta demonstração.</p></section>
-    <section class="dash-card internal-section" id="settings-notificacoes"><div class="internal-card-title"><div><h2>Notificações</h2><p>Avisos de falha e comunicação.</p></div><span class="internal-demo-pill">Planejado</span></div><p class="settings-explanation">O envio automático de e-mails, avisos e alertas em tempo real será implementado posteriormente com o backend.</p></section>
-    <section class="dash-card internal-section" id="settings-dados"><div class="internal-card-title"><div><h2>Dados demonstrativos</h2><p>Controle dos dados usados durante os testes.</p></div></div><p class="settings-explanation">As usinas cadastradas nesta versão ficam salvas no armazenamento local do navegador. Restaurar a demonstração substitui os seus cadastros locais pelos exemplos iniciais.</p><button type="button" id="reset-demo" class="internal-button button-danger">Restaurar dados demonstrativos</button></section>
-  </div>
-</div>
-    <footer class="dash-footer">SolarSystem • Dados locais de demonstração • Sem monitoramento em tempo real</footer>
-  </main>
-</div>
-<div id="toast" class="toast" role="status" aria-live="polite"></div>
-<script src="../scripts/internal-shell.js"></script>
-<script src="../scripts/sidebar.js"></script>
-</body>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script src="../scripts/internal-shell.js"></script>
+    <script src="../scripts/sidebar.js"></script>
+  </body>
 </html>

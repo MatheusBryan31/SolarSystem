@@ -7,7 +7,10 @@
   const dashboardPlants = typeof plants !== 'undefined' && Array.isArray(plants) ? plants : [];
   const $ = (id) => document.getElementById(id);
   const fmt = (value, decimals = 0) =>
-    Number(value).toLocaleString('pt-BR', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+    Number(value).toLocaleString('pt-BR', {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals,
+    });
   const getStatus = (plant) => {
     const statuses = (plant.inverters || []).map((item) => item.status);
     if (statuses.includes('Offline')) return 'Offline';
@@ -16,12 +19,13 @@
   };
 
   const counts = { Online: 0, Atenção: 0, Offline: 0 };
-  dashboardPlants.forEach((plant) => { counts[getStatus(plant)] += 1; });
+  dashboardPlants.forEach((plant) => {
+    counts[getStatus(plant)] += 1;
+  });
   const total = dashboardPlants.length;
   const capacity = dashboardPlants.reduce((sum, plant) => sum + Number(plant.capacity || 0), 0);
   const openAlarms = dashboardPlants.flatMap((plant) =>
-    (plant.alarms || []).filter((alarm) => alarm.status === 'Aberto')
-      .map((alarm) => ({ plant, alarm })),
+    (plant.alarms || []).filter((alarm) => alarm.status === 'Aberto').map((alarm) => ({ plant, alarm })),
   );
 
   // Estes IDs já são atualizados pelo app.js. Os novos elementos complementam o painel.
@@ -39,11 +43,14 @@
 
   const statusRing = $('dash-status-ring');
   if (total > 0) {
-    const online = counts.Online / total * 100;
-    const attention = (counts.Online + counts.Atenção) / total * 100;
+    const online = (counts.Online / total) * 100;
+    const attention = ((counts.Online + counts.Atenção) / total) * 100;
     statusRing.style.background = `conic-gradient(#13b450 0 ${online}%, #ffa916 ${online}% ${attention}%, #f23c4a ${attention}% 100%)`;
   }
-  statusRing.setAttribute('aria-label', `${counts.Online} online, ${counts.Atenção} em atenção, ${counts.Offline} offline`);
+  statusRing.setAttribute(
+    'aria-label',
+    `${counts.Online} online, ${counts.Atenção} em atenção, ${counts.Offline} offline`,
+  );
 
   // Lista de alarmes baseada somente no cadastro local (não há atualização ao vivo).
   const alarmList = $('dash-alarm-list');
@@ -88,7 +95,10 @@
     dot.setAttribute('cx', coordinates[0]);
     dot.setAttribute('cy', coordinates[1]);
     dot.setAttribute('r', '7');
-    dot.setAttribute('class', `dash-map-point ${getStatus(plant) === 'Atenção' ? 'attention' : getStatus(plant).toLowerCase()}`);
+    dot.setAttribute(
+      'class',
+      `dash-map-point ${getStatus(plant) === 'Atenção' ? 'attention' : getStatus(plant).toLowerCase()}`,
+    );
     const tooltip = document.createElementNS(svgNamespace, 'title');
     tooltip.textContent = `${plant.name} — ${plant.city}/${plant.state} — ${getStatus(plant)} (posição aproximada)`;
     dot.append(tooltip);
@@ -103,14 +113,14 @@
     dia: {
       description: 'Produção por hora (simulação)',
       unit: 'kWh',
-      values: [0, .03, .08, .18, .32, .43, .48, .41, .31, .20, .11, .04],
-      labels: ['06h','07h','08h','09h','10h','11h','12h','13h','14h','15h','16h','17h'],
+      values: [0, 0.03, 0.08, 0.18, 0.32, 0.43, 0.48, 0.41, 0.31, 0.2, 0.11, 0.04],
+      labels: ['06h', '07h', '08h', '09h', '10h', '11h', '12h', '13h', '14h', '15h', '16h', '17h'],
     },
     semana: {
       description: 'Produção nos últimos 7 dias (simulação)',
       unit: 'kWh',
       values: [24, 31, 28, 36, 35, 41, 44],
-      labels: ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'],
+      labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
     },
     mes: {
       description: 'Produção do mês (simulação)',
@@ -121,8 +131,8 @@
     ano: {
       description: 'Produção anual (simulação)',
       unit: 'MWh',
-      values: [4.2,4.7,5.1,5.9,6.4,6.8,6.7,6.2,5.8,5.1,4.5,3.7],
-      labels: ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'],
+      values: [4.2, 4.7, 5.1, 5.9, 6.4, 6.8, 6.7, 6.2, 5.8, 5.1, 4.5, 3.7],
+      labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
     },
   };
 
@@ -134,11 +144,19 @@
     const highest = Math.max(1, ...period.values);
     const chartCeiling = Math.ceil(highest / (highest <= 5 ? 0.5 : 10)) * (highest <= 5 ? 0.5 : 10);
     $('dash-chart-description').textContent = period.description;
-    $('dash-chart-total').textContent = `${fmt(period.values.reduce((sum, value) => sum + value, 0), 2)} ${period.unit}`;
-    chart.setAttribute('aria-label', `${period.description}. Total: ${$('dash-chart-total').textContent}. Dados fictícios.`);
+    $('dash-chart-total').textContent = `${fmt(
+      period.values.reduce((sum, value) => sum + value, 0),
+      2,
+    )} ${period.unit}`;
+    chart.setAttribute(
+      'aria-label',
+      `${period.description}. Total: ${$('dash-chart-total').textContent}. Dados fictícios.`,
+    );
 
     const ticks = document.querySelectorAll('.dash-chart-yaxis span');
-    ticks.forEach((tick, i) => { tick.textContent = fmt(chartCeiling * (4 - i) / 4, chartCeiling <= 5 ? 1 : 0); });
+    ticks.forEach((tick, i) => {
+      tick.textContent = fmt((chartCeiling * (4 - i)) / 4, chartCeiling <= 5 ? 1 : 0);
+    });
 
     period.values.forEach((value, index) => {
       const col = document.createElement('div');
@@ -147,7 +165,7 @@
       area.className = 'dash-chart-bar-area';
       const bar = document.createElement('div');
       bar.className = 'dash-chart-bar';
-      bar.style.height = `${Math.max(0, value / chartCeiling * 100)}%`;
+      bar.style.height = `${Math.max(0, (value / chartCeiling) * 100)}%`;
       bar.title = `${period.labels[index]}: ${fmt(value, 2)} ${period.unit} (simulado)`;
       const label = document.createElement('span');
       label.className = 'dash-chart-label';
@@ -163,9 +181,9 @@
       button.setAttribute('aria-pressed', String(active));
     });
   };
-  document.querySelectorAll('[data-period]').forEach((button) =>
-    button.addEventListener('click', () => renderChart(button.dataset.period)),
-  );
+  document
+    .querySelectorAll('[data-period]')
+    .forEach((button) => button.addEventListener('click', () => renderChart(button.dataset.period)));
   renderChart('mes');
 
   // Busca local sem envio de dados a serviços externos.
@@ -176,10 +194,13 @@
     searchResults.replaceChildren();
     searchResults.hidden = !value;
     if (!value) return;
-    const matches = dashboardPlants.filter((plant) =>
-      `${plant.name} ${plant.city} ${plant.state} ${(plant.inverters || []).map((item) => item.serial || '').join(' ')}`
-        .toLocaleLowerCase('pt-BR').includes(value),
-    ).slice(0, 6);
+    const matches = dashboardPlants
+      .filter((plant) =>
+        `${plant.name} ${plant.city} ${plant.state} ${(plant.inverters || []).map((item) => item.serial || '').join(' ')}`
+          .toLocaleLowerCase('pt-BR')
+          .includes(value),
+      )
+      .slice(0, 6);
     if (matches.length === 0) {
       const empty = document.createElement('div');
       empty.className = 'dash-search-empty';

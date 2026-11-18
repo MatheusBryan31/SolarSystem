@@ -1,49 +1,132 @@
 <!doctype html>
 <html lang="pt-BR">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#071e3d">
-  <title>Usinas | SolarSystem</title>
-  <link rel="stylesheet" href="../estilos/styles.css">
-  <script src="../scripts/app.js" defer></script>
-  <script src="../scripts/internal.js" defer></script>
-</head>
-<body class="dashboard-page internal-page" data-page="plants">
-<div class="app-shell">
-  <div id="internal-shell"></div>
-  <main class="main dash-main internal-main" id="conteudo" tabindex="-1">
-    <div class="dash-heading-row internal-heading">
-      <div>
-        <nav class="dash-breadcrumb" aria-label="Navegação estrutural"><a href="index.html">Monitoramento</a><span aria-hidden="true">/</span><strong>Usinas</strong></nav>
-        <h1>Usinas</h1>
-        <p>Gerencie e acompanhe todas as instalações solares.</p>
-      </div>
-      <a href="cadastro.html" class="internal-button button-primary">＋ Cadastrar usina</a>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#071e3d" />
+    <title>Usinas | SolarSystem</title>
+    <link rel="stylesheet" href="../estilos/styles.css" />
+    <script src="../scripts/app.js" defer></script>
+    <script src="../scripts/internal.js" defer></script>
+  </head>
+  <body class="dashboard-page internal-page" data-page="plants">
+    <div class="app-shell">
+      <div id="internal-shell"></div>
+      <main class="main dash-main internal-main" id="conteudo" tabindex="-1">
+        <div class="dash-heading-row internal-heading">
+          <div>
+            <nav class="dash-breadcrumb" aria-label="Navegação estrutural">
+              <a href="index.html">Monitoramento</a><span aria-hidden="true">/</span><strong>Usinas</strong>
+            </nav>
+            <h1>Usinas</h1>
+            <p>Gerencie e acompanhe todas as instalações solares.</p>
+          </div>
+          <a href="cadastro.html" class="internal-button button-primary">＋ Cadastrar usina</a>
+        </div>
+        <section class="internal-kpis" aria-label="Resumo das usinas">
+          <article class="dash-card internal-kpi">
+            <span class="internal-kpi-icon blue">▦</span>
+            <div>
+              <span>Total de usinas</span><strong id="total-count">0</strong
+              ><small>Registradas no sistema</small>
+            </div>
+          </article>
+          <article class="dash-card internal-kpi">
+            <span class="internal-kpi-icon green">✓</span>
+            <div>
+              <span>Online</span><strong id="online-count">0</strong><small>Comunicação normal</small>
+            </div>
+          </article>
+          <article class="dash-card internal-kpi">
+            <span class="internal-kpi-icon amber">!</span>
+            <div>
+              <span>Atenção</span><strong id="attention-count">0</strong><small>Necessitam verificação</small>
+            </div>
+          </article>
+          <article class="dash-card internal-kpi">
+            <span class="internal-kpi-icon red">⏻</span>
+            <div>
+              <span>Offline</span><strong id="offline-count">0</strong><small>Dispositivo desconectado</small>
+            </div>
+          </article>
+        </section>
+        <section class="dash-card internal-section" aria-label="Lista e filtros de usinas">
+          <div class="internal-card-title">
+            <div>
+              <h2>Usinas cadastradas</h2>
+              <p>Busque instalações e acompanhe o status dos inversores.</p>
+            </div>
+            <a class="internal-button button-outline" href="cadastro.html">+ Nova usina</a>
+          </div>
+          <div class="internal-toolbar">
+            <label class="internal-field internal-grow"
+              ><span class="sr-only">Pesquisar usinas</span
+              ><input
+                id="plant-search"
+                type="search"
+                placeholder="Buscar por nome ou número de série"
+                autocomplete="off"
+            /></label>
+            <label class="internal-field"
+              ><span>Status</span
+              ><select id="status-filter">
+                <option value="">Todos</option>
+                <option>Online</option>
+                <option>Atenção</option>
+                <option>Offline</option>
+              </select></label
+            >
+            <label class="internal-field"
+              ><span>Tipo</span
+              ><select id="internal-type-filter">
+                <option value="">Todos</option>
+                <option>Solo</option>
+                <option>Telhado</option>
+                <option>Híbrida</option>
+              </select></label
+            >
+            <label class="internal-field"
+              ><span>Estado</span
+              ><select id="internal-state-filter">
+                <option value="">Todos</option>
+                <option>MG</option>
+                <option>SP</option>
+                <option>RJ</option>
+                <option>ES</option>
+                <option>BA</option>
+                <option>GO</option>
+              </select></label
+            >
+            <button class="internal-button button-light" id="internal-clear-filters" type="button">
+              Limpar
+            </button>
+          </div>
+          <div class="table-wrap internal-table-wrap">
+            <table class="internal-table">
+              <thead>
+                <tr>
+                  <th>Usina / Nº de série</th>
+                  <th>Localização</th>
+                  <th>Status</th>
+                  <th>Potência</th>
+                  <th>Inversores</th>
+                  <th>Ação</th>
+                </tr>
+              </thead>
+              <tbody id="plant-rows"></tbody>
+            </table>
+          </div>
+          <div class="internal-table-footer">
+            <span id="result-count" aria-live="polite">0 usinas</span><span>Origem: cadastro local</span>
+          </div>
+        </section>
+        <footer class="dash-footer">
+          SolarSystem • Dados locais de demonstração • Sem monitoramento em tempo real
+        </footer>
+      </main>
     </div>
-    <section class="internal-kpis" aria-label="Resumo das usinas">
-  <article class="dash-card internal-kpi"><span class="internal-kpi-icon blue">▦</span><div><span>Total de usinas</span><strong id="total-count">0</strong><small>Registradas no sistema</small></div></article>
-  <article class="dash-card internal-kpi"><span class="internal-kpi-icon green">✓</span><div><span>Online</span><strong id="online-count">0</strong><small>Comunicação normal</small></div></article>
-  <article class="dash-card internal-kpi"><span class="internal-kpi-icon amber">!</span><div><span>Atenção</span><strong id="attention-count">0</strong><small>Necessitam verificação</small></div></article>
-  <article class="dash-card internal-kpi"><span class="internal-kpi-icon red">⏻</span><div><span>Offline</span><strong id="offline-count">0</strong><small>Dispositivo desconectado</small></div></article>
-</section>
-<section class="dash-card internal-section" aria-label="Lista e filtros de usinas">
-  <div class="internal-card-title"><div><h2>Usinas cadastradas</h2><p>Busque instalações e acompanhe o status dos inversores.</p></div><a class="internal-button button-outline" href="cadastro.html">+ Nova usina</a></div>
-  <div class="internal-toolbar">
-    <label class="internal-field internal-grow"><span class="sr-only">Pesquisar usinas</span><input id="plant-search" type="search" placeholder="Buscar por nome ou número de série" autocomplete="off"></label>
-    <label class="internal-field"><span>Status</span><select id="status-filter"><option value="">Todos</option><option>Online</option><option>Atenção</option><option>Offline</option></select></label>
-    <label class="internal-field"><span>Tipo</span><select id="internal-type-filter"><option value="">Todos</option><option>Solo</option><option>Telhado</option><option>Híbrida</option></select></label>
-    <label class="internal-field"><span>Estado</span><select id="internal-state-filter"><option value="">Todos</option><option>MG</option><option>SP</option><option>RJ</option><option>ES</option><option>BA</option><option>GO</option></select></label>
-    <button class="internal-button button-light" id="internal-clear-filters" type="button">Limpar</button>
-  </div>
-  <div class="table-wrap internal-table-wrap"><table class="internal-table"><thead><tr><th>Usina / Nº de série</th><th>Localização</th><th>Status</th><th>Potência</th><th>Inversores</th><th>Ação</th></tr></thead><tbody id="plant-rows"></tbody></table></div>
-  <div class="internal-table-footer"><span id="result-count" aria-live="polite">0 usinas</span><span>Origem: cadastro local</span></div>
-</section>
-    <footer class="dash-footer">SolarSystem • Dados locais de demonstração • Sem monitoramento em tempo real</footer>
-  </main>
-</div>
-<div id="toast" class="toast" role="status" aria-live="polite"></div>
-<script src="../scripts/internal-shell.js"></script>
-<script src="../scripts/sidebar.js"></script>
-</body>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script src="../scripts/internal-shell.js"></script>
+    <script src="../scripts/sidebar.js"></script>
+  </body>
 </html>
