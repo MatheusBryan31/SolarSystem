@@ -1,197 +1,180 @@
 <!doctype html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>
-      Visão geral | SolarSystem
-    </title>
-    <link rel="stylesheet" href="styles.css">
-    <script src="app.js" defer>
-    </script>
-  </head>
-  <body data-page="overview">
-    <div class="app-shell">
-
-      <aside class="sidebar" id="sidebar-container"></aside>
-
-      <main class="main">
-        <div class="topbar">
-          <span class="eyebrow">
-            Monitoramento de usinas solares
-          </span>
-          <div class="top-actions">
-            <a class="icon-button" href="usinas.html">
-              ⌕
-            </a>
-            <a class="icon-button" href="alarmes.html">
-              ♧
-            </a>
-            <a class="user-chip" href="login.html">
-              Sair
-            </a>
-          </div>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#071e3d">
+  <title>Visão geral | SolarSystem</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="dashboard.css">
+  <script src="app.js" defer></script>
+  <script src="dashboard.js" defer></script>
+</head>
+<body class="dashboard-page" data-page="overview">
+  <div class="app-shell">
+    <header class="dash-topbar">
+      <div class="dash-brand-group">
+        <button class="dash-menu-button" id="dash-menu-button" type="button"
+          aria-label="Abrir menu" aria-controls="sidebar-container" aria-expanded="false">☰</button>
+        <a class="dash-brand" href="index.html" aria-label="SolarSystem, página inicial">
+          Solar<span>System</span>
+        </a>
+        <span class="dash-brand-separator" aria-hidden="true"></span>
+        <span class="dash-brand-caption">Monitoramento de Usinas Solares</span>
+      </div>
+      <div class="dash-top-actions">
+        <div class="dash-search-wrap">
+          <label class="sr-only" for="dash-search">Buscar usinas</label>
+          <svg viewBox="0 0 24 24" class="dash-search-icon" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m16 16 5 5"></path></svg>
+          <input id="dash-search" type="search" placeholder="Buscar usina..." autocomplete="off">
+          <div id="dash-search-results" class="dash-search-results" hidden></div>
         </div>
-        <div class="page-heading">
-          <div>
-            <h1>
-              Visão geral
-            </h1>
-            <p class="subheading">
-              Acompanhe o desempenho das suas usinas fotovoltaicas.
-            </p>
-          </div>
+        <a class="dash-top-icon" href="cadastro.html" aria-label="Cadastrar nova usina" title="Nova usina">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v8M8 12h8"></path></svg>
+        </a>
+        <a class="dash-top-icon dash-notification" href="alarmes.html" aria-label="Visualizar alarmes" title="Alarmes">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 10h18c0-2-3-3-3-10M10 21h4"></path></svg>
+          <span class="dash-notification-count" id="dash-notification-count" hidden>0</span>
+        </a>
+        <a class="dash-top-icon dash-settings-shortcut" href="configuracoes.html" aria-label="Configurações" title="Configurações">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M9.5 9a2.6 2.6 0 0 1 5 1c0 1.6-2.5 2-2.5 3.2M12 17.5h.01"></path></svg>
+        </a>
+        <a class="dash-user" href="configuracoes.html" title="Abrir configurações do usuário">
+          <span class="dash-user-avatar" aria-hidden="true">T</span>
+          <span>Técnico</span>
+        </a>
+      </div>
+    </header>
+
+    <aside class="sidebar" id="sidebar-container" aria-label="Menu lateral"></aside>
+    <button id="dash-menu-backdrop" class="dash-menu-backdrop" type="button" aria-label="Fechar menu" hidden></button>
+
+    <main class="main dash-main" id="conteudo">
+      <div class="dash-heading-row">
+        <div>
+          <div class="dash-breadcrumb">Monitoramento <span aria-hidden="true">/</span> <strong>Visão geral</strong></div>
+          <h1>Visão geral</h1>
+          <p>Acompanhe o desempenho das suas usinas fotovoltaicas.</p>
         </div>
-        <section class="grid kpi-grid">
-          <article class="card kpi">
-            <span class="kpi-icon">
-              ▦
-            </span>
-            <div>
-              <div class="kpi-label">
-                Usinas monitoradas
-              </div>
-              <div class="kpi-value" id="metric-plants">
-                0
-              </div>
+        <span class="dash-demo-label" title="O sistema ainda utiliza dados locais e exemplos de produção">
+          <span aria-hidden="true">●</span> Ambiente demonstrativo
+        </span>
+      </div>
+
+      <section class="dash-kpi-grid" aria-label="Indicadores principais">
+        <article class="dash-card dash-kpi">
+          <span class="dash-kpi-icon green" aria-hidden="true">▦</span>
+          <div class="dash-kpi-body"><span>Usinas monitoradas</span><strong id="metric-plants">0</strong><small>Usinas cadastradas</small></div>
+        </article>
+        <article class="dash-card dash-kpi">
+          <span class="dash-kpi-icon blue" aria-hidden="true">ϟ</span>
+          <div class="dash-kpi-body"><span>Potência instalada</span><strong id="metric-capacity">0 kWp</strong><small>Capacidade cadastrada</small></div>
+        </article>
+        <article class="dash-card dash-kpi">
+          <span class="dash-kpi-icon violet" aria-hidden="true">▥</span>
+          <div class="dash-kpi-body"><span>Energia gerada (mês)</span><strong id="dash-energy-total">771,49 kWh</strong><small class="dash-demo-text">Dados de exemplo</small></div>
+        </article>
+        <article class="dash-card dash-kpi">
+          <span class="dash-kpi-icon red" aria-hidden="true">△</span>
+          <div class="dash-kpi-body"><span>Alarmes ativos</span><strong class="dash-alert-value" id="metric-alarms">0</strong><small>Ocorrências em aberto</small></div>
+        </article>
+      </section>
+
+      <section class="dash-primary-grid" aria-label="Produção e histórico">
+        <article class="dash-card dash-production-card">
+          <div class="dash-card-head">
+            <h2>Produção total</h2>
+            <span class="dash-data-note">Métricas de produção simuladas</span>
+          </div>
+          <div class="dash-production-top">
+            <div class="dash-gauge" role="img" aria-label="Fator de capacidade ilustrativo: 5,74 por cento">
+              <div class="dash-gauge-center"><strong>5,74%</strong><span>Fator de capacidade</span><small>Exemplo</small></div>
             </div>
-          </article>
-          <article class="card kpi">
-            <span class="kpi-icon">
-              ϟ
-            </span>
-            <div>
-              <div class="kpi-label">
-                Potência instalada
-              </div>
-              <div class="kpi-value" id="metric-capacity">
-                0 kWp
-              </div>
+            <div class="dash-production-stats">
+              <div><span>Potência atual</span><strong>5,55 <small>kW</small></strong><em>Exemplo</em></div>
+              <div><span>Potência instalada</span><strong id="dash-capacity-detail">0 kWp</strong><em>Cadastro local</em></div>
             </div>
-          </article>
-          <article class="card kpi">
-            <span class="kpi-icon">
-              ϟ
-            </span>
-            <div>
-              <div class="kpi-label">
-                Energia hoje
-              </div>
-              <div class="kpi-value">
-                4,26 MWh
-              </div>
-              <div class="kpi-note">
-                Valor demonstrativo
-              </div>
+          </div>
+          <div class="dash-energy-breakdown">
+            <div class="dash-energy-chip sky"><span>Produção diária</span><strong>2,59 kWh</strong></div>
+            <div class="dash-energy-chip amber"><span>Produção mensal</span><strong>771,49 kWh</strong></div>
+            <div class="dash-energy-chip lavender"><span>Produção anual</span><strong>65,03 MWh</strong></div>
+            <div class="dash-energy-chip mint"><span>Produção total</span><strong>399,22 MWh</strong></div>
+          </div>
+          <p class="dash-card-footnote">Valores de produção são ilustrativos até a integração com uma API de monitoramento.</p>
+        </article>
+
+        <article class="dash-card dash-history-card">
+          <div class="dash-card-head dash-history-head">
+            <h2>Histórico de produção</h2>
+            <div class="dash-period-controls" role="group" aria-label="Período do gráfico">
+              <button type="button" data-period="dia">Dia</button>
+              <button type="button" data-period="semana">7 dias</button>
+              <button type="button" data-period="mes" class="active" aria-pressed="true">Mês</button>
+              <button type="button" data-period="ano">Ano</button>
             </div>
-          </article>
-          <article class="card kpi">
-            <span class="kpi-icon amber">
-              △
-            </span>
-            <div>
-              <div class="kpi-label">
-                Alarmes ativos
-              </div>
-              <div class="kpi-value" id="metric-alarms">
-                0
-              </div>
+          </div>
+          <p class="dash-chart-caption"><span id="dash-chart-description">Produção solar mensal (simulação)</span><strong id="dash-chart-total">771,49 kWh</strong></p>
+          <div class="dash-chart-box">
+            <div class="dash-chart-yaxis" aria-hidden="true"><span>400</span><span>300</span><span>200</span><span>100</span><span>0</span></div>
+            <div id="dash-chart" class="dash-chart-bars" role="img" aria-label="Gráfico ilustrativo de produção de energia"></div>
+          </div>
+          <div class="dash-chart-legend"><span class="dash-legend-square"></span> Dados simulados — sem integração com inversores</div>
+        </article>
+      </section>
+
+      <section class="dash-secondary-grid" aria-label="Status, alarmes e distribuição">
+        <article class="dash-card dash-status-card">
+          <div class="dash-card-head"><h2>Status das usinas</h2><span class="dash-data-note">Dados locais</span></div>
+          <div class="dash-status-layout">
+            <div class="dash-status-list">
+              <div class="dash-total-plants"><span>Instalações cadastradas</span><strong id="dash-total-plants">0</strong></div>
+              <div><span><i class="dash-dot online"></i> Online</span><strong id="count-online">0</strong></div>
+              <div><span><i class="dash-dot attention"></i> Atenção</span><strong id="count-attention">0</strong></div>
+              <div><span><i class="dash-dot offline"></i> Offline</span><strong id="count-offline">0</strong></div>
             </div>
-          </article>
-        </section>
-        <section class="grid overview-grid">
-          <article class="card map-card">
-            <h2>
-              Localização das usinas
-            </h2>
-            <div class="map-illustration">
-              <svg viewBox="0 0 700 240" aria-label="Mapa ilustrativo de Minas Gerais">
-                <path d="M110 25 185 14l43 24 67-6 44 24 54-5 39 30 62 3 39 31-12 40-45 14-30 38-57-10-35 19-43-18-44 4-28-24-59 1-24-31-48-8 15-45-20-35z" fill="#dff0e5" stroke="#94c7a3" stroke-width="3"/>
-                <text x="280" y="124" fill="#557460" font-size="18" font-weight="700">
-                  MINAS GERAIS
-                </text>
-                <g fill="#159447" stroke="#fff" stroke-width="3">
-                  <circle cx="175" cy="90" r="8"/>
-                  <circle cx="275" cy="68" r="8"/>
-                  <circle cx="335" cy="132" r="8"/>
-                  <circle cx="450" cy="92" r="8"/>
-                  <circle cx="520" cy="160" r="8"/>
-                </g>
-              </svg>
+            <div class="dash-status-ring" id="dash-status-ring" role="img" aria-label="Distribuição das usinas por status">
+              <div><strong id="dash-ring-total">0</strong><small>Usinas</small></div>
             </div>
-          </article>
-          <article class="card card-pad">
-            <h2>
-              Status das usinas
-            </h2>
-            <div class="status-list">
-              <div class="status-row online">
-                <span class="status-label online-text">
-                  ● Online
-                </span>
-                <strong class="status-count" id="count-online">
-                  0
-                </strong>
-              </div>
-              <div class="status-row attention">
-                <span class="status-label attention-text">
-                  ● Atenção
-                </span>
-                <strong class="status-count" id="count-attention">
-                  0
-                </strong>
-              </div>
-              <div class="status-row offline">
-                <span class="status-label offline-text">
-                  ● Offline
-                </span>
-                <strong class="status-count" id="count-offline">
-                  0
-                </strong>
-              </div>
-            </div>
-          </article>
-        </section>
-        <article class="card card-pad">
-          <h2>
-            Usinas recentes
-            <a class="inline-link" href="usinas.html">
-              Ver todas
-            </a>
-          </h2>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>
-                    Usina
-                  </th>
-                  <th>
-                    Localização
-                  </th>
-                  <th>
-                    Status
-                  </th>
-                  <th>
-                    Potência
-                  </th>
-                  <th>
-                    Inversores
-                  </th>
-                  <th>
-                    Ação
-                  </th>
-                </tr>
-              </thead>
-              <tbody id="recent-plants">
-              </tbody>
-            </table>
           </div>
         </article>
-      </main>
-    </div>
-    <div id="toast" class="toast" role="status" aria-live="polite">
-    </div>
-    <script src="sidebar.js"></script>
-  </body>
+
+        <article class="dash-card dash-alarms-card">
+          <div class="dash-card-head"><h2>Alarmes recentes</h2><a href="alarmes.html">Ver todos →</a></div>
+          <div id="dash-alarm-list" class="dash-alarm-list" aria-live="polite"></div>
+        </article>
+
+        <article class="dash-card dash-map-card">
+          <div class="dash-card-head"><h2>Distribuição das usinas</h2><a href="usinas.html">Ver usinas →</a></div>
+          <div class="dash-map-content">
+            <svg class="dash-brazil-map" viewBox="0 0 340 310" role="img" aria-label="Mapa esquemático do Brasil com pontos ilustrativos">
+              <path d="M177.1,295.0 175.1,290.9 178.3,287.5 174.1,282.6 151.2,268.7 146.5,269.5 164.2,252.7 175.1,245.8 175.2,240.1 171.6,235.9 168.1,237.3 170.5,225.0 162.5,224.5 159.7,213.0 144.3,211.1 144.8,201.3 142.6,197.3 144.9,195.9 147.4,183.0 145.7,178.5 141.8,176.5 142.1,169.5 128.3,169.2 125.6,160.8 127.7,160.7 125.8,151.3 98.5,141.9 90.6,135.5 91.1,122.5 81.7,123.7 70.0,131.5 53.7,131.5 54.2,120.6 48.3,124.8 41.9,124.6 39.2,120.8 34.4,120.4 35.9,117.3 29.0,106.4 30.9,102.1 35.2,100.0 36.8,90.3 51.9,82.9 58.4,83.2 61.8,60.4 57.5,53.7 57.5,48.5 63.0,48.0 63.2,45.3 59.0,44.5 58.9,40.0 72.9,40.2 75.3,37.7 78.7,44.2 84.0,47.2 89.6,46.7 105.3,36.6 98.8,34.4 98.1,25.1 94.9,23.2 107.2,25.3 122.5,19.8 124.2,15.0 129.6,16.3 128.7,19.5 132.8,23.9 129.6,32.6 132.0,39.5 136.4,42.9 148.6,38.4 158.2,39.3 158.4,34.3 180.2,37.1 189.4,22.5 191.9,22.2 197.7,38.7 201.5,39.9 201.7,44.8 196.3,50.8 198.5,52.9 211.2,54.1 211.5,61.3 216.9,56.5 237.9,63.5 241.4,67.7 240.3,71.7 248.6,69.5 262.6,73.3 273.3,73.0 293.1,87.0 304.8,89.4 307.4,91.6 311.0,105.1 308.2,117.0 282.7,146.2 278.4,180.7 274.9,193.2 267.6,202.6 266.4,210.0 260.6,213.1 258.9,217.4 239.8,220.2 218.2,231.2 212.1,238.3 209.3,258.4 177.1,295.0Z" fill="#e7edf6" stroke="#b8cce2" stroke-width="2.5" stroke-linejoin="round"/>
+              <g id="dash-map-points"></g>
+            </svg>
+            <div class="dash-map-stats">
+              <div><span>Total</span><strong id="dash-map-total">0</strong></div>
+              <div><span><i class="dash-dot online"></i> Online</span><strong id="dash-map-online">0</strong></div>
+              <div><span><i class="dash-dot attention"></i> Atenção</span><strong id="dash-map-attention">0</strong></div>
+              <div><span><i class="dash-dot offline"></i> Offline</span><strong id="dash-map-offline">0</strong></div>
+            </div>
+          </div>
+          <p class="dash-card-footnote">Mapa esquemático; posições aproximadas apenas para as usinas de exemplo.</p>
+        </article>
+      </section>
+
+      <section class="dash-card dash-table-card" aria-labelledby="dash-table-title">
+        <div class="dash-card-head"><h2 id="dash-table-title">Usinas recentes</h2><a href="usinas.html">Ver todas →</a></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Usina</th><th>Localização</th><th>Status</th><th>Potência</th><th>Inversores</th><th>Ação</th></tr></thead>
+            <tbody id="recent-plants"></tbody>
+          </table>
+        </div>
+      </section>
+      <footer class="dash-footer">SolarSystem • Painel demonstrativo • Dados de produção ilustrativos</footer>
+    </main>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="sidebar.js"></script>
+</body>
 </html>
