@@ -85,6 +85,27 @@ input:focus-visible {
 .login-logo span {
   color: #22ce69;
 }
+.create-account {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 18px;
+  border: 1px solid #22ce69;
+  border-radius: 9px;
+  background: #22ce69;
+  color: #0b274a;
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: background 0.18s ease;
+}
+.create-account:hover {
+  background: #55df8d;
+}
+
 /* Cartão central e fotografia */
 .login-main {
   width: 100%;
@@ -289,8 +310,7 @@ input:focus-visible {
   top: 5px;
   transform: rotate(-45deg);
 }
-.text-link,
-.create-account {
+.text-link {
   border: 0;
   background: transparent;
   padding: 0;
@@ -299,8 +319,7 @@ input:focus-visible {
   font-weight: 600;
   text-decoration: none;
 }
-.text-link:hover,
-.create-account:hover {
+.text-link:hover {
   text-decoration: underline;
 }
 .login-submit {
@@ -321,16 +340,6 @@ input:focus-visible {
 }
 .login-submit:active {
   transform: translateY(1px);
-}
-.login-bottom-links {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 15px;
-  margin-top: 17px;
-}
-.create-account {
-  color: #08a845;
 }
 
 /* Rodapé e mensagens */
@@ -422,9 +431,6 @@ input:focus-visible {
   }
   .login-options {
     margin-block: 0 14px;
-  }
-  .login-bottom-links {
-    margin-top: 12px;
   }
   .login-footer {
     gap: 6px;
@@ -523,6 +529,11 @@ input:focus-visible {
   }
 }
 @media (max-width: 420px) {
+  .create-account {
+    gap: 6px;
+    padding: 8px 10px;
+    font-size: 12px;
+  }
   .login-header-inner {
     gap: 8px;
   }
@@ -604,15 +615,11 @@ input:focus-visible {
     margin-bottom: 8px;
   }
   .login-options,
-  .login-submit,
-  .login-bottom-links {
+  .login-submit {
     grid-column: 1 / -1;
   }
   .login-options {
     margin-bottom: 8px;
-  }
-  .login-bottom-links {
-    margin-top: 8px;
   }
   .login-main {
     padding-block: 8px;
