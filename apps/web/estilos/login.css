@@ -1,20 +1,14 @@
 /* Tela de login do SolarSystem. */
-:root {
-  color-scheme: light; font-family: Arial, Helvetica, sans-serif; font-synthesis: none;
-  text-rendering: optimizeLegibility;
-}
-* { box-sizing: border-box; }
+:root { font-family: Arial, Helvetica, sans-serif; }
 html { min-width: 320px; }
 body {
-  margin: 0; min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column;
+  min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column;
   background: #edf4ff; color: #102449; position: relative; isolation: isolate;
 }
 body::before {
   content: ''; position: absolute; inset: 76px 0 0; z-index: -1; pointer-events: none;
   background: radial-gradient(ellipse 86% 48% at 45% 53%,rgba(255,255,255,.95),rgba(239,246,255,.40) 70%,transparent 100%), repeating-radial-gradient(ellipse 175% 115% at 50% 114%,transparent 0 150px,rgba(255,255,255,.55) 152px 154px,transparent 156px 205px), linear-gradient(125deg,#e5f0ff 0%,#f6f9fe 48%,#e7f0ff 100%);
 }
-button, input { font: inherit; }
-button { cursor: pointer; }
 button:focus-visible, input:focus-visible { outline: 3px solid #5bb0ff; outline-offset: 3px; }
 .icon-library { width: 0; height: 0; position: absolute; overflow: hidden; }
 .icon {
@@ -162,14 +156,12 @@ button:focus-visible, input:focus-visible { outline: 3px solid #5bb0ff; outline-
 .login-footer nav span { color: #a2b2c9; }
 .login-footer p { margin: 0; color: #7789a3; font-size: 12px; }
 .toast {
-  position: fixed; bottom: 22px; left: 50%; max-width: min(470px,calc(100vw - 28px));
-  transform: translate(-50%,12px); border-radius: 10px; padding: 13px 18px;
+  bottom: 22px; max-width: min(470px,calc(100vw - 28px));
+  border-radius: 10px; padding: 13px 18px;
   background: #0a2851; color: #fff; box-shadow: 0 12px 32px rgba(1,18,43,.26);
-  font-size: 13px; line-height: 1.45; text-align: center; opacity: 0; pointer-events: none;
+  font-size: 13px; line-height: 1.45; text-align: center;
   transition: opacity .2s ease,transform .2s ease; z-index: 100;
 }
-.toast.show { opacity: 1; transform: translate(-50%,0); }
-
 
 @media (max-width: 900px) {
   .login-header-inner { padding-inline: 24px; }
