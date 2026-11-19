@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="../estilos/login.css" />
     <script src="../scripts/app.js" defer></script>
     <script src="../scripts/login.js" defer></script>
+    <script src="../scripts/registration.js" defer></script>
   </head>
   <body class="login-page" data-page="login">
     <!-- Ícones locais sem dependência de bibliotecas externas. -->
@@ -47,7 +48,9 @@
         <button
           class="create-account"
           type="button"
-          data-demo-message="O cadastro de contas será disponibilizado após a implementação do back-end."
+          id="open-registration"
+          aria-haspopup="dialog"
+          aria-controls="registration-dialog"
         >
           <svg class="icon" aria-hidden="true"><use href="#i-user-plus" /></svg>
           <span>Criar conta</span>
@@ -138,6 +141,36 @@
     <footer class="login-footer">
       <p>© <span id="copyright-year">2026</span> SolarSystem. Todos os direitos reservados.</p>
     </footer>
+
+    <dialog id="registration-dialog" class="registration-dialog" aria-labelledby="registration-title">
+      <button id="close-registration" class="registration-close" type="button" aria-label="Fechar cadastro">×</button>
+      <h2 id="registration-title">Criar conta</h2>
+      <form id="registration-form" class="login-form">
+        <div class="form-field">
+          <label for="registration-name">Nome completo</label>
+          <div class="input-wrapper">
+            <input id="registration-name" name="name" autocomplete="name" minlength="2" maxlength="120" required autofocus />
+          </div>
+        </div>
+        <div class="form-field">
+          <label for="registration-email">E-mail</label>
+          <div class="input-wrapper">
+            <input id="registration-email" name="email" type="email" autocomplete="email" maxlength="254" required />
+          </div>
+        </div>
+        <div class="form-field">
+          <label for="registration-password">Senha</label>
+          <div class="input-wrapper password-wrapper">
+            <input id="registration-password" name="password" type="password" autocomplete="new-password" required />
+            <button id="registration-toggle-password" class="password-toggle" type="button" aria-label="Mostrar senha" aria-controls="registration-password" aria-pressed="false">
+              <svg class="icon" aria-hidden="true"><use href="#i-eye-off" /></svg>
+            </button>
+          </div>
+        </div>
+        <button class="login-submit" type="submit">Finalizar</button>
+      </form>
+      <p id="registration-message" class="registration-message" role="status" aria-live="polite" tabindex="-1" hidden></p>
+    </dialog>
 
     <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true"></div>
   </body>

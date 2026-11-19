@@ -110,6 +110,55 @@ input:focus-visible {
   background: #edf4ff;
 }
 
+/* Janela de cadastro sobre o login. */
+.registration-dialog {
+  width: min(400px, calc(100% - 32px));
+  max-height: calc(100dvh - 32px);
+  margin: auto;
+  padding: 28px;
+  overflow-y: auto;
+  border: 0;
+  border-radius: 18px;
+  color: #102449;
+  background: #fff;
+  box-shadow: 0 24px 70px rgba(0, 23, 60, 0.3);
+}
+.registration-dialog::backdrop {
+  background: rgba(4, 21, 43, 0.6);
+}
+.registration-dialog h2 {
+  margin: 0 30px 24px 0;
+  font-size: 25px;
+}
+.registration-dialog [hidden] {
+  display: none;
+}
+.registration-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 8px;
+  color: #223450;
+  background: transparent;
+  font-size: 28px;
+}
+.registration-close:hover {
+  background: #edf4ff;
+}
+.registration-dialog .input-wrapper input {
+  padding-left: 12px;
+  font-size: 16px;
+}
+.registration-message {
+  margin: 0;
+  color: #223450;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
 /* Cartão central e fotografia */
 .login-main {
   width: 100%;
