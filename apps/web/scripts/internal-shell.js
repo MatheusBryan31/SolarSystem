@@ -30,9 +30,9 @@
         <a class="dash-top-icon dash-settings-shortcut" href="configuracoes.html" aria-label="Configurações" title="Configurações">
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M9.5 9a2.6 2.6 0 0 1 5 1c0 1.6-2.5 2-2.5 3.2M12 17.5h.01"></path></svg>
         </a>
-        <a class="dash-user" href="configuracoes.html" title="Abrir configurações do sistema">
+        <button class="dash-user" id="open-user-profile" type="button" title="Informações do usuário" aria-label="Informações do usuário: Técnico" aria-haspopup="dialog" aria-controls="user-profile-dialog">
           <span class="dash-user-avatar" aria-hidden="true">T</span><span>Técnico</span>
-        </a>
+        </button>
         <a class="dash-sign-out" href="login.html">Sair</a>
       </div>
     </header>
