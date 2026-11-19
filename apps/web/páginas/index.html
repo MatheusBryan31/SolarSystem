@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="../estilos/dashboard.css" />
     <script src="../scripts/app.js" defer></script>
     <script src="../scripts/dashboard.js" defer></script>
+    <script src="../scripts/user-profile.js" defer></script>
   </head>
   <body class="dashboard-page" data-page="overview">
     <div class="app-shell">
@@ -68,10 +69,19 @@
               <path d="M9.5 9a2.6 2.6 0 0 1 5 1c0 1.6-2.5 2-2.5 3.2M12 17.5h.01"></path>
             </svg>
           </a>
-          <a class="dash-user" href="configuracoes.html" title="Abrir configurações do usuário">
+          <button
+            class="dash-user"
+            id="open-user-profile"
+            type="button"
+            title="Informações do usuário"
+            aria-label="Informações do usuário: Técnico"
+            aria-haspopup="dialog"
+            aria-controls="user-profile-dialog"
+          >
             <span class="dash-user-avatar" aria-hidden="true">T</span>
             <span>Técnico</span>
-          </a>
+          </button>
+          <a class="dash-sign-out" href="login.html">Sair</a>
         </div>
       </header>
 
@@ -307,6 +317,22 @@
         </footer>
       </main>
     </div>
+    <dialog id="user-profile-dialog" class="user-profile-dialog" aria-labelledby="user-profile-title">
+      <button
+        id="close-user-profile"
+        class="user-profile-close"
+        type="button"
+        aria-label="Fechar informações do usuário"
+        autofocus
+      >×</button>
+      <h2 id="user-profile-title">Informações do usuário</h2>
+      <dl class="user-profile-details">
+        <div><dt>Usuário</dt><dd>Técnico</dd></div>
+        <div><dt>E-mail</dt><dd>Não informado</dd></div>
+        <div><dt>Sistema</dt><dd>SolarSystem</dd></div>
+        <div><dt>Ambiente</dt><dd>Demonstração</dd></div>
+      </dl>
+    </dialog>
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
     <script src="../scripts/sidebar.js"></script>
   </body>

@@ -33,6 +33,7 @@
         <a class="dash-user" href="configuracoes.html" title="Abrir configurações do sistema">
           <span class="dash-user-avatar" aria-hidden="true">T</span><span>Técnico</span>
         </a>
+        <a class="dash-sign-out" href="login.html">Sair</a>
       </div>
     </header>
     <aside class="sidebar" id="sidebar-container" aria-label="Menu lateral"></aside>

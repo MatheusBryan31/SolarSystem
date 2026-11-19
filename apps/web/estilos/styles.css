@@ -1059,6 +1059,17 @@ tr:last-child td {
   padding: 5px 7px;
   white-space: nowrap;
 }
+/* Saída para o login em todas as telas do painel. */
+.dashboard-page .dash-sign-out {
+  flex: none;
+  padding: 8px;
+  color: #fff;
+  font-size: 13px;
+  border-radius: 8px;
+}
+.dashboard-page .dash-sign-out:hover {
+  background: #17395f;
+}
 .dashboard-page .dash-user-avatar {
   background: #7d91ad;
   color: #fff;
