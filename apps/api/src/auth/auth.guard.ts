@@ -1,0 +1,56 @@
+import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
+import { JwtService } from '@nestjs/jwt';
+import type { Request } from 'express';
+import { PrismaService } from '../prisma/prisma.service';
+import type { JwtPayload, UsuarioAutenticado } from './auth.types';
+import { IS_PUBLIC_KEY } from './public.decorator';
+
+@Injectable()
+export class AuthGuard implements CanActivate {
+  constructor(
+    private readonly jwt: JwtService,
+    private readonly reflector: Reflector,
+    private readonly prisma: PrismaService,
+  ) {}
+
+  async canActivate(ctx: ExecutionContext): Promise<boolean> {
+    // 1. A rota tem a etiqueta @Public()? Então passa direto.
+    const publica = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      ctx.getHandler(),
+      ctx.getClass(),
+    ]);
+    if (publica) return true;
+
+    // 2. Lê o cabeçalho "Authorization: Bearer <token>"
+    const req = ctx.switchToHttp().getRequest<Request & { user?: UsuarioAutenticado }>();
+    const [tipo, token] = req.headers.authorization?.split(' ') ?? [];
+    if (tipo !== 'Bearer' || !token) {
+      throw new UnauthorizedException('Faça login para continuar');
+    }
+
+    // 3. Confere a assinatura e a validade
+    let payload: JwtPayload;
+    try {
+      payload = await this.jwt.verifyAsync<JwtPayload>(token);
+    } catch {
+      throw new UnauthorizedException('Sessão inválida ou expirada');
+    }
+
+    // 4. Confere no banco: o usuário ainda existe e está ativo?
+    const usuario = await this.prisma.user.findUnique({ where: { id: payload.sub } });
+    if (!usuario || !usuario.active) {
+      throw new UnauthorizedException('Usuário inativo');
+    }
+
+    // 5. Anexa o usuário à requisição para o controller usar
+    req.user = {
+      id: usuario.id,
+      nome: usuario.name,
+      email: usuario.email,
+      role: usuario.role,
+      clientId: usuario.clientId,
+    };
+    return true;
+  }
+}
