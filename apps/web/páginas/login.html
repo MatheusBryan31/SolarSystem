@@ -143,33 +143,70 @@
     </footer>
 
     <dialog id="registration-dialog" class="registration-dialog" aria-labelledby="registration-title">
-      <button id="close-registration" class="registration-close" type="button" aria-label="Fechar cadastro">×</button>
+      <button id="close-registration" class="registration-close" type="button" aria-label="Fechar cadastro">
+        ×
+      </button>
       <h2 id="registration-title">Criar conta</h2>
       <form id="registration-form" class="login-form">
         <div class="form-field">
           <label for="registration-name">Nome completo</label>
           <div class="input-wrapper">
-            <input id="registration-name" name="name" autocomplete="name" minlength="2" maxlength="120" required autofocus />
+            <input
+              id="registration-name"
+              name="name"
+              autocomplete="name"
+              minlength="2"
+              maxlength="120"
+              required
+              autofocus
+            />
           </div>
         </div>
         <div class="form-field">
           <label for="registration-email">E-mail</label>
           <div class="input-wrapper">
-            <input id="registration-email" name="email" type="email" autocomplete="email" maxlength="254" required />
+            <input
+              id="registration-email"
+              name="email"
+              type="email"
+              autocomplete="email"
+              maxlength="254"
+              required
+            />
           </div>
         </div>
         <div class="form-field">
           <label for="registration-password">Senha</label>
           <div class="input-wrapper password-wrapper">
-            <input id="registration-password" name="password" type="password" autocomplete="new-password" required />
-            <button id="registration-toggle-password" class="password-toggle" type="button" aria-label="Mostrar senha" aria-controls="registration-password" aria-pressed="false">
+            <input
+              id="registration-password"
+              name="password"
+              type="password"
+              autocomplete="new-password"
+              required
+            />
+            <button
+              id="registration-toggle-password"
+              class="password-toggle"
+              type="button"
+              aria-label="Mostrar senha"
+              aria-controls="registration-password"
+              aria-pressed="false"
+            >
               <svg class="icon" aria-hidden="true"><use href="#i-eye-off" /></svg>
             </button>
           </div>
         </div>
         <button class="login-submit" type="submit">Finalizar</button>
       </form>
-      <p id="registration-message" class="registration-message" role="status" aria-live="polite" tabindex="-1" hidden></p>
+      <p
+        id="registration-message"
+        class="registration-message"
+        role="status"
+        aria-live="polite"
+        tabindex="-1"
+        hidden
+      ></p>
     </dialog>
 
     <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true"></div>

@@ -27,13 +27,13 @@ Foi escrito e testado no **Windows 10/11** com o PowerShell. Em Linux/macOS os c
 
 ## 1. Requisitos
 
-| Ferramenta | Versão | Para quê |
-| --- | --- | --- |
-| Node.js | 22.12 ou superior (veja `.nvmrc`) | Executa a API e as ferramentas do front-end |
-| npm | vem com o Node | Instala as bibliotecas |
-| Git | 2.40 ou superior | Controle de versão e download do projeto |
-| PostgreSQL | 17 | Banco de dados |
-| VS Code | atual | Editor (recomendado) |
+| Ferramenta | Versão                            | Para quê                                    |
+| ---------- | --------------------------------- | ------------------------------------------- |
+| Node.js    | 22.12 ou superior (veja `.nvmrc`) | Executa a API e as ferramentas do front-end |
+| npm        | vem com o Node                    | Instala as bibliotecas                      |
+| Git        | 2.40 ou superior                  | Controle de versão e download do projeto    |
+| PostgreSQL | 17                                | Banco de dados                              |
+| VS Code    | atual                             | Editor (recomendado)                        |
 
 Espaço em disco: ~1,5GB (ferramentas + dependências).
 
@@ -43,21 +43,21 @@ Espaço em disco: ~1,5GB (ferramentas + dependências).
 2. Instale com as opções padrão (inclui o npm e adiciona ao `PATH`).
 3. **Feche e abra** o terminal (ele só enxergo o `PATH` novo ao reabrir) e confira:
 
-    ```bash
-    node -v
-    npm -v
-    ```
+   ```bash
+   node -v
+   npm -v
+   ```
 
 ## 3. Git
 
 1. Baixe em <https://git-scm.com> e instale com as opções padrão.
 2. Configure sua identidade (aparece em cada commit):
 
-    ```bash
-    git config --global user.name "Seu Nome"
-    git config --global user.email "seu-email@exemplo.com"
-    git config --global init.defaultBranch main
-    ```
+   ```bash
+   git config --global user.name "Seu Nome"
+   git config --global user.email "seu-email@exemplo.com"
+   git config --global init.defaultBranch main
+   ```
 
 3. Confira: `git --version.`
 
@@ -67,8 +67,8 @@ Espaço em disco: ~1,5GB (ferramentas + dependências).
 
 1. Baixe o instalador da versão **17** em <https://www.postgresql.org/download/windows/>.
 2. Durante a instalação:
-    - defina e **anote** a senha do superusuário `postgres`;
-    - **anote a porta**. O padrão é `5432`, se já houver outro PostgreSQL na máquina ou outro sistema utilizando a porta, use outra (ex: `5433`) - ela será usada no `.env`.
+   - defina e **anote** a senha do superusuário `postgres`;
+   - **anote a porta**. O padrão é `5432`, se já houver outro PostgreSQL na máquina ou outro sistema utilizando a porta, use outra (ex: `5433`) - ela será usada no `.env`.
 3. O Stack Builder ao final pode ser cancelado.
 
 ### 4.2 Criar o usuário e o banco do sistema
@@ -121,7 +121,7 @@ npm install
 Esse comando:
 
 - Instala as bibliotecas de **todos** os apps (npm workspaces),
-nas versões exatas do `package-lock.json`;
+  nas versões exatas do `package-lock.json`;
 - Executa o `postinstall` da API, que **gera o Prisma Client** automaticamente.
 
 ## 8. Configurar as variáveis de ambiente
@@ -137,16 +137,16 @@ Copy-Item apps\api\.env.example apps\api\.env
 
 Abra `apps/api/.env` e preencha:
 
-| Variável | Obrigatória | Exemplo | Descrição |
-| --- | --- | --- | --- |
-| `NODE_ENV` | não | `development` | `development`, `test` ou `production` |
-| `PORT` | não | `3333` | Porta da API |
-| `DATABASE_URL` | **sim** | `postgresql://nome:SENHA@localhost:5433/solarsystem?schema=public` | Conexão com o banco |
-| `JWT_SECRET` | **sim** | (96 caracteres aleatórios) | Chave que assina os logins — mínimo 32 caracteres |
-| `JWT_EXPIRES_IN` | não | `28800` | Validade do login em segundos (28800 = 8 h) |
-| `WEB_ORIGIN` | não | `http://localhost:5173` | Endereço do front-end (CORS) |
-| `SEED_ADMIN_EMAIL` | só para o seed | `admin@empresa.com` | E-mail do primeiro administrador |
-| `SEED_ADMIN_PASSWORD` | só para o seed | (senha forte) | Senha inicial do primeiro administrador |
+| Variável              | Obrigatória    | Exemplo                                                            | Descrição                                         |
+| --------------------- | -------------- | ------------------------------------------------------------------ | ------------------------------------------------- |
+| `NODE_ENV`            | não            | `development`                                                      | `development`, `test` ou `production`             |
+| `PORT`                | não            | `3333`                                                             | Porta da API                                      |
+| `DATABASE_URL`        | **sim**        | `postgresql://nome:SENHA@localhost:5433/solarsystem?schema=public` | Conexão com o banco                               |
+| `JWT_SECRET`          | **sim**        | (96 caracteres aleatórios)                                         | Chave que assina os logins — mínimo 32 caracteres |
+| `JWT_EXPIRES_IN`      | não            | `28800`                                                            | Validade do login em segundos (28800 = 8 h)       |
+| `WEB_ORIGIN`          | não            | `http://localhost:5173`                                            | Endereço do front-end (CORS)                      |
+| `SEED_ADMIN_EMAIL`    | só para o seed | `admin@empresa.com`                                                | E-mail do primeiro administrador                  |
+| `SEED_ADMIN_PASSWORD` | só para o seed | (senha forte)                                                      | Senha inicial do primeiro administrador           |
 
 **Anatomia da `DATABASE_URL`:**
 `postgresql://usuario:senha@servidor:porta/banco?schema=public`
@@ -218,31 +218,31 @@ Ao terminar: `npm run format`, commit, `git push -u origin <branch>`, Pull Reque
 
 ## 14. Problemas comuns
 
-| Sintoma | Causa | Solução |
-| --- | --- | --- |
-| `git`/`node` "não é reconhecido como nome de cmdlet" | Terminal aberto antes da instalação, ou PowerShell de administrador sem o `PATH` do usuário | Feche e abra o terminal; use um PowerShell **normal** |
-| `autenticação do tipo senha falhou para o usuário` | Porta errada (há outro PostgreSQL na máquina) ou senha errada | Confira a porta na `DATABASE_URL`; teste no psql com `\c solarsystem bryan` |
-| `\c` diz que o banco/usuário não existe | Nome com maiúscula, ou ordem trocada | É `\c banco usuário`, tudo minúsculo |
-| psql mostra `-#` e não executa | Faltou o `;` no fim do comando | Digite `;` e Enter |
-| `Missing script: "..."` | Nome do script digitado errado, ou `package.json` do app incompleto | `npm run -w apps/api` lista os scripts existentes |
-| `Variáveis de ambiente inválidas` | `.env` ausente ou com valor inválido | Leia a lista exibida e corrija o `.env` |
-| `P3014` / erro ao criar *shadow database* | Usuário do banco sem permissão de criar bancos | `ALTER ROLE bryan CREATEDB;` (só em desenvolvimento) |
-| `@prisma/client did not initialize yet` | Prisma Client não gerado | `npm run db:generate -w apps/api` |
-| `Cannot find module './prisma/...'` | Arquivo `.ts` salvo fora de `apps/api/src/` | Todo código da API fica em `src/`; a pasta `apps/api/prisma/` é só do schema e das migrations |
-| `EADDRINUSE: address already in use :::3333` | A API já está rodando em outro terminal | Feche o outro terminal, ou mude `PORT` |
-| Avisos `LF will be replaced by CRLF` | Quebras de linha do Windows | Já tratado pelo `.gitattributes`; se surgir, `git add --renormalize .` |
-| Acentos estranhos no psql (`relaþ§es`) | Página de código do console | Rode `chcp 1252` antes do psql |
+| Sintoma                                              | Causa                                                                                       | Solução                                                                                       |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `git`/`node` "não é reconhecido como nome de cmdlet" | Terminal aberto antes da instalação, ou PowerShell de administrador sem o `PATH` do usuário | Feche e abra o terminal; use um PowerShell **normal**                                         |
+| `autenticação do tipo senha falhou para o usuário`   | Porta errada (há outro PostgreSQL na máquina) ou senha errada                               | Confira a porta na `DATABASE_URL`; teste no psql com `\c solarsystem bryan`                   |
+| `\c` diz que o banco/usuário não existe              | Nome com maiúscula, ou ordem trocada                                                        | É `\c banco usuário`, tudo minúsculo                                                          |
+| psql mostra `-#` e não executa                       | Faltou o `;` no fim do comando                                                              | Digite `;` e Enter                                                                            |
+| `Missing script: "..."`                              | Nome do script digitado errado, ou `package.json` do app incompleto                         | `npm run -w apps/api` lista os scripts existentes                                             |
+| `Variáveis de ambiente inválidas`                    | `.env` ausente ou com valor inválido                                                        | Leia a lista exibida e corrija o `.env`                                                       |
+| `P3014` / erro ao criar _shadow database_            | Usuário do banco sem permissão de criar bancos                                              | `ALTER ROLE bryan CREATEDB;` (só em desenvolvimento)                                          |
+| `@prisma/client did not initialize yet`              | Prisma Client não gerado                                                                    | `npm run db:generate -w apps/api`                                                             |
+| `Cannot find module './prisma/...'`                  | Arquivo `.ts` salvo fora de `apps/api/src/`                                                 | Todo código da API fica em `src/`; a pasta `apps/api/prisma/` é só do schema e das migrations |
+| `EADDRINUSE: address already in use :::3333`         | A API já está rodando em outro terminal                                                     | Feche o outro terminal, ou mude `PORT`                                                        |
+| Avisos `LF will be replaced by CRLF`                 | Quebras de linha do Windows                                                                 | Já tratado pelo `.gitattributes`; se surgir, `git add --renormalize .`                        |
+| Acentos estranhos no psql (`relaþ§es`)               | Página de código do console                                                                 | Rode `chcp 1252` antes do psql                                                                |
 
 ## 15. Referência de comandos
 
-| Comando | O que faz |
-| --- | --- |
-| `npm install` | Instala dependências de todos os apps |
-| `npm run start:dev -w apps/api` | API em modo desenvolvimento |
-| `npm run build -w apps/api` | Compila a API para `apps/api/dist` |
-| `npm run test -w apps/api` | Testes da API |
-| `npm run db:migrate -w apps/api -- --name x` | Cria e aplica uma migration (desenvolvimento) |
-| `npm run db:deploy -w apps/api` | Aplica migrations pendentes (produção/outra máquina) |
-| `npm run db:seed -w apps/api` | Cria o primeiro administrador |
-| `npm run db:studio -w apps/api` | Painel visual do banco |
-| `npm run format` | Formata todo o código com o Prettier |
+| Comando                                      | O que faz                                            |
+| -------------------------------------------- | ---------------------------------------------------- |
+| `npm install`                                | Instala dependências de todos os apps                |
+| `npm run start:dev -w apps/api`              | API em modo desenvolvimento                          |
+| `npm run build -w apps/api`                  | Compila a API para `apps/api/dist`                   |
+| `npm run test -w apps/api`                   | Testes da API                                        |
+| `npm run db:migrate -w apps/api -- --name x` | Cria e aplica uma migration (desenvolvimento)        |
+| `npm run db:deploy -w apps/api`              | Aplica migrations pendentes (produção/outra máquina) |
+| `npm run db:seed -w apps/api`                | Cria o primeiro administrador                        |
+| `npm run db:studio -w apps/api`              | Painel visual do banco                               |
+| `npm run format`                             | Formata todo o código com o Prettier                 |

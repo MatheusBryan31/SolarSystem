@@ -6,6 +6,7 @@ export const envSchema = z.object({
   PORT: z.coerce.number().int().positive().default(3333),
   DATABASE_URL: z.string().startsWith('postgresql://', 'DATABASE_URL deve começar com postgresql://'),
   JWT_SECRET: z.string().min(32, 'JWT_SECRET precisa ter pelo menos 32 caracteres'),
+  JWT_EXPIRES_IN: z.coerce.number().int().positive().default(28800),
   WEB_ORIGIN: z.string().default('http://localhost:5173'),
 });
 

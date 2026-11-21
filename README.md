@@ -62,49 +62,51 @@ npm install
 
 1. **Banco de dados** - no psql, como `postgres`:
 
-    ```sql
-    CREATE ROLE nome WITH LOGIN PASSWORD 'troque-esta-senha';
-    CREATE DATABASE solarsystem OWNER nome;
-    ALTER ROLE nome CREATEBD;
-    ```
+   ```sql
+   CREATE ROLE nome WITH LOGIN PASSWORD 'troque-esta-senha';
+   CREATE DATABASE solarsystem OWNER nome;
+   ALTER ROLE nome CREATEBD;
+   ```
 
 2. **Projeto:**
 
-    ```bash
-    git clone https://github.com/MatheusBryan31/SolarSystem.git
-    cd caminhodoexplorer
-    npm install
-    ```
+   ```bash
+   git clone https://github.com/MatheusBryan31/SolarSystem.git
+   cd caminhodoexplorer
+   npm install
+   ```
 
 3. **Configuração** - copie o modelo e preencha senha do banco, porta e `JWT_SECRET`:
 
-    ```bash
-    Copy-Item apps\api\.env.example apps\api\.env
-    ```
+   ```bash
+   Copy-Item apps\api\.env.example apps\api\.env
+   ```
 
 4. **Tabelas e primeiro administrador:**
 
-    ```bash
-    npm run db:deploy -w apps/api
-    npm run db:seed -w apps/api
+   ```bash
+   npm run db:deploy -w apps/api
+   npm run db:seed -w apps/api
+
+   ```
 
 5. **Rodar:**
 
-    ```bash
-    npm run start:dev -w apps/api
-    ```
+   ```bash
+   npm run start:dev -w apps/api
+   ```
 
-    Verifique em <http://localhost:3333/api/health>.
+   Verifique em <http://localhost:3333/api/health>.
 
 ### Scripts principais
 
-| Comando | Descrição |
-| --- | --- |
-| `npm run start:dev -w apps/api` | API em modo desenvolvimento |
-| `npm run test -w apps/api` | Testes da API |
+| Comando                                      | Descrição                        |
+| -------------------------------------------- | -------------------------------- |
+| `npm run start:dev -w apps/api`              | API em modo desenvolvimento      |
+| `npm run test -w apps/api`                   | Testes da API                    |
 | `npm run db:migrate -w apps/api -- --name x` | Nova migration (desenvolvimento) |
-| `npm run db:studio -w apps/api` | Painel visual do banco |
-| `npm run format` | Formata o código |
+| `npm run db:studio -w apps/api`              | Painel visual do banco           |
+| `npm run format`                             | Formata o código                 |
 
 ## Roteiro
 
@@ -115,12 +117,6 @@ npm install
 - [ ] Front-end
 - [ ] Testes e CI
 - [ ] Publicação
-
-
-
-
-
-
 
 ?## Documentação
 
