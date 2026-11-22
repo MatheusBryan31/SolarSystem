@@ -52,3 +52,10 @@ O SolarSystem precisa:
 ## Plano de saída
 
 Se a coleta crescer demais, o módulo `sync` pode virar um processo separado (_worker_) lendo a mesma fila do PostgreSQL. Como os módulos já são independentes, a separação não exige reescrever o sistema.
+
+## Atualização: agendamento da coleta
+
+A coleta automática usa `setInterval` dentro da própria API (`SyncScheduler`), com trava contra
+sobreposição de ciclos. Motivo: o sistema roda em **uma** instância, e isso evita uma dependência
+a mais. Limitação conhecida: com várias instâncias, cada uma coletaria em paralelo. Plano de saída:
+migrar para o pg-boss (fila no próprio PostgreSQL), que garante uma execução por ciclo.

@@ -41,6 +41,7 @@ model User {
   client Client? @relation(fields: [clientId], references: [id], onDelete: SetNull)
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
+  acknowledgedAlerts Alert[] // alertas que este usuário reconheceu
 
   @@index([clientId])
   @@map("users")
@@ -71,6 +72,7 @@ model Integration {
   lastError   String?      @map("last_error")
   createdAt   DateTime     @default(now()) @map("created_at")
   updatedAt   DateTime     @updatedAt @map("updated_at")
+  alerts Alert[]
 
   plants Plant[]
 
@@ -97,8 +99,51 @@ model Plant {
 
   integration Integration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
   client      Client?     @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  alerts      Alert[]
 
   @@unique([integrationId, externalId]) // a mesma usina nunca entra duas vezes
   @@index([clientId])
   @@map("plants")
+}
+// O que aconteceu
+enum AlertType {
+  PLANT_OFFLINE // usina parou de enviar dados
+  PLANT_FAULT // inversor reportou falha
+  SYNC_FAILED // não conseguimos falar com a plataforma
+}
+
+// Quão grave é
+enum AlertSeverity {
+  WARNING
+  CRITICAL
+}
+
+// Ciclo de vida: aberto -> reconhecido (alguém assumiu) -> resolvido (a condição sumiu)
+enum AlertStatus {
+  OPEN
+  ACKNOWLEDGED
+  RESOLVED
+}
+
+model Alert {
+  id               String        @id @default(uuid())
+  type             AlertType
+  severity         AlertSeverity
+  status           AlertStatus   @default(OPEN)
+  message          String
+  plantId          String?       @map("plant_id") // alertas de usina
+  integrationId    String?       @map("integration_id") // alertas de integração
+  acknowledgedById String?       @map("acknowledged_by_id")
+  openedAt         DateTime      @default(now()) @map("opened_at")
+  acknowledgedAt   DateTime?     @map("acknowledged_at")
+  resolvedAt       DateTime?     @map("resolved_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
+
+  plant          Plant?       @relation(fields: [plantId], references: [id], onDelete: Cascade)
+  integration    Integration? @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+  acknowledgedBy User?        @relation(fields: [acknowledgedById], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([plantId, type, status]) // acelera a pergunta "já existe alerta aberto disto?"
+  @@map("alerts")
 }
