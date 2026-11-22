@@ -25,6 +25,7 @@ model Client {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   users User[] // Um cliente pode ter vários usuários
+  plants Plant[]
 
   @@map("clients")
 }
@@ -43,4 +44,61 @@ model User {
 
   @@index([clientId])
   @@map("users")
+}
+
+// Plataformas de monitoramento suportadas (cada uma terá um adaptador)
+enum ProviderType {
+  DEMO
+}
+
+// Saúde de uma usina
+enum HealthStatus {
+  ONLINE
+  WARNING
+  FAULT
+  OFFLINE
+  UNKNOWN
+}
+
+// Uma conta numa plataforma (ex.: o login da empresa no portal do fabricante)
+model Integration {
+  id          String       @id @default(uuid())
+  provider    ProviderType
+  name        String
+  credentials Json         @default("{}") // dados de acesso à plataforma; nunca saem pela API
+  enabled     Boolean      @default(true)
+  lastSyncAt  DateTime?    @map("last_sync_at")
+  lastError   String?      @map("last_error")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+
+  plants Plant[]
+
+  @@map("integrations")
+}
+
+// Uma usina, como a plataforma a descreve + o vínculo com o nosso cliente
+model Plant {
+  id             String       @id @default(uuid())
+  integrationId  String       @map("integration_id")
+  externalId     String       @map("external_id") // o id da usina LÁ na plataforma
+  name           String
+  clientId       String?      @map("client_id")
+  capacityKwp    Float?       @map("capacity_kwp")
+  city           String?
+  state          String?
+  status         HealthStatus @default(UNKNOWN)
+  currentPowerKw Float?       @map("current_power_kw")
+  todayEnergyKwh Float?       @map("today_energy_kwh")
+  totalEnergyKwh Float?       @map("total_energy_kwh")
+  lastDataAt     DateTime?    @map("last_data_at")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+
+  integration Integration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+  client      Client?     @relation(fields: [clientId], references: [id], onDelete: SetNull)
+
+  @@unique([integrationId, externalId]) // a mesma usina nunca entra duas vezes
+  @@index([clientId])
+  @@map("plants")
 }
