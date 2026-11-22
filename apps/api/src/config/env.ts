@@ -8,6 +8,7 @@ export const envSchema = z.object({
   JWT_SECRET: z.string().min(32, 'JWT_SECRET precisa ter pelo menos 32 caracteres'),
   JWT_EXPIRES_IN: z.coerce.number().int().positive().default(28800),
   WEB_ORIGIN: z.string().default('http://localhost:5173'),
+  SYNC_INTERVAL_MIN: z.coerce.number().int().min(0).max(1440).default(10), // De quantos em quantos minutos a coleta automática roda (0 = desligada)
 });
 
 // O TypeScript deduz o tipo a partir do contrato: não precisamos escrevê-lo duas vezes

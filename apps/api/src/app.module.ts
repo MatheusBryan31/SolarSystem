@@ -9,6 +9,7 @@ import { ClientsModule } from './clients/clients.module';
 import { UsersModule } from './users/users.module';
 import { IntegrationsModule } from './integrations/integrations.module';
 import { PlantsModule } from './plants/plants.module';
+import { AlertsModule } from './alerts/alerts.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { PlantsModule } from './plants/plants.module';
     UsersModule,
     IntegrationsModule,
     PlantsModule,
+    AlertsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
