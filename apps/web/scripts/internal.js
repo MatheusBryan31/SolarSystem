@@ -3,28 +3,10 @@
    Este arquivo adiciona filtros e visualizações sem requisitar serviços externos. */
 (() => {
   'use strict';
-  const $ = (id) => document.getElementById(id);
-  const allPlants = typeof plants !== 'undefined' && Array.isArray(plants) ? plants : [];
+  const $ = byId;
+  const allPlants = plants;
   const page = document.body.dataset.page;
-  const format = (number, digits = 0) =>
-    Number(number || 0).toLocaleString('pt-BR', {
-      minimumFractionDigits: digits,
-      maximumFractionDigits: digits,
-    });
-  const statusOfPlant = (plant) => {
-    const statuses = (plant.inverters || []).map((inv) => inv.status);
-    if (statuses.includes('Offline')) return 'Offline';
-    if (statuses.includes('Atenção')) return 'Atenção';
-    return 'Online';
-  };
   const normalize = (value) => String(value ?? '').toLocaleLowerCase('pt-BR');
-  const make = (tag, label, className) => {
-    const element = document.createElement(tag);
-    if (label !== undefined) element.textContent = String(label);
-    if (className) element.className = className;
-    return element;
-  };
-
   // Cabeçalho e navegação: compartilhados nas seis páginas internas.
   const icons = [
     '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>',
@@ -91,7 +73,7 @@
       matches.forEach((plant) => {
         const link = make('a', plant.name);
         link.href = `detalhes.html?id=${encodeURIComponent(plant.id)}`;
-        link.append(make('small', `${plant.city}/${plant.state} · ${statusOfPlant(plant)}`));
+        link.append(make('small', `${plant.city}/${plant.state} · ${statusOf(plant)}`));
         headerResults.append(link);
       });
     });
@@ -108,24 +90,19 @@
 
   const emptyRow = (colSpan, label) => {
     const tr = make('tr');
-    const td = make('td', label, 'empty-state');
-    td.colSpan = colSpan;
-    tr.append(td);
+    addCell(tr, label, 'empty-state').colSpan = colSpan;
     return tr;
   };
-  const td = (row, label) => {
-    const cell = make('td', label);
-    row.append(cell);
-    return cell;
-  };
-  const badgeFor = (status) =>
-    make(
-      'span',
-      status,
-      `badge ${status === 'Online' ? 'online' : status === 'Offline' ? 'offline' : 'attention'}`,
-    );
 
   if (page === 'plants') {
+    $('total-count').textContent = allPlants.length;
+    for (const [id, status] of [
+      ['online-count', 'Online'],
+      ['attention-count', 'Atenção'],
+      ['offline-count', 'Offline'],
+    ]) {
+      $(id).textContent = allPlants.filter((plant) => statusOf(plant) === status).length;
+    }
     const search = $('plant-search');
     const status = $('status-filter');
     const type = $('internal-type-filter');
@@ -137,7 +114,7 @@
         const searchable = [plant.name, ...(plant.inverters || []).map((inv) => inv.serial)].join(' ');
         return (
           normalize(searchable).includes(term) &&
-          (!status.value || statusOfPlant(plant) === status.value) &&
+          (!status.value || statusOf(plant) === status.value) &&
           (!type.value || plant.type === type.value) &&
           (!state.value || plant.state === state.value)
         );
@@ -146,7 +123,7 @@
       if (!matches.length) table.append(emptyRow(6, 'Nenhuma usina corresponde aos filtros.'));
       matches.forEach((plant) => {
         const row = make('tr');
-        const name = td(row, plant.name);
+        const name = addCell(row, plant.name);
         name.className = 'plant-name';
         name.append(
           make(
@@ -155,11 +132,11 @@
             'muted row-note',
           ),
         );
-        td(row, `${plant.city || '—'} / ${plant.state || '—'}`);
-        td(row).append(badgeFor(statusOfPlant(plant)));
-        td(row, `${format(plant.capacity)} kWp`);
-        td(row, String((plant.inverters || []).length));
-        const actions = td(row);
+        addCell(row, `${plant.city || '—'} / ${plant.state || '—'}`);
+        addBadge(addCell(row), statusOf(plant));
+        addCell(row, `${formatNumber(plant.capacity)} kWp`);
+        addCell(row, String((plant.inverters || []).length));
+        const actions = addCell(row);
         actions.className = 'internal-table-actions';
         const detail = make('a', 'Ver detalhes', 'internal-table-link');
         detail.href = `detalhes.html?id=${encodeURIComponent(plant.id)}`;
@@ -253,6 +230,11 @@
       const button = row.querySelector('[data-alarm]');
       if (button) button.classList.add('internal-action-button');
     });
+    const empty = emptyRow(
+      6,
+      rows.length ? 'Nenhum alarme corresponde aos filtros.' : 'Nenhum alarme registrado.',
+    );
+    $('alarm-rows').append(empty);
     const filter = () => {
       let shown = 0;
       rows.forEach((row) => {
@@ -269,6 +251,7 @@
         row.hidden = !matching;
         if (matching) shown++;
       });
+      empty.hidden = shown > 0;
       $('internal-alarms-count').textContent = `${shown} ocorrência(s) encontrada(s)`;
     };
     search.addEventListener('input', filter);
@@ -279,7 +262,6 @@
       status.value = '';
       filter();
     });
-    if (!rows.length) $('alarm-rows').append(emptyRow(6, 'Nenhum alarme registrado.'));
     filter();
   }
 
@@ -296,7 +278,7 @@
       const items =
         kind === 'producao'
           ? reportExamples.map((value, i) => ({ label: `Dia ${i + 1}`, value, units: 'kWh' }))
-          : allPlants.slice(0, 8).map((plant) => ({
+          : currentPlants.slice(0, 8).map((plant) => ({
               label: plant.name,
               value: kind === 'alarmes' ? (plant.alarms || []).length : Number(plant.capacity || 0),
               units: kind === 'alarmes' ? 'ocorrências' : 'kWp',
@@ -314,12 +296,11 @@
             ? 'Quantidade de alarmes do cadastro local.'
             : 'Potências cadastradas no navegador.';
       dataType.textContent = kind === 'producao' ? 'Simulação' : 'Dados cadastrados';
-      bars.setAttribute(
-        'aria-label',
-        `${title.textContent}. ${kind === 'producao' ? 'Dados simulados.' : 'Dados cadastrados.'}`,
-      );
+      if (kind !== 'producao' && currentPlants.length > 8)
+        note.textContent += ' Exibindo as primeiras oito usinas do filtro.';
+      bars.setAttribute('aria-label', title.textContent);
       if (!items.length) {
-        bars.append(make('p', 'Cadastre usinas para visualizar o gráfico.', 'internal-empty-chart'));
+        bars.append(make('p', 'Nenhuma usina para exibir.', 'internal-empty-chart'));
         return;
       }
       const max = Math.max(1, ...items.map((item) => item.value));
@@ -332,11 +313,7 @@
         track.append(fill);
         line.append(
           track,
-          make(
-            'strong',
-            `${format(item.value, kind === 'producao' ? 1 : 0)} ${item.units}`,
-            'internal-chart-value',
-          ),
+          make('strong', `${formatNumber(item.value)} ${item.units}`, 'internal-chart-value'),
         );
         bars.append(line);
       });
@@ -350,17 +327,14 @@
         drawChart(tab.dataset.reportTab);
       }),
     );
-    drawChart('capacidade');
     const filter = () => {
       const text = normalize($('internal-report-search').value.trim());
       const state = $('internal-report-state').value;
       currentPlants = allPlants.filter(
         (p) => normalize(`${p.name} ${p.city} ${p.state}`).includes(text) && (!state || p.state === state),
       );
-      // Tabela originalmente renderizada por app.js; apenas ocultamos os resultados não correspondentes.
-      const names = new Set(currentPlants.map((p) => p.name));
-      for (const row of $('report-rows').rows)
-        row.hidden = !names.has(row.cells[0]?.firstChild?.textContent?.trim());
+      fillPlantsTable($('report-rows'), currentPlants);
+      drawChart(tabs.find((tab) => tab.getAttribute('aria-pressed') === 'true').dataset.reportTab);
       $('internal-report-count').textContent = `${currentPlants.length} usina(s) encontrada(s)`;
     };
     $('internal-report-search').addEventListener('input', filter);
@@ -369,7 +343,7 @@
     const safeCSV = (value) => {
       let str = String(value ?? '');
       // Impede interpretação de fórmulas ao abrir o arquivo em planilhas.
-      if (/^[\s]*[=+@\-\t\r]/.test(str)) str = `'${str}`;
+      if (/^[\t\r\n]|^\s*[=+@-]/.test(str)) str = `'${str}`;
       return `"${str.replaceAll('"', '""')}"`;
     };
     $('internal-export-csv').addEventListener('click', () => {
@@ -378,7 +352,7 @@
         p.name,
         p.city,
         p.state,
-        statusOfPlant(p),
+        statusOf(p),
         Number(p.capacity || 0),
         (p.inverters || []).length,
       ]);

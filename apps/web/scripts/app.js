@@ -36,17 +36,9 @@ function badgeClass(status) {
 function addBadge(cell, status) {
   cell.append(make('span', status || 'Sem dados', badgeClass(status)));
 }
-function plantRow(plant, showSerial = false) {
+function plantRow(plant) {
   const row = make('tr');
-  const nameCell = addCell(row, plant.name, 'plant-name');
-  if (showSerial)
-    nameCell.append(
-      make(
-        'small',
-        (plant.inverters || []).map((item) => item.serial).join(', ') || 'Sem inversor',
-        'muted row-note',
-      ),
-    );
+  addCell(row, plant.name, 'plant-name');
   addCell(row, locationOf(plant));
   addBadge(addCell(row), statusOf(plant));
   addCell(row, `${formatNumber(plant.capacity)} kWp`);
@@ -57,7 +49,7 @@ function plantRow(plant, showSerial = false) {
   actionCell.append(link);
   return row;
 }
-function fillPlantsTable(table, data, showSerial = false) {
+function fillPlantsTable(table, data) {
   table.replaceChildren();
   if (!data.length) {
     const row = make('tr');
@@ -66,49 +58,7 @@ function fillPlantsTable(table, data, showSerial = false) {
     table.append(row);
     return;
   }
-  data.forEach((plant) => table.append(plantRow(plant, showSerial)));
-}
-
-function initOverview() {
-  const statusCounts = { Online: 0, Atenção: 0, Offline: 0 };
-  plants.forEach((plant) => statusCounts[statusOf(plant)]++);
-  byId('metric-plants').textContent = plants.length;
-  byId('metric-capacity').textContent =
-    `${formatNumber(plants.reduce((total, plant) => total + Number(plant.capacity || 0), 0))} kWp`;
-  byId('metric-alarms').textContent = plants.reduce(
-    (total, plant) => total + (plant.alarms || []).filter((alarm) => alarm.status === 'Aberto').length,
-    0,
-  );
-  byId('count-online').textContent = statusCounts.Online;
-  byId('count-attention').textContent = statusCounts['Atenção'];
-  byId('count-offline').textContent = statusCounts.Offline;
-  fillPlantsTable(byId('recent-plants'), plants.slice(0, 5));
-}
-
-function initPlants() {
-  const search = byId('plant-search');
-  const filter = byId('status-filter');
-  const table = byId('plant-rows');
-  function update() {
-    const query = search.value.trim().toLocaleLowerCase('pt-BR');
-    const selectedStatus = filter.value;
-    const matches = plants.filter((plant) => {
-      const serials = (plant.inverters || []).map((item) => item.serial).join(' ');
-      return (
-        `${plant.name} ${serials}`.toLocaleLowerCase('pt-BR').includes(query) &&
-        (!selectedStatus || statusOf(plant) === selectedStatus)
-      );
-    });
-    fillPlantsTable(table, matches, true);
-    byId('result-count').textContent = `${matches.length} usina(s)`;
-    byId('total-count').textContent = plants.length;
-    byId('online-count').textContent = plants.filter((plant) => statusOf(plant) === 'Online').length;
-    byId('attention-count').textContent = plants.filter((plant) => statusOf(plant) === 'Atenção').length;
-    byId('offline-count').textContent = plants.filter((plant) => statusOf(plant) === 'Offline').length;
-  }
-  search.addEventListener('input', update);
-  filter.addEventListener('change', update);
-  update();
+  data.forEach((plant) => table.append(plantRow(plant)));
 }
 
 function duplicateSerial(serial, except) {
@@ -368,7 +318,6 @@ function initReports() {
   byId('report-capacity').textContent =
     `${formatNumber(plants.reduce((total, plant) => total + Number(plant.capacity || 0), 0))} kWp`;
   byId('report-alarms').textContent = plants.reduce((total, plant) => total + (plant.alarms || []).length, 0);
-  fillPlantsTable(byId('report-rows'), plants);
 }
 function initSettings() {
   const categories = [...document.querySelectorAll('.settings-menu-item')];
@@ -392,8 +341,6 @@ function initSettings() {
 }
 
 const pages = {
-  overview: initOverview,
-  plants: initPlants,
   form: initForm,
   details: initDetails,
   alarms: initAlarms,

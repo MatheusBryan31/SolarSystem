@@ -3,39 +3,38 @@
 (() => {
   'use strict';
 
-  // O app.js atual usa o array global `plants` como fonte dos cadastros locais.
-  const dashboardPlants = typeof plants !== 'undefined' && Array.isArray(plants) ? plants : [];
-  const $ = (id) => document.getElementById(id);
+  const dashboardPlants = plants;
+  const $ = byId;
   const fmt = (value, decimals = 0) =>
     Number(value).toLocaleString('pt-BR', {
       minimumFractionDigits: decimals,
       maximumFractionDigits: decimals,
     });
-  const getStatus = (plant) => {
-    const statuses = (plant.inverters || []).map((item) => item.status);
-    if (statuses.includes('Offline')) return 'Offline';
-    if (statuses.includes('Atenção')) return 'Atenção';
-    return 'Online';
-  };
-
-  const counts = { Online: 0, Atenção: 0, Offline: 0 };
-  dashboardPlants.forEach((plant) => {
-    counts[getStatus(plant)] += 1;
-  });
   const total = dashboardPlants.length;
+  const counts = { Online: 0, Atenção: 0, Offline: 0, 'Sem dados': 0 };
+  dashboardPlants.forEach((plant) => counts[statusOf(plant)]++);
   const capacity = dashboardPlants.reduce((sum, plant) => sum + Number(plant.capacity || 0), 0);
   const openAlarms = dashboardPlants.flatMap((plant) =>
     (plant.alarms || []).filter((alarm) => alarm.status === 'Aberto').map((alarm) => ({ plant, alarm })),
   );
 
-  // Estes IDs já são atualizados pelo app.js. Os novos elementos complementam o painel.
+  $('metric-plants').textContent = total;
+  $('metric-capacity').textContent = `${formatNumber(capacity)} kWp`;
+  $('metric-alarms').textContent = openAlarms.length;
+  $('count-online').textContent = counts.Online;
+  $('count-attention').textContent = counts.Atenção;
+  $('count-offline').textContent = counts.Offline;
+  $('count-unknown').textContent = counts['Sem dados'];
+  fillPlantsTable($('recent-plants'), dashboardPlants.slice(0, 5));
   $('dash-total-plants').textContent = fmt(total);
   $('dash-ring-total').textContent = fmt(total);
-  $('dash-capacity-detail').textContent = `${fmt(capacity)} kWp`;
+  $('dash-capacity-detail').textContent = `${formatNumber(capacity)} kWp`;
   $('dash-map-total').textContent = fmt(total);
   $('dash-map-online').textContent = fmt(counts.Online);
   $('dash-map-attention').textContent = fmt(counts.Atenção);
   $('dash-map-offline').textContent = fmt(counts.Offline);
+
+  $('dash-map-unknown').textContent = counts['Sem dados'];
 
   const noticeCount = $('dash-notification-count');
   noticeCount.hidden = openAlarms.length === 0;
@@ -45,11 +44,12 @@
   if (total > 0) {
     const online = (counts.Online / total) * 100;
     const attention = ((counts.Online + counts.Atenção) / total) * 100;
-    statusRing.style.background = `conic-gradient(#13b450 0 ${online}%, #ffa916 ${online}% ${attention}%, #f23c4a ${attention}% 100%)`;
+    const offline = attention + (counts.Offline / total) * 100;
+    statusRing.style.background = `conic-gradient(#13b450 0 ${online}%, #ffa916 ${online}% ${attention}%, #f23c4a ${attention}% ${offline}%, #718299 ${offline}% 100%)`;
   }
   statusRing.setAttribute(
     'aria-label',
-    `${counts.Online} online, ${counts.Atenção} em atenção, ${counts.Offline} offline`,
+    `${counts.Online} online, ${counts.Atenção} em atenção, ${counts.Offline} offline, ${counts['Sem dados']} sem dados`,
   );
 
   // Lista de alarmes baseada somente no cadastro local (não há atualização ao vivo).
@@ -80,7 +80,7 @@
     });
   }
 
-  // Mapa ilustrativo: somente estas cidades dos dados de exemplo têm posições aproximadas.
+  // Apenas cidades de referência conhecidas têm posições aproximadas.
   // Outros cadastros continuam listados no painel, mas não recebem um marcador inventado.
   const cityPositions = {
     'Uberlândia-MG': [214, 188],
@@ -97,10 +97,10 @@
     dot.setAttribute('r', '7');
     dot.setAttribute(
       'class',
-      `dash-map-point ${getStatus(plant) === 'Atenção' ? 'attention' : getStatus(plant).toLowerCase()}`,
+      `dash-map-point ${statusOf(plant) === 'Atenção' ? 'attention' : statusOf(plant) === 'Sem dados' ? 'unknown' : statusOf(plant).toLowerCase()}`,
     );
     const tooltip = document.createElementNS(svgNamespace, 'title');
-    tooltip.textContent = `${plant.name} — ${plant.city}/${plant.state} — ${getStatus(plant)} (posição aproximada)`;
+    tooltip.textContent = `${plant.name} — ${plant.city}/${plant.state} — ${statusOf(plant)} (posição aproximada)`;
     dot.append(tooltip);
     $('dash-map-points').append(dot);
   });
@@ -136,6 +136,15 @@
     },
   };
 
+  for (const key of ['dia', 'mes', 'ano']) {
+    const { values, unit } = periods[key];
+    $(`energy-${key}`).textContent = `${fmt(
+      values.reduce((sum, value) => sum + value, 0),
+      2,
+    )} ${unit}`;
+  }
+  $('dash-energy-total').textContent = $('energy-mes').textContent;
+
   const renderChart = (periodKey) => {
     const period = periods[periodKey];
     if (!period) return;
@@ -170,6 +179,8 @@
       const label = document.createElement('span');
       label.className = 'dash-chart-label';
       label.textContent = period.values.length > 20 && index % 3 !== 0 ? '' : period.labels[index];
+      col.setAttribute('role', 'img');
+      col.setAttribute('aria-label', bar.title);
       area.append(bar);
       col.append(area, label);
       chart.append(col);
@@ -212,7 +223,7 @@
         link.href = `detalhes.html?id=${encodeURIComponent(plant.id)}`;
         link.textContent = plant.name;
         const extra = document.createElement('small');
-        extra.textContent = `${plant.city}/${plant.state} · ${getStatus(plant)}`;
+        extra.textContent = `${plant.city}/${plant.state} · ${statusOf(plant)}`;
         link.append(extra);
         searchResults.append(link);
       });

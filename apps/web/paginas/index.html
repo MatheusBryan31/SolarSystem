@@ -95,7 +95,7 @@
         hidden
       ></button>
 
-      <main class="main dash-main" id="conteudo">
+      <main class="main dash-main" id="conteudo" tabindex="-1">
         <div class="dash-heading-row">
           <div>
             <div class="dash-breadcrumb">
@@ -104,9 +104,6 @@
             <h1>Visão geral</h1>
             <p>Acompanhe o desempenho das suas usinas fotovoltaicas.</p>
           </div>
-          <span class="dash-demo-label" title="O sistema ainda utiliza dados locais e exemplos de produção">
-            <span aria-hidden="true">●</span> Ambiente demonstrativo
-          </span>
         </div>
 
         <section class="dash-kpi-grid" aria-label="Indicadores principais">
@@ -164,12 +161,14 @@
               </div>
             </div>
             <div class="dash-energy-breakdown">
-              <div class="dash-energy-chip sky"><span>Produção diária</span><strong>2,59 kWh</strong></div>
+              <div class="dash-energy-chip sky">
+                <span>Produção diária</span><strong id="energy-dia">2,59 kWh</strong>
+              </div>
               <div class="dash-energy-chip amber">
-                <span>Produção mensal</span><strong>771,49 kWh</strong>
+                <span>Produção mensal</span><strong id="energy-mes">771,49 kWh</strong>
               </div>
               <div class="dash-energy-chip lavender">
-                <span>Produção anual</span><strong>65,03 MWh</strong>
+                <span>Produção anual</span><strong id="energy-ano">65,03 MWh</strong>
               </div>
               <div class="dash-energy-chip mint"><span>Produção total</span><strong>399,22 MWh</strong></div>
             </div>
@@ -192,14 +191,14 @@
               <span id="dash-chart-description">Produção solar mensal (simulação)</span
               ><strong id="dash-chart-total">771,49 kWh</strong>
             </p>
-            <div class="dash-chart-box">
+            <div class="dash-chart-box" role="region" aria-label="Histórico de produção" tabindex="0">
               <div class="dash-chart-yaxis" aria-hidden="true">
                 <span>400</span><span>300</span><span>200</span><span>100</span><span>0</span>
               </div>
               <div
                 id="dash-chart"
                 class="dash-chart-bars"
-                role="img"
+                role="group"
                 aria-label="Gráfico ilustrativo de produção de energia"
               ></div>
             </div>
@@ -229,6 +228,9 @@
                 </div>
                 <div>
                   <span><i class="dash-dot offline"></i> Offline</span><strong id="count-offline">0</strong>
+                </div>
+                <div>
+                  <span><i class="dash-dot unknown"></i> Sem dados</span><strong id="count-unknown">0</strong>
                 </div>
               </div>
               <div
@@ -283,6 +285,10 @@
                 <div>
                   <span><i class="dash-dot offline"></i> Offline</span
                   ><strong id="dash-map-offline">0</strong>
+                </div>
+                <div>
+                  <span><i class="dash-dot unknown"></i> Sem dados</span
+                  ><strong id="dash-map-unknown">0</strong>
                 </div>
               </div>
             </div>

@@ -380,6 +380,9 @@
   border-radius: 50%;
   margin-right: 5px;
 }
+.dashboard-page .dash-dot.unknown {
+  background: #718299;
+}
 .dashboard-page .dash-dot.online {
   background: #13b450;
 }

@@ -1637,6 +1637,10 @@ tr:last-child td {
   color: #9e6709;
   background: #fff0d0;
 }
+.badge.unknown {
+  color: #42566d;
+  background: #e9eef4;
+}
 .internal-page .internal-table .badge.low {
   color: #476886;
   background: #eaf2fa;
