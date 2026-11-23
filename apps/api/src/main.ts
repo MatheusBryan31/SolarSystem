@@ -10,8 +10,9 @@ async function bootstrap() {
   const ambiente = config.getOrThrow<string>('NODE_ENV');
 
   app.setGlobalPrefix('api');
-  // Permite que o front-end (outro endereço) chame a API (veremos CORS na aula 15)
-  app.enableCors({ origin: config.getOrThrow<string>('WEB_ORIGIN') });
+  // Permite que um front-end em OUTRO endereço chame a API.
+  // credentials: true = esse front pode enviar o cookie de sessão junto.
+  app.enableCors({ origin: config.getOrThrow<string>('WEB_ORIGIN'), credentials: true });
 
   await app.listen(porta);
   console.log(`SolarSystem API em http://localhost:${porta}/api (${ambiente})`);
