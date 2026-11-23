@@ -5,7 +5,7 @@ O software "SolarSystem" centraliza o monitoramento de usinas fotovoltaicas de c
 > Construção do projeto
 > [Roteiro](#roteiro).
 
-## Funcionalidades (planejadas)
+## Funcionalidades planejadas para a plataforma
 
 - Coleta automática dos dados de várias plataformas (Sungrow, Growatt, Huawei, Deye/Solarman e GoodWe) em um só lugar
 - Painel com potência atual, energia gerada (dia, mês e total), economia estimada em R$ e CO₂ evitado
@@ -16,14 +16,45 @@ O software "SolarSystem" centraliza o monitoramento de usinas fotovoltaicas de c
 
 ## Tecnologias
 
-| Camada         | Tecnologia       |
-| -------------- | ---------------- |
-| Linguagem      | TypeScript       |
-| Back-end       | Node.js · NestJS |
-| Banco de dados | PostgreSQL       |
-| Front-end      | React · Vite     |
+| Camada           | Tecnologia                |
+| ---------------- | ------------------------- |
+| Linguagem da API | TypeScript                |
+| Back-end         | Node.js · NestJS          |
+| Banco de dados   | PostgreSQL                |
+| Front-end        | HTML5 · CSS3 · JavaScript |
 
-## Como rodar
+## Executar o front-end
+
+Na raiz do repositório, inicie um servidor estático com Python 3:
+
+```sh
+python -m http.server 5173 --bind 127.0.0.1 --directory apps/web
+```
+
+Abra [a tela de login](http://127.0.0.1:5173/paginas/login.html). No Windows com o Python Launcher, também funciona `py -m http.server 5173 --bind 127.0.0.1 --directory apps/web`. Para reencontrar os cadastros, use o mesmo navegador, endereço e porta.
+
+| Situação               | Recursos do front-end                                                                                                                                                                   |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Disponíveis localmente | Cadastro e edição de usinas e inversores, remoção de inversores, consulta e atualização de alarmes, pesquisa, filtros e exportação dos cadastros filtrados em CSV.                      |
+| Simulados              | Entrada com e-mail e senha fictícios, cadastro de conta, perfil de técnico, gráficos de produção e mapa esquemático. A simulação de login abre o painel sem autenticar ou criar sessão. |
+| Integração futura      | Autenticação pela API, recuperação de senha, contas reais, notificações e telemetria dos inversores no painel.                                                                          |
+
+Os cadastros ficam na chave `solaris.plants.v1`. A preferência “Lembrar e-mail” usa `solarsystem.rememberedEmail`. A senha é descartada. Na primeira visita, o painel exibe três usinas de exemplo. Em Configurações, a restauração acrescenta os exemplos ausentes, preservando os cadastros existentes. Dados ilegíveis bloqueiam gravações.
+
+### Testes do front-end
+
+Com Node.js 22.12+ e npm, instale as ferramentas isoladas de teste e execute a suíte:
+
+```sh
+cd apps/web/tests
+npm ci
+npx playwright install chromium
+npm test
+```
+
+Os testes iniciam um servidor temporário e usam um perfil de navegador isolado. Para usar o Edge instalado, defina `BROWSER_CHANNEL=msedge` (no PowerShell, `$env:BROWSER_CHANNEL = 'msedge'`) antes de executar os testes.
+
+## Executar a API
 
 ### Pré-requisitos
 
@@ -72,7 +103,7 @@ npm install
 
    ```bash
    git clone https://github.com/MatheusBryan31/SolarSystem.git
-   cd caminhodoexplorer
+   cd SolarSystem
    npm install
    ```
 
@@ -118,6 +149,6 @@ npm install
 - [ ] Testes e CI
 - [ ] Publicação
 
-?## Documentação
+## Documentação
 
 - [Decisões de arquitetura](docs/adr/)

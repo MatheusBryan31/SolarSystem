@@ -11,6 +11,8 @@ nas duas — por exemplo, um novo campo na usina precisa ser salvo pela API e
 exibido pelo painel. Precisávamos decidir se cada aplicação teria o seu próprio
 repositório (polyrepo) ou se ficariam juntas (monorepo).
 
+O painel entregue em `apps/web` usa HTML, CSS e JavaScript estáticos. React foi considerado no contexto original.
+
 ## Decisão
 
 Usar um único repositório (monorepo) com o recurso nativo de workspaces do npm.

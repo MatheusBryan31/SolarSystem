@@ -5,6 +5,8 @@ Foi escrito e testado no **Windows 10/11** com o PowerShell. Em Linux/macOS os c
 
 > Tempo estimado: 40-60 minutos na primeira vez.
 
+Para abrir apenas o painel HTML, siga as [instruções do front-end no README](../README.md#executar-o-front-end). As etapas de banco e API abaixo atendem ao ambiente de back-end.
+
 ## Sumário
 
 1. [Requisitos](#1-requisitos)

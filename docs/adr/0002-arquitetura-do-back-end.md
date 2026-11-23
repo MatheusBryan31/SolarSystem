@@ -27,6 +27,8 @@ O SolarSystem precisa:
 5. **API REST com JSON**
    - O front-end React (cliente-servidor) consumirá a API.
 
+O painel atual é estático e usa armazenamento local. O cliente React citado nesta decisão correspondia ao planejamento inicial.
+
 ## Alternativas consideradas
 
 - **Express:**
