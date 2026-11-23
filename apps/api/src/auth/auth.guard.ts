@@ -5,6 +5,7 @@ import type { Request } from 'express';
 import { PrismaService } from '../prisma/prisma.service';
 import type { JwtPayload, UsuarioAutenticado } from './auth.types';
 import { IS_PUBLIC_KEY } from './public.decorator';
+import { lerTokenDoCookie } from './sessao-cookie';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -22,10 +23,10 @@ export class AuthGuard implements CanActivate {
     ]);
     if (publica) return true;
 
-    // 2. Lê o cabeçalho "Authorization: Bearer <token>"
+    // 2. Lê o token do cookie httpOnly (o navegador o envia sozinho)
     const req = ctx.switchToHttp().getRequest<Request & { user?: UsuarioAutenticado }>();
-    const [tipo, token] = req.headers.authorization?.split(' ') ?? [];
-    if (tipo !== 'Bearer' || !token) {
+    const token = lerTokenDoCookie(req);
+    if (!token) {
       throw new UnauthorizedException('Faça login para continuar');
     }
 

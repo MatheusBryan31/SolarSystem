@@ -11,6 +11,39 @@ export interface Usuario {
 }
 
 export interface RespostaLogin {
-  accessToken: string;
-  usuario: Usuario;
+  usuario: Usuario; // o token não vem aqui: ele chega num cookie httpOnly
+}
+
+// Toda listagem da API vem nesse envelope
+export interface Pagina<T> {
+  itens: T[];
+  total: number;
+  pagina: number;
+  porPagina: number;
+}
+
+export type StatusUsina = 'ONLINE' | 'WARNING' | 'FAULT' | 'OFFLINE' | 'UNKNOWN';
+
+export interface Usina {
+  id: string;
+  name: string;
+  city: string | null;
+  state: string | null;
+  status: StatusUsina;
+  capacityKwp: number | null;
+  currentPowerKw: number | null;
+  todayEnergyKwh: number | null;
+  totalEnergyKwh: number | null;
+  lastDataAt: string | null; // datas chegam como texto (JSON não tem tipo Date)
+  client: { id: string; name: string } | null;
+}
+
+export interface Alerta {
+  id: string;
+  type: 'PLANT_OFFLINE' | 'PLANT_FAULT' | 'SYNC_FAILED';
+  severity: 'WARNING' | 'CRITICAL';
+  status: 'OPEN' | 'ACKNOWLEDGED' | 'RESOLVED';
+  message: string;
+  openedAt: string;
+  plant: { id: string; name: string } | null;
 }

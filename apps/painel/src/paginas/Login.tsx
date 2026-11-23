@@ -1,10 +1,19 @@
 import { useState, type FormEvent } from 'react';
 import { useAuth } from '../auth';
+import { Icone, type NomeIcone } from '../componentes/Icone';
+import { Logo } from '../componentes/Logo';
+
+const destaques: { icone: NomeIcone; texto: string }[] = [
+  { icone: 'plug', texto: 'Várias plataformas de inversores em um só lugar' },
+  { icone: 'alerta', texto: 'Alertas automáticos quando uma usina para' },
+  { icone: 'escudo', texto: 'Acesso por perfil: cada cliente vê só o que é dele' },
+];
 
 export function Login() {
   const { entrar } = useAuth();
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
+  const [mostrarSenha, setMostrarSenha] = useState(false);
   const [erro, setErro] = useState('');
   const [enviando, setEnviando] = useState(false);
 
@@ -22,47 +31,71 @@ export function Login() {
 
   return (
     <div className="login">
-      <aside className="login-marca">
-        <div className="logo">
-          <span className="logo-sol" aria-hidden="true" />
-          <span>
-            Solar<b>System</b>
-          </span>
-        </div>
+      <section className="login-hero">
+        <Logo tamanho={34} />
         <div>
-          <h1>Todas as suas usinas solares em um só painel.</h1>
-          <p>
-            Geração, alertas e clientes de várias plataformas de inversores, reunidos e atualizados sozinhos.
-          </p>
+          <span className="selo">
+            <Icone nome="sol" tamanho={16} /> Monitoramento fotovoltaico
+          </span>
+          <h1>
+            Energia solar sob controle, <em>em tempo real.</em>
+          </h1>
+          <p>Geração, alertas e clientes de todas as suas usinas, reunidos e atualizados automaticamente.</p>
+          <ul className="destaques">
+            {destaques.map((d) => (
+              <li key={d.icone}>
+                <span>
+                  <Icone nome={d.icone} tamanho={18} />
+                </span>
+                {d.texto}
+              </li>
+            ))}
+          </ul>
         </div>
-        <small>Vale do Jequitinhonha · MG</small>
-      </aside>
+        <small>© {new Date().getFullYear()} SolarSystem · Vale do Jequitinhonha, MG</small>
+      </section>
 
-      <main className="login-area">
-        <form className="cartao login-form" onSubmit={enviar}>
-          <h2>Entrar</h2>
-          <p className="sutil">Use o e-mail e a senha cadastrados pelo administrador.</p>
+      <main className="login-lado">
+        <form className="login-cartao" onSubmit={enviar}>
+          <h2>Bem-vindo de volta</h2>
+          <p className="sutil">Entre para acompanhar suas usinas.</p>
 
           <label>
             E-mail
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              autoComplete="username"
-              required
-              autoFocus
-            />
+            <span className="campo">
+              <Icone nome="email" tamanho={18} />
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="voce@empresa.com"
+                autoComplete="username"
+                required
+                autoFocus
+              />
+            </span>
           </label>
           <label>
             Senha
-            <input
-              type="password"
-              value={senha}
-              onChange={(e) => setSenha(e.target.value)}
-              autoComplete="current-password"
-              required
-            />
+            <span className="campo">
+              <Icone nome="cadeado" tamanho={18} />
+              <input
+                type={mostrarSenha ? 'text' : 'password'}
+                value={senha}
+                onChange={(e) => setSenha(e.target.value)}
+                placeholder="Sua senha"
+                autoComplete="current-password"
+                required
+              />
+              <button
+                type="button"
+                className="campo-botao"
+                onClick={() => setMostrarSenha(!mostrarSenha)}
+                aria-label={mostrarSenha ? 'Ocultar senha' : 'Mostrar senha'}
+              >
+                <Icone nome={mostrarSenha ? 'olhoFechado' : 'olho'} tamanho={18} />
+              </button>
+            </span>
           </label>
 
           {erro && (
@@ -72,8 +105,12 @@ export function Login() {
           )}
 
           <button className="botao" type="submit" disabled={enviando}>
-            {enviando ? 'Entrando...' : 'Entrar'}
+            {enviando ? 'Entrando...' : 'Entrar'} <Icone nome="seta" tamanho={18} />
           </button>
+
+          <p className="seguranca">
+            <Icone nome="escudo" tamanho={16} /> Sessão protegida por cookie httpOnly
+          </p>
         </form>
       </main>
     </div>
