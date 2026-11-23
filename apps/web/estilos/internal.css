@@ -13,7 +13,7 @@
 }
 .internal-page .internal-step {
   border-radius: 9px;
-  color: #0878ed;
+  color: var(--dash-action);
   background: white;
   font-weight: 800;
   padding: 7px;
@@ -51,7 +51,7 @@
   color: #153152;
 }
 .internal-page .internal-section-heading p {
-  color: #8394aa;
+  color: var(--dash-muted);
   font-size: 12px;
   margin: 0;
 }
@@ -168,13 +168,10 @@
   font-size: 13px;
 }
 .internal-page .internal-subtle {
-  color: #8ca1b6;
+  color: var(--dash-muted);
   font-size: 11px;
 }
 
-.internal-page .detail-panel[hidden] {
-  display: none !important;
-}
 .internal-page .internal-two-col {
   display: grid;
   grid-template-columns: 1.55fr 1fr;
@@ -188,7 +185,7 @@
 }
 .internal-page .internal-chart-foot {
   margin: 0;
-  color: #92a3b7;
+  color: var(--dash-muted);
   font-size: 11px;
 }
 .internal-page .internal-detail-list {
@@ -206,7 +203,7 @@
   border: 0;
 }
 .internal-page .internal-detail-list dt {
-  color: #6c829b;
+  color: var(--dash-muted);
   font-size: 12px;
 }
 .internal-page .internal-detail-list dd {
@@ -302,14 +299,14 @@
 }
 .internal-page .settings-menu-item:hover,
 .internal-page .settings-menu-item.active {
-  color: #0b6ed4;
+  color: var(--dash-action);
   background: #e7f1ff;
 }
 .internal-page .settings-content {
   min-width: 0;
 }
 .internal-page .settings-content .internal-section {
-  scroll-margin-top: 88px;
+  scroll-margin-top: calc(var(--mobile-header-height, 64px) + 24px);
 }
 .internal-page .settings-row {
   display: flex;
@@ -337,7 +334,7 @@
   align-items: center;
   gap: 9px;
   font-size: 11px;
-  color: #7188a5;
+  color: var(--dash-muted);
 }
 .internal-page .settings-colors span {
   border: 1px solid #d0dbe9;
@@ -347,7 +344,7 @@
   display: inline-block;
 }
 .internal-page .settings-explanation {
-  color: #647d9b;
+  color: var(--dash-muted);
   font-size: 13px;
   line-height: 1.75;
   margin: 8px 0 16px;

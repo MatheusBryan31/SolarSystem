@@ -788,7 +788,6 @@ tr:last-child td {
   .brand-name {
     font-size: 21px;
   }
-  .nav,
   .profile {
     display: none;
   }
@@ -867,7 +866,9 @@ tr:last-child td {
   --dash-surface: #ffffff;
   --dash-bg: #f2f6fc;
   --dash-ink: #102341;
-  --dash-muted: #687c95;
+  --dash-muted: #526880;
+  --dash-amber-text: #855b13;
+  --dash-action: #0868cf;
   --dash-border: #dae4f1;
   --dash-shadow: 0 4px 17px rgba(15, 46, 91, 0.07);
 }
@@ -895,6 +896,20 @@ tr:last-child td {
 .dashboard-page input:focus-visible {
   outline: 3px solid #5bb0ff;
   outline-offset: 2px;
+}
+
+.dashboard-page .skip-link {
+  position: fixed;
+  top: 6px;
+  left: 12px;
+  z-index: 25;
+  padding: 8px 12px;
+  color: #fff;
+  background: var(--dash-navy);
+  transform: translateY(-150%);
+}
+.dashboard-page .skip-link:focus {
+  transform: none;
 }
 
 /* Cabeçalho fixo — Alinha a marca e os atalhos no topo do painel. */
@@ -986,6 +1001,8 @@ tr:last-child td {
   border-radius: 9px;
   padding: 5px;
   z-index: 22;
+  max-height: 50dvh;
+  overflow-y: auto;
 }
 .dashboard-page .dash-search-results[hidden] {
   display: none;
@@ -1184,7 +1201,7 @@ tr:last-child td {
 }
 .dashboard-page .dash-breadcrumb {
   font-size: 12px;
-  color: #55779e;
+  color: var(--dash-muted);
   margin-bottom: 10px;
 }
 .dashboard-page .dash-breadcrumb span {
@@ -1233,7 +1250,7 @@ tr:last-child td {
 /* Rodapé do painel — Define o espaçamento e a aparência do texto ao final da página. */
 .dashboard-page .dash-footer {
   text-align: center;
-  color: #9aa9bd;
+  color: var(--dash-muted);
   margin-top: 22px;
   font-size: 11px;
 }
@@ -1266,6 +1283,7 @@ tr:last-child td {
     width: 250px;
     height: auto;
     padding: 25px 13px 17px;
+    overflow-y: auto;
     transform: translateX(-110%);
     transition: transform 0.2s ease;
     z-index: 19;
@@ -1298,20 +1316,28 @@ tr:last-child td {
 }
 
 @media (max-width: 620px) {
+  .dashboard-page {
+    --mobile-header-height: 102px;
+  }
   .dashboard-page .dash-topbar {
-    height: 60px;
+    height: var(--mobile-header-height);
+    padding-bottom: 44px;
   }
   .dashboard-page .sidebar {
-    top: 60px;
+    top: var(--mobile-header-height);
   }
   .dashboard-page .dash-menu-backdrop:not([hidden]) {
-    top: 60px;
+    top: var(--mobile-header-height);
   }
   .dashboard-page .main.dash-main {
-    margin-top: 60px;
+    margin-top: var(--mobile-header-height);
   }
   .dashboard-page .dash-search-wrap {
-    display: none;
+    position: absolute;
+    left: 13px;
+    right: 13px;
+    bottom: 8px;
+    width: auto;
   }
   .dashboard-page .dash-settings-shortcut {
     display: none;
@@ -1333,7 +1359,7 @@ tr:last-child td {
   .dashboard-page .dash-top-actions {
     gap: 0;
   }
-  .dashboard-page .dash-user {
+  .dashboard-page .dash-top-icon[href='cadastro.html'] {
     display: none;
   }
 }
@@ -1349,7 +1375,7 @@ tr:last-child td {
   max-width: none;
 }
 .internal-page .dash-breadcrumb a {
-  color: #55779e;
+  color: var(--dash-muted);
 }
 .internal-page .dash-breadcrumb a:hover {
   color: var(--internal-blue);
@@ -1388,9 +1414,9 @@ tr:last-child td {
     transform 0.15s ease;
 }
 .internal-page .internal-button.button-primary {
-  background: #0878ed;
+  background: var(--dash-action);
   color: #fff;
-  border-color: #0878ed;
+  border-color: var(--dash-action);
   box-shadow: 0 3px 9px rgba(8, 120, 237, 0.18);
 }
 .internal-page .internal-button.button-primary:hover {
@@ -1448,7 +1474,7 @@ tr:last-child td {
 }
 .internal-page .internal-kpi-icon.blue {
   background: #e7f2ff;
-  color: #0878ed;
+  color: var(--dash-action);
 }
 .internal-page .internal-kpi-icon.green {
   background: #e6f8ec;
@@ -1480,7 +1506,7 @@ tr:last-child td {
 }
 .internal-page .internal-kpi small {
   font-size: 10px;
-  color: #8b9ab0;
+  color: var(--dash-muted);
 }
 
 /* Seções e títulos de cartões — Alinha o título, a descrição, as ações e a etiqueta de demonstração. */
@@ -1502,7 +1528,7 @@ tr:last-child td {
   font-weight: 750;
 }
 .internal-page .internal-card-title p {
-  color: #7389a4;
+  color: var(--dash-muted);
   font-size: 12px;
   line-height: 1.5;
   margin: 0;
@@ -1515,7 +1541,7 @@ tr:last-child td {
   align-items: center;
   padding: 6px 9px;
   border-radius: 6px;
-  color: #996b15;
+  color: var(--dash-amber-text);
   background: #fff4de;
   font-size: 11px;
   font-weight: 600;
@@ -1616,7 +1642,7 @@ tr:last-child td {
   font-weight: 700;
 }
 .internal-page .internal-table .row-note {
-  color: #8c9cb0;
+  color: var(--dash-muted);
   max-width: 300px;
   overflow-wrap: anywhere;
 }
@@ -1634,7 +1660,7 @@ tr:last-child td {
   background: #ffe5e7;
 }
 .internal-page .internal-table .badge.attention {
-  color: #9e6709;
+  color: var(--dash-amber-text);
   background: #fff0d0;
 }
 .badge.unknown {
@@ -1649,7 +1675,7 @@ tr:last-child td {
   white-space: nowrap;
 }
 .internal-page .internal-table-link {
-  color: #0878ed;
+  color: var(--dash-action);
   font-size: 12px;
   font-weight: 700;
   text-decoration: none;
@@ -1663,13 +1689,13 @@ tr:last-child td {
   font-size: 12px;
 }
 .internal-page .internal-table-edit:hover {
-  color: #0878ed;
+  color: var(--dash-action);
   text-decoration: underline;
 }
 .internal-page .internal-table .table-action,
 .internal-page .internal-action-button {
   padding: 7px 12px;
-  color: #0878ed;
+  color: var(--dash-action);
   font-size: 12px;
   border-radius: 6px;
   border: 1px solid #bfd7f2;
@@ -1687,7 +1713,7 @@ tr:last-child td {
   justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
-  color: #8193ab;
+  color: var(--dash-muted);
   font-size: 11px;
   margin-top: 14px;
 }
@@ -1712,7 +1738,7 @@ tr:last-child td {
   font: inherit;
   padding: 13px 17px;
   font-size: 13px;
-  color: #5a7898;
+  color: var(--dash-muted);
   background: transparent;
   border: 0;
   border-bottom: 3px solid transparent;
@@ -1722,7 +1748,7 @@ tr:last-child td {
 
 .internal-page .internal-tabs .tab:hover,
 .internal-page .internal-tabs .internal-report-tab:hover {
-  color: #0878ed;
+  color: var(--dash-action);
 }
 
 .internal-page .internal-tabs .tab.active,

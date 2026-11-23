@@ -36,10 +36,6 @@
 
   $('dash-map-unknown').textContent = counts['Sem dados'];
 
-  const noticeCount = $('dash-notification-count');
-  noticeCount.hidden = openAlarms.length === 0;
-  noticeCount.textContent = openAlarms.length > 99 ? '99+' : String(openAlarms.length);
-
   const statusRing = $('dash-status-ring');
   if (total > 0) {
     const online = (counts.Online / total) * 100;
@@ -196,77 +192,4 @@
     .querySelectorAll('[data-period]')
     .forEach((button) => button.addEventListener('click', () => renderChart(button.dataset.period)));
   renderChart('mes');
-
-  // Busca local sem envio de dados a serviços externos.
-  const searchInput = $('dash-search');
-  const searchResults = $('dash-search-results');
-  searchInput.addEventListener('input', () => {
-    const value = searchInput.value.trim().toLocaleLowerCase('pt-BR');
-    searchResults.replaceChildren();
-    searchResults.hidden = !value;
-    if (!value) return;
-    const matches = dashboardPlants
-      .filter((plant) =>
-        `${plant.name} ${plant.city} ${plant.state} ${(plant.inverters || []).map((item) => item.serial || '').join(' ')}`
-          .toLocaleLowerCase('pt-BR')
-          .includes(value),
-      )
-      .slice(0, 6);
-    if (matches.length === 0) {
-      const empty = document.createElement('div');
-      empty.className = 'dash-search-empty';
-      empty.textContent = 'Nenhuma usina encontrada.';
-      searchResults.append(empty);
-    } else {
-      matches.forEach((plant) => {
-        const link = document.createElement('a');
-        link.href = `detalhes.html?id=${encodeURIComponent(plant.id)}`;
-        link.textContent = plant.name;
-        const extra = document.createElement('small');
-        extra.textContent = `${plant.city}/${plant.state} · ${statusOf(plant)}`;
-        link.append(extra);
-        searchResults.append(link);
-      });
-    }
-  });
-  document.addEventListener('click', (event) => {
-    if (!event.target.closest('.dash-search-wrap')) searchResults.hidden = true;
-  });
-  searchInput.addEventListener('focus', () => {
-    if (searchInput.value.trim()) searchResults.hidden = false;
-  });
-
-  // Ícones SVG inseridos apenas no menu do dashboard, sem modificar sidebar.js.
-  const iconMarkup = [
-    '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>',
-    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21V7l7-4v18M10 12l5-4v13M15 11l6-3v13M2 21h20M6 10h1M6 14h1M6 18h1"/></svg>',
-    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.5 3.5 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.5 3.5a1.7 1.7 0 0 0-3 0ZM12 9v5M12 17h.01"/></svg>',
-    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V12h4v8M10 20V4h4v16M16 20v-9h4v9M2 20h20"/></svg>',
-    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 14 5l3-.5.7 3 3 1.5-1 3 1 3-3 1.5-.7 3-3-.5-2 2-2-2-3 .5-.7-3-3-1.5 1-3-1-3 3-1.5.7-3 3 .5z"/><circle cx="12" cy="12" r="3"/></svg>',
-  ];
-  document.querySelectorAll('#sidebar-container .nav a').forEach((link, i) => {
-    if (!iconMarkup[i]) return;
-    const icon = document.createElement('span');
-    icon.className = 'dash-side-icon';
-    // HTML fixo, definido no próprio código; nenhuma entrada de usuário é interpolada.
-    icon.innerHTML = iconMarkup[i];
-    link.prepend(icon);
-  });
-
-  // Abertura acessível do menu no celular.
-  const toggle = $('dash-menu-button');
-  const backdrop = $('dash-menu-backdrop');
-  const setMenuOpen = (open) => {
-    document.body.classList.toggle('menu-open', open);
-    toggle.setAttribute('aria-expanded', String(open));
-    toggle.setAttribute('aria-label', open ? 'Fechar menu' : 'Abrir menu');
-    backdrop.hidden = !open;
-  };
-  toggle.addEventListener('click', () => setMenuOpen(!document.body.classList.contains('menu-open')));
-  backdrop.addEventListener('click', () => setMenuOpen(false));
-  document.addEventListener('keydown', (event) => {
-    if (event.key !== 'Escape') return;
-    setMenuOpen(false);
-    searchResults.hidden = true;
-  });
 })();

@@ -6,6 +6,7 @@
   if (!anchor) return;
   const template = document.createElement('template');
   template.innerHTML = `
+    <a href="#conteudo" class="skip-link">Ir para o conteúdo</a>
     <header class="dash-topbar">
       <div class="dash-brand-group">
         <button class="dash-menu-button" id="dash-menu-button" type="button" aria-label="Abrir menu" aria-controls="sidebar-container" aria-expanded="false">☰</button>
