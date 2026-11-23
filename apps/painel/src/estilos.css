@@ -1,0 +1,255 @@
+/* ===== Cores e medidas do painel (mude aqui e muda em tudo) ===== */
+:root {
+  --fundo: #f4f6fa;
+  --superficie: #ffffff;
+  --borda: #e3e8f0;
+  --texto: #142033;
+  --texto-sutil: #5d6b82;
+  --marca: #0b2545; /* azul-noite do menu */
+  --marca-2: #13315c;
+  --sol: #f5a524; /* âmbar solar: ações e destaques */
+  --sol-escuro: #d98a06;
+  --perigo: #d64545;
+  --sucesso: #1f9d63;
+  --raio: 12px;
+  --sombra: 0 1px 2px rgb(16 24 40 / 6%), 0 4px 16px rgb(16 24 40 / 6%);
+  font-family: 'Inter', system-ui, sans-serif;
+  color: var(--texto);
+  background: var(--fundo);
+}
+
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+}
+h1,
+h2 {
+  margin: 0 0 8px;
+  letter-spacing: -0.02em;
+}
+.sutil {
+  color: var(--texto-sutil);
+  margin: 0;
+  font-size: 14px;
+}
+.tela-cheia {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  color: var(--texto-sutil);
+}
+
+/* ===== Peças reutilizáveis ===== */
+.cartao {
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  box-shadow: var(--sombra);
+  padding: 24px;
+}
+.botao {
+  background: var(--sol);
+  color: #1d1300;
+  border: 0;
+  border-radius: 8px;
+  padding: 11px 16px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.botao:hover {
+  background: var(--sol-escuro);
+}
+.botao:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+.botao-secundario {
+  background: transparent;
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  padding: 8px 14px;
+  font: inherit;
+  color: var(--texto);
+  cursor: pointer;
+}
+.botao-secundario:hover {
+  background: var(--fundo);
+}
+label {
+  display: grid;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 500;
+}
+input {
+  font: inherit;
+  padding: 10px 12px;
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  background: var(--superficie);
+}
+input:focus {
+  outline: 2px solid var(--sol);
+  outline-offset: 1px;
+}
+.erro {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #fdecec;
+  color: var(--perigo);
+  font-size: 14px;
+}
+
+/* ===== Logo ===== */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 20px;
+  color: #fff;
+}
+.logo b {
+  color: var(--sol);
+}
+.logo-sol {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffd56b 0 45%, var(--sol) 46% 100%);
+  box-shadow: 0 0 16px rgb(245 165 36 / 60%);
+}
+
+/* ===== Tela de login ===== */
+.login {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+.login-marca {
+  background: linear-gradient(160deg, var(--marca) 0%, var(--marca-2) 100%);
+  color: #c9d6ea;
+  padding: 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.login-marca h1 {
+  color: #fff;
+  font-size: 34px;
+  max-width: 440px;
+}
+.login-marca p {
+  max-width: 420px;
+  line-height: 1.6;
+}
+.login-area {
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+.login-form {
+  width: 100%;
+  max-width: 380px;
+  display: grid;
+  gap: 16px;
+}
+@media (max-width: 800px) {
+  .login {
+    grid-template-columns: 1fr;
+  }
+  .login-marca {
+    padding: 24px;
+    gap: 24px;
+  }
+  .login-marca h1 {
+    font-size: 24px;
+  }
+}
+
+/* ===== Estrutura interna: menu + conteúdo ===== */
+.app {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 240px 1fr;
+}
+.menu {
+  background: var(--marca);
+  padding: 20px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.menu .logo {
+  padding: 0 12px 20px;
+}
+.menu a {
+  color: #c9d6ea;
+  text-decoration: none;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-weight: 500;
+}
+.menu a:hover {
+  background: var(--marca-2);
+  color: #fff;
+}
+.menu a.active {
+  background: rgb(245 165 36 / 15%);
+  color: var(--sol);
+}
+.conteudo {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 28px;
+  background: var(--superficie);
+  border-bottom: 1px solid var(--borda);
+}
+.quem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.quem div {
+  display: grid;
+}
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--marca);
+  color: var(--sol);
+  font-weight: 700;
+}
+.pagina {
+  padding: 28px;
+}
+@media (max-width: 800px) {
+  .app {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr; /* menu só com a altura necessária */
+  }
+  .menu {
+    flex-direction: row;
+    align-items: center;
+    overflow-x: auto;
+  }
+  .menu .logo {
+    padding: 0 12px 0 4px;
+  }
+  .topo,
+  .pagina {
+    padding: 14px 16px;
+  }
+}
