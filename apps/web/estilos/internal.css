@@ -411,3 +411,8 @@
     font-size: 19px;
   }
 }
+
+.inverter-form {
+  display: grid;
+  gap: 14px;
+}

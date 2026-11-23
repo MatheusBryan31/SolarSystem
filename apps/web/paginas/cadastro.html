@@ -7,6 +7,7 @@
     <title>Cadastrar usina | SolarSystem</title>
     <link rel="stylesheet" href="../estilos/styles.css" />
     <link rel="stylesheet" href="../estilos/internal.css" />
+    <script src="../scripts/plant-store.js" defer></script>
     <script src="../scripts/app.js" defer></script>
     <script src="../scripts/internal.js" defer></script>
     <script src="../scripts/user-profile.js" defer></script>
@@ -34,7 +35,7 @@
             somente neste navegador.</span
           >
         </div>
-        <form id="plant-form" class="internal-plant-form">
+        <form id="plant-form" method="dialog" class="internal-plant-form">
           <section class="dash-card internal-form-card">
             <div class="internal-section-heading">
               <span class="internal-section-icon">▦</span>
@@ -200,7 +201,7 @@
                 <span class="internal-section-icon">ϟ</span>
                 <div>
                   <h2>Inversor principal</h2>
-                  <p>Equipamento de monitoramento vinculado.</p>
+                  <p id="inverter-note">Equipamento de monitoramento vinculado.</p>
                 </div>
               </div>
               <div class="internal-form-grid narrow">

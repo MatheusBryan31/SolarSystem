@@ -1848,3 +1848,13 @@ tr:last-child td {
   font-size: 15px;
   overflow-wrap: anywhere;
 }
+
+.dashboard-page [hidden] {
+  display: none !important;
+}
+.storage-warning {
+  padding: 12px 16px;
+  border-left: 4px solid #a76800;
+  background: #fff3d9;
+  color: #603c00;
+}

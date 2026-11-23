@@ -7,6 +7,7 @@
     <title>Detalhes da usina | SolarSystem</title>
     <link rel="stylesheet" href="../estilos/styles.css" />
     <link rel="stylesheet" href="../estilos/internal.css" />
+    <script src="../scripts/plant-store.js" defer></script>
     <script src="../scripts/app.js" defer></script>
     <script src="../scripts/internal.js" defer></script>
     <script src="../scripts/user-profile.js" defer></script>
@@ -18,7 +19,7 @@
         <div class="dash-heading-row internal-heading">
           <div>
             <nav class="dash-breadcrumb" aria-label="Navegação estrutural">
-              <a href="index.html">Usinas</a><span aria-hidden="true">/</span
+              <a href="usinas.html">Usinas</a><span aria-hidden="true">/</span
               ><strong id="plant-title">Detalhes da usina</strong>
             </nav>
             <h1>Detalhes da usina</h1>
@@ -32,7 +33,7 @@
             <div>
               <div class="internal-detail-topline">
                 <h2 id="plant-heading">Detalhes da usina</h2>
-                <span id="plant-status" class="badge online">Online</span>
+                <span id="plant-status" class="badge unknown">Sem dados</span>
               </div>
               <p id="plant-location">Localização cadastrada</p>
               <span class="internal-subtle" id="internal-detail-client">Cliente: —</span>
@@ -40,12 +41,40 @@
           </div>
           <a class="internal-button button-light" id="edit-plant" href="cadastro.html">✎ Editar usina</a>
         </section>
-        <nav class="internal-tabs" aria-label="Seções da usina">
-          <button type="button" class="tab active" data-tab-target="painel">Visão geral</button
-          ><button type="button" class="tab" data-tab-target="dispositivos">Inversores</button
-          ><button type="button" class="tab" data-tab-target="alarmes">Alarmes</button>
-        </nav>
-        <section id="painel" class="detail-panel">
+        <div role="tablist" class="internal-tabs" aria-label="Seções da usina">
+          <button
+            type="button"
+            class="tab active"
+            role="tab"
+            id="tab-painel"
+            aria-controls="painel"
+            aria-selected="true"
+            data-tab-target="painel"
+          >
+            Visão geral</button
+          ><button
+            type="button"
+            class="tab"
+            role="tab"
+            id="tab-dispositivos"
+            aria-controls="dispositivos"
+            aria-selected="false"
+            data-tab-target="dispositivos"
+          >
+            Inversores</button
+          ><button
+            type="button"
+            class="tab"
+            role="tab"
+            id="tab-alarmes"
+            aria-controls="alarmes"
+            aria-selected="false"
+            data-tab-target="alarmes"
+          >
+            Alarmes
+          </button>
+        </div>
+        <section id="painel" role="tabpanel" aria-labelledby="tab-painel" tabindex="0" class="detail-panel">
           <section class="internal-kpis" aria-label="Dados da usina">
             <article class="dash-card internal-kpi">
               <span class="internal-kpi-icon blue">ϟ</span>
@@ -152,7 +181,14 @@
             </article>
           </div>
         </section>
-        <section id="dispositivos" class="detail-panel" hidden>
+        <section
+          id="dispositivos"
+          role="tabpanel"
+          aria-labelledby="tab-dispositivos"
+          tabindex="0"
+          class="detail-panel"
+          hidden
+        >
           <article class="dash-card internal-section">
             <div class="internal-card-title">
               <div>
@@ -179,7 +215,14 @@
             </div>
           </article>
         </section>
-        <section id="alarmes" class="detail-panel" hidden>
+        <section
+          id="alarmes"
+          role="tabpanel"
+          aria-labelledby="tab-alarmes"
+          tabindex="0"
+          class="detail-panel"
+          hidden
+        >
           <article class="dash-card internal-section">
             <div class="internal-card-title">
               <div>
@@ -209,6 +252,19 @@
         </footer>
       </main>
     </div>
+    <dialog id="inverter-dialog" class="user-profile-dialog" aria-labelledby="inverter-title">
+      <h2 id="inverter-title">Adicionar inversor</h2>
+      <form id="inverter-form" method="dialog" class="inverter-form">
+        <label class="internal-field">Marca<input name="brand" maxlength="100" required autofocus /></label>
+        <label class="internal-field">Modelo<input name="model" maxlength="100" required /></label>
+        <label class="internal-field">Número de série<input name="serial" maxlength="100" required /></label>
+        <p id="inverter-error" role="alert" hidden></p>
+        <div class="internal-table-actions">
+          <button class="internal-button button-light" type="button" id="cancel-inverter">Cancelar</button>
+          <button class="internal-button button-primary" type="submit">Salvar inversor</button>
+        </div>
+      </form>
+    </dialog>
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
     <script src="../scripts/internal-shell.js"></script>
     <script src="../scripts/sidebar.js"></script>

@@ -193,17 +193,31 @@
       $('internal-detail-alerts').textContent = String(
         (plant.alarms || []).filter((alarm) => alarm.status === 'Aberto').length,
       );
-    }
-    document.querySelectorAll('.detail-panel[hidden]').forEach((section) => {
-      section.style.display = 'none';
-    });
-    document.querySelectorAll('[data-tab-target]').forEach((tab) => {
-      tab.addEventListener('click', () => {
-        for (const section of document.querySelectorAll('.detail-panel')) {
-          section.style.display = section.id === tab.dataset.tabTarget ? '' : 'none';
+      const tabs = [...document.querySelectorAll('[data-tab-target]')];
+      function select(tab) {
+        for (const item of tabs) {
+          const active = item === tab;
+          item.tabIndex = active ? 0 : -1;
+          item.setAttribute('aria-selected', String(active));
+          item.classList.toggle('active', active);
+          $(item.dataset.tabTarget).hidden = !active;
         }
-      });
-    });
+      }
+      for (const [index, tab] of tabs.entries()) {
+        tab.addEventListener('click', () => select(tab));
+        tab.addEventListener('keydown', (event) => {
+          const target = { ArrowRight: index + 1, ArrowLeft: index - 1, Home: 0, End: tabs.length - 1 }[
+            event.key
+          ];
+          if (target === undefined) return;
+          event.preventDefault();
+          const next = tabs[(target + tabs.length) % tabs.length];
+          select(next);
+          next.focus();
+        });
+      }
+      select(tabs.find((tab) => '#' + tab.dataset.tabTarget === location.hash) || tabs[0]);
+    }
   }
 
   if (page === 'alarms') {

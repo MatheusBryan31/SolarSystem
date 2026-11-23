@@ -1,103 +1,4 @@
-const STORAGE_KEY = 'solaris.plants.v1';
-const examples = [
-  {
-    id: 'plant-1',
-    name: 'Fazenda Sol Nascente',
-    type: 'Solo',
-    city: 'Uberlândia',
-    state: 'MG',
-    capacity: 320,
-    tilt: 12,
-    nominal: 300,
-    startDate: '2023-03-15',
-    notes: '',
-    client: 'Energia Solar Ltda.',
-    email: 'contato@energiasolar.example',
-    cep: '38400-000',
-    street: 'Estrada Solar',
-    number: '1200',
-    complement: '',
-    inverters: [
-      { id: 'inv-1', brand: 'Huawei', model: 'SUN2000-100KTL', serial: 'SN-HW-001245', status: 'Online' },
-      { id: 'inv-2', brand: 'SMA', model: 'Sunny Tripower', serial: 'SN-SMA-004321', status: 'Online' },
-    ],
-    alarms: [
-      {
-        id: 'alarm-1',
-        severity: 'Baixa',
-        title: 'Comunicação intermitente',
-        description: 'Perda momentânea de comunicação com o inversor INV-03.',
-        date: 'Hoje, 13:47',
-        status: 'Aberto',
-      },
-    ],
-  },
-  {
-    id: 'plant-2',
-    name: 'Sítio Boa Vista',
-    type: 'Solo',
-    city: 'Montes Claros',
-    state: 'MG',
-    capacity: 180,
-    tilt: 10,
-    nominal: 160,
-    startDate: '2024-06-01',
-    notes: '',
-    client: 'João Pereira',
-    email: 'joao@example.com',
-    cep: '39400-000',
-    street: 'Estrada Boa Vista',
-    number: '45',
-    complement: '',
-    inverters: [
-      { id: 'inv-3', brand: 'Growatt', model: 'MAX 80KTL3', serial: 'SN-GR-000873', status: 'Atenção' },
-    ],
-    alarms: [
-      {
-        id: 'alarm-2',
-        severity: 'Média',
-        title: 'Temperatura elevada',
-        description: 'Temperatura acima do limite configurado.',
-        date: 'Hoje, 11:20',
-        status: 'Aberto',
-      },
-    ],
-  },
-  {
-    id: 'plant-3',
-    name: 'Usina Horizonte',
-    type: 'Solo',
-    city: 'Juiz de Fora',
-    state: 'MG',
-    capacity: 250,
-    tilt: 15,
-    nominal: 230,
-    startDate: '2022-11-10',
-    notes: '',
-    client: 'Horizonte Geração',
-    email: 'operacao@horizonte.example',
-    cep: '36000-000',
-    street: 'Rodovia MG-353',
-    number: '80',
-    complement: '',
-    inverters: [
-      { id: 'inv-4', brand: 'Huawei', model: 'SUN2000-100KTL', serial: 'SN-HW-002019', status: 'Offline' },
-    ],
-    alarms: [],
-  },
-];
-
-function loadPlants() {
-  try {
-    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    if (Array.isArray(stored)) return stored;
-  } catch {
-    /* Dados locais inválidos: iniciar com exemplos. */
-  }
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(examples));
-  return examples;
-}
-let plants = loadPlants();
+const plants = plantStore.plants;
 const page = document.body.dataset.page;
 const byId = (id) => document.getElementById(id);
 const make = (tag, text, className = '') => {
@@ -106,12 +7,11 @@ const make = (tag, text, className = '') => {
   element.className = className;
   return element;
 };
-const save = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(plants));
 const statusOf = (plant) => {
   const statuses = (plant.inverters || []).map((inverter) => inverter.status);
   if (statuses.includes('Offline')) return 'Offline';
   if (statuses.includes('Atenção')) return 'Atenção';
-  return 'Online';
+  return statuses.length && statuses.every((status) => status === 'Online') ? 'Online' : 'Sem dados';
 };
 const formatNumber = (value) => Number(value || 0).toLocaleString('pt-BR');
 const locationOf = (plant) => `${plant.city}, ${plant.state}`;
@@ -129,9 +29,12 @@ function addCell(row, text, className = '') {
   row.append(cell);
   return cell;
 }
+function badgeClass(status) {
+  const tones = { Online: 'online', Offline: 'offline', Atenção: 'attention' };
+  return 'badge ' + (tones[status] || 'unknown');
+}
 function addBadge(cell, status) {
-  const tone = status === 'Online' ? 'online' : status === 'Offline' ? 'offline' : 'attention';
-  cell.append(make('span', status, `badge ${tone}`));
+  cell.append(make('span', status || 'Sem dados', badgeClass(status)));
 }
 function plantRow(plant, showSerial = false) {
   const row = make('tr');
@@ -208,12 +111,42 @@ function initPlants() {
   update();
 }
 
+function duplicateSerial(serial, except) {
+  const key = serial.trim().toLowerCase();
+  return plants.some((plant) =>
+    plant.inverters.some((item) => item !== except && item.serial.trim().toLowerCase() === key),
+  );
+}
+
+function trimFields(form) {
+  for (const field of form.querySelectorAll('input:not([type]), input[type="text"], textarea')) {
+    field.value = field.value.trim();
+  }
+  return form.reportValidity();
+}
+
+function setFormValue(field, value) {
+  if (
+    field instanceof HTMLSelectElement &&
+    value &&
+    ![...field.options].some((option) => option.value === value)
+  ) {
+    field.add(new Option(value, value));
+  }
+  field.value = value;
+}
+
 function initForm() {
   const form = byId('plant-form');
   const id = new URLSearchParams(window.location.search).get('id');
   const original = id ? byPlantId(id) : null;
+  if (!plantStore.readable) {
+    form.querySelector('[type="submit"]').disabled = true;
+    return;
+  }
   if (id && !original) {
-    showToast('Não encontramos essa usina.');
+    byId('form-title').textContent = 'Usina não encontrada';
+    form.hidden = true;
     return;
   }
   if (original) {
@@ -221,33 +154,45 @@ function initForm() {
     form.querySelector('[type="submit"]').textContent = 'Salvar alterações';
     for (const [name, value] of Object.entries(original)) {
       const input = form.elements.namedItem(name);
-      if (input && typeof value !== 'object') input.value = value;
+      if (!input || typeof value === 'object') continue;
+      setFormValue(input, value);
     }
     const inverter = original.inverters?.[0] || {};
+    if (!original.inverters.length)
+      byId('inverter-note').textContent =
+        'Esta usina está sem inversores. Deixe os três campos em branco ou preencha todos para adicionar um.';
     ['brand', 'model', 'serial'].forEach((name) => {
-      form.elements.namedItem(name).value = inverter[name] || '';
+      const field = form.elements.namedItem(name);
+      if (!original.inverters.length) {
+        field.required = false;
+        field.labels[0].querySelector('.required').hidden = true;
+      }
+      setFormValue(field, inverter[name] || '');
     });
   }
-  form.addEventListener('submit', (event) => {
+  form.addEventListener('submit', async (event) => {
     event.preventDefault();
+    if (!trimFields(form)) return;
     const data = Object.fromEntries(new FormData(form).entries());
-    const serial = data.serial.trim().toLocaleLowerCase('pt-BR');
-    const duplicate = plants.some(
-      (plant) =>
-        plant.id !== original?.id &&
-        (plant.inverters || []).some((item) => item.serial.toLocaleLowerCase('pt-BR') === serial),
-    );
-    if (duplicate) {
+    const previous = original?.inverters[0];
+    const hasDevice = Boolean(data.brand || data.model || data.serial);
+    if (hasDevice && !(data.brand && data.model && data.serial)) {
+      showToast('Preencha marca, modelo e número de série do inversor.');
+      form.elements.namedItem(['brand', 'model', 'serial'].find((key) => !data[key])).focus();
+      return;
+    }
+    if (hasDevice && duplicateSerial(data.serial, previous)) {
       showToast('Já existe um inversor com esse número de série.');
       byId('serial').focus();
       return;
     }
     const inverter = {
-      id: original?.inverters?.[0]?.id || crypto.randomUUID(),
+      ...previous,
+      id: previous?.id || crypto.randomUUID(),
       brand: data.brand,
       model: data.model,
       serial: data.serial.trim(),
-      status: original?.inverters?.[0]?.status || 'Online',
+      status: previous?.status || 'Sem dados',
     };
     const plant = {
       ...original,
@@ -255,12 +200,14 @@ function initForm() {
       capacity: Number(data.capacity),
       tilt: Number(data.tilt),
       nominal: Number(data.nominal),
-      inverters: [inverter, ...(original?.inverters?.slice(1) || [])],
+      inverters: hasDevice ? [inverter, ...(original?.inverters.slice(1) || [])] : [],
       alarms: original?.alarms || [],
       id: original?.id || crypto.randomUUID(),
     };
-    plants = original ? plants.map((item) => (item.id === original.id ? plant : item)) : [plant, ...plants];
-    save();
+    const next = original
+      ? plants.map((item) => (item.id === original.id ? plant : item))
+      : [plant, ...plants];
+    if (!(await plantStore.save(next))) return;
     window.location.href = `detalhes.html?id=${encodeURIComponent(plant.id)}`;
   });
 }
@@ -269,15 +216,19 @@ function initDetails() {
   const id = new URLSearchParams(window.location.search).get('id') || plants[0]?.id;
   const plant = byPlantId(id);
   if (!plant) {
-    showToast('Cadastre uma usina para ver os detalhes.');
+    byId('plant-title').textContent = 'Usina não encontrada';
+    document.querySelector('.internal-heading h1').textContent = 'Usina não encontrada';
+    document.querySelector('.internal-heading p').textContent =
+      'Consulte a lista para escolher uma usina cadastrada.';
+    for (const section of document.querySelectorAll('.internal-plant-head, .internal-tabs, .detail-panel'))
+      section.hidden = true;
     return;
   }
   byId('plant-title').textContent = plant.name;
   byId('plant-heading').textContent = plant.name;
   byId('plant-location').textContent = locationOf(plant);
   byId('plant-status').textContent = statusOf(plant);
-  byId('plant-status').className =
-    `badge ${statusOf(plant) === 'Online' ? 'online' : statusOf(plant) === 'Offline' ? 'offline' : 'attention'}`;
+  byId('plant-status').className = badgeClass(statusOf(plant));
   byId('edit-plant').href = `cadastro.html?id=${encodeURIComponent(plant.id)}`;
   byId('capacity-value').textContent = `${formatNumber(plant.capacity)} kWp`;
   byId('capacity-side').textContent = `${formatNumber(plant.capacity)} kWp`;
@@ -297,7 +248,10 @@ function initDetails() {
     const button = make('button', 'Remover', 'table-action');
     button.type = 'button';
     button.dataset.removeInverter = inverter.id;
-    action.append(button);
+    const edit = make('button', 'Editar', 'table-action');
+    edit.type = 'button';
+    edit.dataset.editInverter = inverter.id;
+    action.append(edit, button);
     byId('device-rows').append(row);
   });
   plant.alarms.forEach((alarm) => {
@@ -308,43 +262,70 @@ function initDetails() {
     addCell(row, alarm.status);
     byId('detail-alarm-rows').append(row);
   });
-  document.querySelectorAll('[data-tab-target]').forEach((button) =>
-    button.addEventListener('click', () => {
-      document
-        .querySelectorAll('[data-tab-target]')
-        .forEach((tab) => tab.classList.toggle('active', tab === button));
-      document.querySelectorAll('.detail-panel').forEach((panel) => {
-        panel.hidden = panel.id !== button.dataset.tabTarget;
-      });
-    }),
-  );
-  byId('add-inverter').addEventListener('click', () => {
-    const serial = window.prompt('Número de série do inversor:');
-    if (!serial) return;
-    if (
-      plants.some((item) =>
-        item.inverters.some((device) => device.serial.toLowerCase() === serial.trim().toLowerCase()),
-      )
-    ) {
-      showToast('Esse número de série já está cadastrado.');
+  for (const [id, columns, label] of [
+    ['device-rows', 5, 'Nenhum inversor cadastrado.'],
+    ['detail-alarm-rows', 4, 'Nenhum alarme registrado.'],
+  ]) {
+    if (!byId(id).rows.length) addCell(byId(id).insertRow(), label, 'empty-state').colSpan = columns;
+  }
+
+  const dialog = byId('inverter-dialog');
+  const form = byId('inverter-form');
+  let editing;
+  function openDevice(device) {
+    editing = device;
+    byId('inverter-error').hidden = true;
+    byId('inverter-title').textContent = device ? 'Editar inversor' : 'Adicionar inversor';
+    for (const field of ['brand', 'model', 'serial']) form.elements[field].value = device?.[field] || '';
+    form.elements.serial.setCustomValidity('');
+    dialog.showModal();
+  }
+  async function saveDevices(inverters) {
+    const updated = { ...plant, inverters };
+    // Versões anteriores também gravavam os dados do primeiro inversor na usina.
+    for (const field of ['brand', 'model', 'serial']) {
+      if (Object.hasOwn(plant, field)) updated[field] = inverters[0]?.[field] || '';
+    }
+    const next = plants.map((item) => (item.id === plant.id ? updated : item));
+    if (await plantStore.save(next)) {
+      location.hash = 'dispositivos';
+      location.reload();
+    } else if (dialog.open) {
+      const error = byId('inverter-error');
+      error.hidden = false;
+      error.textContent = byId('storage-warning').textContent;
+    }
+  }
+  byId('add-inverter').addEventListener('click', () => openDevice());
+  byId('cancel-inverter').addEventListener('click', () => dialog.close());
+  form.elements.serial.addEventListener('input', () => form.elements.serial.setCustomValidity(''));
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (!trimFields(form)) return;
+    const values = Object.fromEntries(new FormData(form));
+    if (duplicateSerial(values.serial, editing)) {
+      form.elements.serial.setCustomValidity('Esse número de série já está cadastrado.');
+      form.elements.serial.reportValidity();
       return;
     }
-    plant.inverters.push({
-      id: crypto.randomUUID(),
-      brand: window.prompt('Marca:') || 'Outra',
-      model: window.prompt('Modelo:') || 'Não informado',
-      serial: serial.trim(),
-      status: 'Online',
-    });
-    save();
-    window.location.reload();
+    const device = { id: crypto.randomUUID(), status: 'Sem dados', ...editing, ...values };
+    await saveDevices(
+      editing
+        ? plant.inverters.map((item) => (item === editing ? device : item))
+        : [...plant.inverters, device],
+    );
   });
-  byId('device-rows').addEventListener('click', (event) => {
-    const button = event.target.closest('[data-remove-inverter]');
-    if (!button || !window.confirm('Remover este inversor?')) return;
-    plant.inverters = plant.inverters.filter((device) => device.id !== button.dataset.removeInverter);
-    save();
-    window.location.reload();
+  byId('device-rows').addEventListener('click', async (event) => {
+    const button = event.target.closest('button');
+    if (!button) return;
+    const device = plant.inverters.find(
+      (item) => item.id === (button.dataset.editInverter || button.dataset.removeInverter),
+    );
+    if (!device) return;
+    if (button.dataset.editInverter) openDevice(device);
+    else if (window.confirm(`Remover o inversor ${device.serial} desta usina?`)) {
+      await saveDevices(plant.inverters.filter((item) => item !== device));
+    }
   });
 }
 
@@ -361,20 +342,24 @@ function initAlarms() {
       const actionCell = addCell(row);
       const button = make('button', alarm.status === 'Resolvido' ? 'Reabrir' : 'Concluir', 'table-action');
       button.type = 'button';
-      button.dataset.alarm = `${plant.id}:${alarm.id}`;
+      button.dataset.plant = plant.id;
+      button.dataset.alarm = alarm.id;
       actionCell.append(button);
       table.append(row);
     }),
   );
-  table.addEventListener('click', (event) => {
+  table.addEventListener('click', async (event) => {
     const button = event.target.closest('[data-alarm]');
     if (!button) return;
-    const [plantId, alarmId] = button.dataset.alarm.split(':');
-    const alarm = byPlantId(plantId)?.alarms.find((item) => item.id === alarmId);
-    if (!alarm) return;
-    alarm.status = alarm.status === 'Resolvido' ? 'Aberto' : 'Resolvido';
-    save();
-    window.location.reload();
+    const plant = byPlantId(button.dataset.plant);
+    if (!plant) return;
+    const alarms = plant.alarms.map((alarm) =>
+      alarm.id === button.dataset.alarm
+        ? { ...alarm, status: alarm.status === 'Resolvido' ? 'Aberto' : 'Resolvido' }
+        : alarm,
+    );
+    const next = plants.map((item) => (item === plant ? { ...plant, alarms } : item));
+    if (await plantStore.save(next)) window.location.reload();
   });
 }
 
@@ -386,10 +371,23 @@ function initReports() {
   fillPlantsTable(byId('report-rows'), plants);
 }
 function initSettings() {
-  byId('reset-demo').addEventListener('click', () => {
-    if (!window.confirm('Restaurar os dados demonstrativos?')) return;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(examples));
-    window.location.reload();
+  const categories = [...document.querySelectorAll('.settings-menu-item')];
+  function markCategory() {
+    const selected = categories.find((link) => link.hash === location.hash) || categories[0];
+    for (const link of categories) {
+      link.classList.toggle('active', link === selected);
+      if (link === selected) link.setAttribute('aria-current', 'location');
+      else link.removeAttribute('aria-current');
+    }
+  }
+  window.addEventListener('hashchange', markCategory);
+  markCategory();
+  byId('reset-demo').addEventListener('click', async () => {
+    if (!plantStore.readable) return;
+    const missing = plantStore.missingExamples();
+    if (!missing.length) return showToast('Os exemplos já existem ou usam séries já cadastradas.');
+    if (!window.confirm(`Adicionar ${missing.length} usina(s) de exemplo aos cadastros atuais?`)) return;
+    if (await plantStore.save([...plants, ...missing])) window.location.reload();
   });
 }
 
