@@ -412,27 +412,6 @@ input:focus-visible {
   font-size: 13px;
   text-align: center;
 }
-.login-footer nav {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 12px 22px;
-}
-.login-footer nav button {
-  border: 0;
-  padding: 0;
-  color: #5b6f8a;
-  font-size: inherit;
-  background: transparent;
-}
-.login-footer nav button:hover {
-  text-decoration: underline;
-  color: #0878ed;
-}
-.login-footer nav span {
-  color: #a2b2c9;
-}
 .login-footer p {
   margin: 0;
   color: #52647e;

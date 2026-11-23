@@ -12,7 +12,6 @@
     <link rel="preload" as="image" href="../imgs/foto_login.jpeg" />
     <link rel="stylesheet" href="../estilos/styles.css" />
     <link rel="stylesheet" href="../estilos/login.css" />
-    <script src="../scripts/app.js" defer></script>
     <script src="../scripts/login.js" defer></script>
     <script src="../scripts/registration.js" defer></script>
   </head>
@@ -71,10 +70,10 @@
         <section class="login-content" aria-labelledby="login-title">
           <div class="login-intro">
             <h2 id="login-title">Acesse suas usinas</h2>
-            <p>Entre com seu e-mail e senha.</p>
+            <p>Demonstração local. Use e-mail e senha fictícios.</p>
           </div>
 
-          <form id="login-form" class="login-form">
+          <form id="login-form" class="login-form" method="dialog">
             <div class="form-field">
               <label for="login-email">E-mail</label>
               <div class="input-wrapper">
@@ -85,6 +84,7 @@
                   type="email"
                   placeholder="Seu e-mail"
                   autocomplete="username"
+                  maxlength="254"
                   inputmode="email"
                   required
                 />
@@ -98,6 +98,8 @@
                   id="login-password"
                   name="password"
                   type="password"
+                  pattern=".*\S.*"
+                  title="Inclua pelo menos um caractere diferente de espaço."
                   placeholder="Sua senha"
                   autocomplete="current-password"
                   required
@@ -132,7 +134,7 @@
               </button>
             </div>
 
-            <button class="login-submit" type="submit">Entrar</button>
+            <button class="login-submit" type="submit">Entrar na demonstração</button>
           </form>
         </section>
       </div>
@@ -146,8 +148,8 @@
       <button id="close-registration" class="registration-close" type="button" aria-label="Fechar cadastro">
         ×
       </button>
-      <h2 id="registration-title">Criar conta</h2>
-      <form id="registration-form" class="login-form">
+      <h2 id="registration-title">Simular cadastro</h2>
+      <form id="registration-form" class="login-form" method="dialog">
         <div class="form-field">
           <label for="registration-name">Nome completo</label>
           <div class="input-wrapper">
@@ -182,6 +184,8 @@
               id="registration-password"
               name="password"
               type="password"
+              pattern=".*\S.*"
+              title="Inclua pelo menos um caractere diferente de espaço."
               autocomplete="new-password"
               required
             />
@@ -197,7 +201,7 @@
             </button>
           </div>
         </div>
-        <button class="login-submit" type="submit">Finalizar</button>
+        <button class="login-submit" type="submit">Simular cadastro</button>
       </form>
       <p
         id="registration-message"

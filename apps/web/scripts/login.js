@@ -1,5 +1,3 @@
-/* SolarSystem — interações exclusivas da tela de login.
-   A navegação demonstrativa e as mensagens de recursos futuros permanecem no app.js. */
 (() => {
   const form = document.getElementById('login-form');
   const emailInput = document.getElementById('login-email');
@@ -32,20 +30,26 @@
     // Sem acesso ao armazenamento, a página continua utilizável.
   }
 
-  // Persistimos somente o e-mail e nunca a senha. Captura antes do redirecionamento demo.
-  form.addEventListener(
-    'submit',
-    () => {
-      try {
-        if (rememberCheckbox.checked) {
-          localStorage.setItem(STORAGE_KEY, emailInput.value.trim());
-        } else {
-          localStorage.removeItem(STORAGE_KEY);
-        }
-      } catch {
-        // Falha de armazenamento não bloqueia o fluxo demonstrativo.
-      }
-    },
-    { capture: true },
-  );
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    if (!form.reportValidity()) return;
+    try {
+      if (rememberCheckbox.checked) localStorage.setItem(STORAGE_KEY, emailInput.value.trim());
+      else localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // A preferência de e-mail é opcional.
+    }
+    passwordInput.value = '';
+    window.location.assign('index.html');
+  });
+
+  let recoveryTimer;
+  const recovery = document.querySelector('[data-demo-message]');
+  recovery.addEventListener('click', () => {
+    const toast = document.getElementById('toast');
+    toast.textContent = recovery.dataset.demoMessage;
+    toast.classList.add('show');
+    clearTimeout(recoveryTimer);
+    recoveryTimer = setTimeout(() => toast.classList.remove('show'), 5000);
+  });
 })();

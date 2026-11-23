@@ -385,15 +385,6 @@ function initReports() {
   byId('report-alarms').textContent = plants.reduce((total, plant) => total + (plant.alarms || []).length, 0);
   fillPlantsTable(byId('report-rows'), plants);
 }
-function initLogin() {
-  byId('login-form').addEventListener('submit', (event) => {
-    event.preventDefault();
-    window.location.href = 'index.html';
-  });
-  document
-    .querySelectorAll('[data-demo-message]')
-    .forEach((button) => button.addEventListener('click', () => showToast(button.dataset.demoMessage)));
-}
 function initSettings() {
   byId('reset-demo').addEventListener('click', () => {
     if (!window.confirm('Restaurar os dados demonstrativos?')) return;
@@ -409,7 +400,6 @@ const pages = {
   details: initDetails,
   alarms: initAlarms,
   reports: initReports,
-  login: initLogin,
   settings: initSettings,
 };
 pages[page]?.();

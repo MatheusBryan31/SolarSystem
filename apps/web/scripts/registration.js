@@ -35,12 +35,20 @@
   });
   form.addEventListener('submit', (event) => {
     event.preventDefault();
+    const name = document.getElementById('registration-name');
+    name.value = name.value.trim();
+    if (name.value.length < 2) {
+      name.setCustomValidity('Informe pelo menos dois caracteres para o nome.');
+      name.reportValidity();
+      name.setCustomValidity('');
+      return;
+    }
     if (!form.reportValidity()) return;
     form.reset();
     form.hidden = true;
     title.hidden = true;
     dialog.setAttribute('aria-labelledby', 'registration-message');
-    message.textContent = 'Cadastro finalizado, chegará algo em breve no seu e-mail.';
+    message.textContent = 'Simulação concluída. Nenhuma conta foi criada e nenhum e-mail foi enviado.';
     message.hidden = false;
     message.focus();
   });
