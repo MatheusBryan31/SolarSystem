@@ -1,26 +1,304 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
+import { Test } from '@nestjs/testing';
+import { Role } from '@prisma/client';
+import { hash } from 'bcryptjs';
 import request from 'supertest';
-import { App } from 'supertest/types';
-import { AppModule } from './../src/app.module';
+import type { App } from 'supertest/types';
+import { AppController } from '../src/app.controller';
+import { AppService } from '../src/app.service';
+import { AuthModule } from '../src/auth/auth.module';
+import { NOME_DO_COOKIE } from '../src/auth/sessao-cookie';
+import { PlantsModule } from '../src/plants/plants.module';
+import { PrismaModule } from '../src/prisma/prisma.module';
+import { PrismaService } from '../src/prisma/prisma.service';
+import { UsersModule } from '../src/users/users.module';
 
-describe('AppController (e2e)', () => {
+const SENHA = 'SenhaApenasParaTeste123';
+const ADMIN = '11111111-1111-4111-8111-111111111111';
+const OPERADOR = '22222222-2222-4222-8222-222222222222';
+const CLIENTE = '33333333-3333-4333-8333-333333333333';
+const USINA = '44444444-4444-4444-8444-444444444444';
+const DONO = '55555555-5555-4555-8555-555555555555';
+
+interface TestUser {
+  id: string;
+  name: string;
+  email: string;
+  passwordHash: string;
+  role: Role;
+  active: boolean;
+  clientId: string | null;
+}
+
+describe('API HTTP — saúde, sessão e permissões com Prisma isolado', () => {
   let app: INestApplication<App>;
+  let jwt: JwtService;
+  let passwordHash: string;
+  let users: TestUser[];
+  const prisma = {
+    $queryRaw: jest.fn(),
+    $transaction: jest.fn(),
+    user: { findUnique: jest.fn(), count: jest.fn(), findMany: jest.fn() },
+    plant: { count: jest.fn(), findMany: jest.fn(), findFirst: jest.fn(), update: jest.fn() },
+  };
 
-  beforeEach(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    }).compile();
-
-    app = moduleFixture.createNestApplication();
+  beforeAll(async () => {
+    passwordHash = await hash(SENHA, 4); // Custo baixo apenas nas fixtures, compare real.
+    // Não importar AppModule: evita .env, banco e bootstrap do SyncScheduler.
+    // Controllers, serviços, validação, JWT e ambos os guards permanecem reais.
+    const module = await Test.createTestingModule({
+      imports: [
+        ConfigModule.forRoot({
+          isGlobal: true,
+          ignoreEnvFile: true,
+          ignoreEnvVars: true,
+          load: [
+            () => ({
+              NODE_ENV: 'test',
+              JWT_SECRET: 'segredo-exclusivo-dos-testes-nao-usar-em-producao',
+              JWT_EXPIRES_IN: 60,
+            }),
+          ],
+        }),
+        PrismaModule,
+        AuthModule,
+        UsersModule,
+        PlantsModule,
+      ],
+      controllers: [AppController],
+      providers: [AppService],
+    })
+      .overrideProvider(PrismaService)
+      .useValue(prisma)
+      .compile();
+    app = module.createNestApplication();
+    app.setGlobalPrefix('api'); // Mesmo prefixo de main.ts, sem executar bootstrap.
     await app.init();
+    jwt = app.get(JwtService);
   });
 
-  it('/ (GET)', () => {
-    return request(app.getHttpServer()).get('/').expect(200).expect('Hello World!');
+  beforeEach(() => {
+    jest.resetAllMocks();
+    users = [
+      { id: ADMIN, name: 'Admin teste', email: 'admin@example.test', role: Role.ADMIN, clientId: null },
+      {
+        id: OPERADOR,
+        name: 'Operador teste',
+        email: 'operator@example.test',
+        role: Role.OPERATOR,
+        clientId: null,
+      },
+      { id: CLIENTE, name: 'Cliente teste', email: 'client@example.test', role: Role.CLIENT, clientId: DONO },
+    ].map((user) => ({ ...user, active: true, passwordHash }));
+    prisma.$queryRaw.mockResolvedValue([{ resultado: 1 }]);
+    prisma.user.findUnique.mockImplementation(({ where }: { where: { id?: string; email?: string } }) =>
+      Promise.resolve(
+        users.find((user) => (where.id ? user.id === where.id : user.email === where.email)) ?? null,
+      ),
+    );
+    prisma.user.count.mockResolvedValue(0);
+    prisma.user.findMany.mockResolvedValue([]);
+    prisma.plant.count.mockResolvedValue(0);
+    prisma.plant.findMany.mockResolvedValue([]);
+    prisma.plant.findFirst.mockResolvedValue({ id: USINA, clientId: null });
+    prisma.plant.update.mockResolvedValue({ id: USINA, clientId: null });
+    prisma.$transaction.mockImplementation((queries: Promise<unknown>[]) => Promise.all(queries));
   });
 
-  afterEach(async () => {
-    await app.close();
+  afterAll(async () => {
+    await app?.close();
+  });
+
+  async function login(email = 'admin@example.test') {
+    const response = await request(app.getHttpServer())
+      .post('/api/auth/login')
+      .send({ email, senha: SENHA })
+      .expect(200);
+    const setCookie = response.get('Set-Cookie')?.[0];
+    if (!setCookie) throw new Error('Login não emitiu cookie');
+    return { response, setCookie, cookie: setCookie.split(';')[0] };
+  }
+
+  it('GET /api/health é público e informa banco disponível', async () => {
+    const response = await request(app.getHttpServer()).get('/api/health').expect(200);
+    const { horario } = response.body as { horario: string };
+    expect(response.body).toEqual({
+      status: 'ok',
+      banco: 'ok',
+      servico: 'solarsystem-api',
+      horario,
+    });
+    expect(typeof horario).toBe('string');
+    expect(Number.isNaN(Date.parse(horario))).toBe(false);
+    expect(prisma.$queryRaw).toHaveBeenCalledTimes(1);
+  });
+
+  it('falha de banco mantém saúde degradada com HTTP 200, sem expor erro interno', async () => {
+    prisma.$queryRaw.mockRejectedValue(new Error('erro interno confidencial'));
+    const response = await request(app.getHttpServer()).get('/api/health').expect(200);
+    expect(response.body).toMatchObject({ status: 'degradado', banco: 'erro', servico: 'solarsystem-api' });
+    expect(JSON.stringify(response.body)).not.toContain('erro interno confidencial');
+  });
+
+  it.each(['/health', '/', '/api'])('não publica a rota antiga/sem prefixo %s', async (path) => {
+    await request(app.getHttpServer()).get(path).expect(404);
+  });
+
+  it.each(['/api/auth/me', '/api/plants', '/api/users'])(
+    '%s rejeita acesso sem autenticação',
+    async (path) => {
+      await request(app.getHttpServer()).get(path).expect(401);
+      expect(prisma.user.findUnique).not.toHaveBeenCalled();
+      expect(prisma.plant.findMany).not.toHaveBeenCalled();
+    },
+  );
+
+  it('login retorna somente usuário e cookie HttpOnly, SameSite=Strict e Path=/api', async () => {
+    const { response, setCookie } = await login();
+    expect(response.body).toEqual({
+      usuario: { id: ADMIN, nome: 'Admin teste', email: 'admin@example.test', role: 'ADMIN' },
+    });
+    expect(setCookie).toMatch(new RegExp(`^${NOME_DO_COOKIE}=`));
+    for (const flag of ['HttpOnly', 'SameSite=Strict', 'Path=/api', 'Max-Age=60'])
+      expect(setCookie).toContain(flag);
+    expect(JSON.stringify(response.body)).not.toContain(SENHA);
+    expect(JSON.stringify(response.body)).not.toContain(passwordHash);
+  });
+
+  it('login normaliza e-mail usando o schema real', async () => {
+    await request(app.getHttpServer())
+      .post('/api/auth/login')
+      .send({ email: ' ADMIN@EXAMPLE.TEST ', senha: SENHA })
+      .expect(200);
+  });
+
+  it.each([
+    { email: 'admin@example.test', senha: 'incorreta' },
+    { email: 'inexistente@example.test', senha: SENHA },
+  ])('login inválido não emite cookie e mantém mensagem genérica: $email', async (body) => {
+    const response = await request(app.getHttpServer()).post('/api/auth/login').send(body).expect(401);
+    expect((response.body as { message: unknown }).message).toBe('E-mail ou senha incorretos');
+    expect(response.get('Set-Cookie')).toBeUndefined();
+  });
+
+  it('usuário inativo não faz login', async () => {
+    users[0].active = false;
+    await request(app.getHttpServer())
+      .post('/api/auth/login')
+      .send({ email: users[0].email, senha: SENHA })
+      .expect(401);
+  });
+
+  it.each([{ email: 'invalido', senha: SENHA }, { email: 'admin@example.test', senha: '' }, {}])(
+    'entrada inválida é 400: %j',
+    async (body) => {
+      await request(app.getHttpServer()).post('/api/auth/login').send(body).expect(400);
+      expect(prisma.user.findUnique).not.toHaveBeenCalled();
+    },
+  );
+
+  it('/api/auth/me retorna o usuário atual sem senha/hash/token', async () => {
+    const { cookie } = await login('client@example.test');
+    const response = await request(app.getHttpServer()).get('/api/auth/me').set('Cookie', cookie).expect(200);
+    expect(response.body).toEqual({
+      id: CLIENTE,
+      nome: 'Cliente teste',
+      email: 'client@example.test',
+      role: 'CLIENT',
+      clientId: DONO,
+    });
+  });
+
+  it('cookie adulterado é rejeitado antes de consultar usuários', async () => {
+    await request(app.getHttpServer())
+      .get('/api/auth/me')
+      .set('Cookie', `${NOME_DO_COOKIE}=invalido`)
+      .expect(401);
+    expect(prisma.user.findUnique).not.toHaveBeenCalled();
+  });
+
+  it('token assinado mas expirado é rejeitado', async () => {
+    const token = jwt.sign({ sub: ADMIN, role: Role.ADMIN }, { expiresIn: -1 });
+    await request(app.getHttpServer())
+      .get('/api/auth/me')
+      .set('Cookie', `${NOME_DO_COOKIE}=${token}`)
+      .expect(401);
+    expect(prisma.user.findUnique).not.toHaveBeenCalled();
+  });
+
+  it('Bearer sozinho não substitui o cookie de sessão', async () => {
+    const token = jwt.sign({ sub: ADMIN, role: Role.ADMIN });
+    await request(app.getHttpServer()).get('/api/auth/me').auth(token, { type: 'bearer' }).expect(401);
+  });
+
+  it('desativar o usuário bloqueia uma sessão previamente válida', async () => {
+    const { cookie } = await login();
+    users[0].active = false;
+    await request(app.getHttpServer()).get('/api/auth/me').set('Cookie', cookie).expect(401);
+  });
+
+  it('logout remove o cookie do agente e bloqueia sua próxima requisição', async () => {
+    const agent = request.agent(app.getHttpServer());
+    await agent.post('/api/auth/login').send({ email: 'admin@example.test', senha: SENHA }).expect(200);
+    await agent.get('/api/auth/me').expect(200);
+    const response = await agent.post('/api/auth/logout').expect(204);
+    expect(response.text).toBe('');
+    const expired = response.get('Set-Cookie')?.[0];
+    expect(expired).toBeDefined();
+    for (const flag of [`${NOME_DO_COOKIE}=;`, 'Path=/api', 'HttpOnly', 'SameSite=Strict'])
+      expect(expired).toContain(flag);
+    const expires = expired?.match(/Expires=([^;]+)/)?.[1];
+    expect(expires).toBeDefined();
+    expect(Date.parse(expires!)).toBeLessThan(Date.now());
+    await agent.get('/api/auth/me').expect(401);
+  });
+
+  it('logout é público e repetível com cookie ausente ou inválido', async () => {
+    await request(app.getHttpServer()).post('/api/auth/logout').expect(204);
+    await request(app.getHttpServer())
+      .post('/api/auth/logout')
+      .set('Cookie', `${NOME_DO_COOKIE}=invalido`)
+      .expect(204);
+  });
+
+  it.each([
+    ['admin@example.test', 200],
+    ['operator@example.test', 403],
+    ['client@example.test', 403],
+  ])('GET /api/users verifica perfil de %s (HTTP %i)', async (email, status) => {
+    const { cookie } = await login(email);
+    await request(app.getHttpServer()).get('/api/users').set('Cookie', cookie).expect(status);
+    expect(prisma.user.findMany).toHaveBeenCalledTimes(status === 200 ? 1 : 0);
+  });
+
+  it.each([
+    ['admin@example.test', 200],
+    ['operator@example.test', 200],
+    ['client@example.test', 403],
+  ])('PATCH /api/plants/:id/client verifica perfil de %s (HTTP %i)', async (email, status) => {
+    const { cookie } = await login(email);
+    await request(app.getHttpServer())
+      .patch(`/api/plants/${USINA}/client`)
+      .set('Cookie', cookie)
+      .send({ clientId: null })
+      .expect(status);
+    expect(prisma.plant.update).toHaveBeenCalledTimes(status === 200 ? 1 : 0);
+  });
+
+  it('CLIENT consulta usinas com filtro do cliente no serviço real', async () => {
+    const { cookie } = await login('client@example.test');
+    await request(app.getHttpServer()).get('/api/plants').set('Cookie', cookie).expect(200);
+    expect(prisma.plant.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { clientId: DONO } }),
+    );
+  });
+
+  it('permissão usa o papel atual do usuário, não o papel antigo do JWT', async () => {
+    const { cookie } = await login();
+    users[0].role = Role.CLIENT;
+    await request(app.getHttpServer()).get('/api/users').set('Cookie', cookie).expect(403);
+    expect(prisma.user.findMany).not.toHaveBeenCalled();
   });
 });
