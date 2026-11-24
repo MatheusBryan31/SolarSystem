@@ -93,7 +93,21 @@ export class PlantsService {
   private projetar(usina: Parameters<typeof plantDto>[0], cliente: boolean) {
     const dto = plantDto(usina);
     // Metadados da conta remota são internos. O vínculo próprio continua disponível para medições.
-    return cliente ? { ...dto, integrationId: null, externalId: null, integration: null } : dto;
+    return cliente
+      ? {
+          ...dto,
+          integrationId: null,
+          externalId: null,
+          integration: null,
+          postalCode: null,
+          street: null,
+          addressNumber: null,
+          addressComplement: null,
+          latitude: null,
+          longitude: null,
+          technicalNotes: null,
+        }
+      : dto;
   }
 
   async vincularCliente(id: string, clientId: string | null, usuario: UsuarioAutenticado) {
@@ -132,11 +146,7 @@ export class PlantsService {
         },
         include: incluir,
       });
-      await this.catalog.audit(tx, plant.id, user.id, 'CREATE', {
-        metadata: effective,
-        details,
-        clientId: clientId ?? null,
-      });
+      await this.catalog.audit(tx, plant.id, user.id, 'CREATE', { clientId: clientId ?? null });
       return plantDto(plant);
     });
   }
@@ -172,9 +182,7 @@ export class PlantsService {
       });
       await this.catalog.audit(tx, id, user.id, 'EDIT', {
         revision,
-        before: metadata(plant),
-        after: effective,
-        details,
+        fields: [...Object.keys(changes), ...Object.keys(details)],
         useRemote,
       });
       return plantDto(updated);
@@ -236,7 +244,6 @@ export class PlantsService {
       });
       await this.catalog.audit(tx, id, user.id, 'DETACH', {
         linkId: link.id,
-        reason: input.reason,
         revision: input.revision,
       });
     });

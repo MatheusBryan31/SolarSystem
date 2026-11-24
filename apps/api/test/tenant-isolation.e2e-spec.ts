@@ -13,10 +13,12 @@ import { ClientsModule } from '../src/clients/clients.module';
 import { configurarHttp } from '../src/config/http';
 import { InvertersModule } from '../src/inverters/inverters.module';
 import { CredentialEncryption } from '../src/integrations/credential-encryption';
+import { IntegrationsModule } from '../src/integrations/integrations.module';
 import { MeasurementsModule } from '../src/measurements/measurements.module';
 import { PlantsModule } from '../src/plants/plants.module';
 import { PrismaModule } from '../src/prisma/prisma.module';
 import { PrismaService } from '../src/prisma/prisma.service';
+import { UsersModule } from '../src/users/users.module';
 
 const database = process.env.SOLARSYSTEM_PERMISSIONS_TEST_DATABASE_URL;
 const suite = database ? describe : describe.skip;
@@ -44,6 +46,8 @@ suite('Isolamento de clientes via HTTP e PostgreSQL', () => {
               NODE_ENV: 'test',
               JWT_SECRET: 'segredo-exclusivo-do-teste-de-isolamento',
               JWT_EXPIRES_IN: 60,
+              SYNC_INTERVAL_MIN: 0,
+              INTEGRATION_CREDENTIALS_KEY: Buffer.alloc(32, 7).toString('base64'),
             }),
           ],
         }),
@@ -54,6 +58,8 @@ suite('Isolamento de clientes via HTTP e PostgreSQL', () => {
         AlertsModule,
         InvertersModule,
         MeasurementsModule,
+        IntegrationsModule,
+        UsersModule,
       ],
     })
       .overrideProvider(PrismaService)
@@ -85,7 +91,9 @@ suite('Isolamento de clientes via HTTP e PostgreSQL', () => {
 
   it('restringe listas, contagens, detalhes, alertas, equipamentos e série temporal ao dono', async () => {
     const nome = randomUUID();
-    const a = await prisma.client.create({ data: { name: `Cliente A ${nome}` } });
+    const a = await prisma.client.create({
+      data: { name: `Cliente A ${nome}`, email: 'privado@example.test', phone: '12345', document: nome },
+    });
     const b = await prisma.client.create({ data: { name: `Cliente B ${nome}` } });
     const integrationId = randomUUID();
     const cipher = new CredentialEncryption(Buffer.alloc(32, 7).toString('base64'));
@@ -100,7 +108,16 @@ suite('Isolamento de clientes via HTTP e PostgreSQL', () => {
     const criarPlanta = (clientId: string, externalId: string) =>
       prisma.$transaction(async (tx) => {
         const plant = await tx.plant.create({
-          data: { name: nome, clientId, integrationId: integracao.id, externalId },
+          data: {
+            name: nome,
+            clientId,
+            integrationId: integracao.id,
+            externalId,
+            street: 'Rua privada',
+            latitude: -23,
+            longitude: -46,
+            technicalNotes: 'Observação privada',
+          },
         });
         const link = await tx.plantExternalLink.create({
           data: {
@@ -159,6 +176,17 @@ suite('Isolamento de clientes via HTTP e PostgreSQL', () => {
     });
 
     const cliente = await sessao(Role.CLIENT, a.id);
+    const equipeParaAlertas = await prisma.user.create({
+      data: {
+        name: 'Nome privado da equipe',
+        email: `${randomUUID()}@example.test`,
+        passwordHash: 'fixture',
+      },
+    });
+    await prisma.alert.update({
+      where: { id: propria.alert.id },
+      data: { acknowledgedById: equipeParaAlertas.id, acknowledgedAt: new Date(), status: 'ACKNOWLEDGED' },
+    });
     const get = (path: string, cookie = cliente) =>
       request(app.getHttpServer())
         .get('/api' + path)
@@ -179,14 +207,26 @@ suite('Isolamento de clientes via HTTP e PostgreSQL', () => {
       expect(payload.itens.map((item) => item.id)).toEqual([lista.id]);
     }
     const alertas = await get('/alerts').expect(200);
-    expect(alertas.body).toMatchObject({ itens: [{ integrationId: null, integration: null }] });
-    await get(`/clients/${a.id}`).expect(200);
+    expect(alertas.body).toMatchObject({
+      itens: [{ integrationId: null, integration: null, acknowledgedById: null, acknowledgedBy: null }],
+    });
+    const listaClientes = await get('/clients').expect(200);
+    expect(listaClientes.body).toMatchObject({ itens: [{ id: a.id, name: a.name }] });
+    expect(listaClientes.text).not.toContain('privado@example.test');
+    expect(listaClientes.text).not.toContain('"document"');
+    expect(listaClientes.text).not.toContain('"phone"');
+    const detalheCliente = await get(`/clients/${a.id}`).expect(200);
+    expect(detalheCliente.body).toMatchObject({ id: a.id, email: 'privado@example.test' });
     await get(`/clients/${b.id}`).expect(404);
     const planta = await get(`/plants/${propria.plant.id}`).expect(200);
     expect(planta.body).toMatchObject({
       integration: null,
       integrationId: null,
       externalId: null,
+      street: null,
+      latitude: null,
+      longitude: null,
+      technicalNotes: null,
       activeLink: { id: propria.link.id },
     });
     const inversor = await get(`/plants/${propria.plant.id}/inverters/${propria.inverter.id}`).expect(200);
@@ -227,6 +267,11 @@ suite('Isolamento de clientes via HTTP e PostgreSQL', () => {
         [propria.plant.id, alheia.plant.id].sort(),
       );
       await get(other, equipe).query(range).expect(200);
+      const detalheUsina = await get(`/plants/${propria.plant.id}`, equipe).expect(200);
+      expect(detalheUsina.body).toMatchObject({
+        street: 'Rua privada',
+        technicalNotes: 'Observação privada',
+      });
     }
     const operador = await sessao(Role.OPERATOR, null);
     await request(app.getHttpServer())
@@ -239,6 +284,121 @@ suite('Isolamento de clientes via HTTP e PostgreSQL', () => {
     await get(own).query(range).expect(404);
     const novoDono = await sessao(Role.CLIENT, b.id);
     await get(`/plants/${propria.plant.id}`, novoDono).expect(200);
+  });
+
+  it('audita alterações críticas com ator e correlação e reverte eventos de transações abortadas', async () => {
+    const cookie = await sessao(Role.ADMIN, null);
+    const ator = jwt.verify<{ sub: string }>(cookie.split('=')[1]).sub;
+    const post = (path: string) =>
+      request(app.getHttpServer())
+        .post('/api' + path)
+        .set('X-CSRF-Protection', '1')
+        .set('Cookie', cookie);
+    const patch = (path: string) =>
+      request(app.getHttpServer())
+        .patch('/api' + path)
+        .set('X-CSRF-Protection', '1')
+        .set('Cookie', cookie);
+    const criado = await post('/clients')
+      .send({ name: 'Cliente auditado', email: 'auditado@example.test' })
+      .expect(201);
+    const clientId = (criado.body as { id: string }).id;
+    await patch(`/clients/${clientId}`).send({ phone: '12345' }).expect(200);
+    const eventosCliente = await prisma.securityAuditEvent.findMany({
+      where: { entityId: clientId, entityType: 'clients' },
+      orderBy: { id: 'asc' },
+    });
+    expect(eventosCliente.map((evento) => evento.action)).toEqual(['created', 'profile_changed']);
+    expect(eventosCliente[0]).toMatchObject({ actorId: ator, requestId: criado.get('X-Request-Id') });
+    const revogado = await sessao(Role.OPERATOR, null);
+    await request(app.getHttpServer())
+      .delete(`/api/clients/${clientId}`)
+      .set('X-CSRF-Protection', '1')
+      .set('Cookie', revogado)
+      .expect(403);
+    expect(await prisma.securityAuditEvent.count({ where: { entityId: clientId } })).toBe(2);
+
+    const criadoUsuario = await post('/users')
+      .send({
+        name: 'Usuário auditado',
+        email: `${randomUUID()}@example.test`,
+        senha: 'SenhaInicial123',
+      })
+      .expect(201);
+    const userId = (criadoUsuario.body as { id: string }).id;
+    const alteradoUsuario = await patch(`/users/${userId}`)
+      .send({ active: false, senha: 'OutraSenha123' })
+      .expect(200);
+    const eventosUsuario = await prisma.securityAuditEvent.findMany({
+      where: { entityId: userId, requestId: alteradoUsuario.get('X-Request-Id') },
+      orderBy: { id: 'asc' },
+    });
+    expect(eventosUsuario.map((item) => item.action)).toEqual(['password_changed', 'access_changed']);
+    expect(eventosUsuario.every((item) => item.actorId === ator)).toBe(true);
+
+    const criadaIntegracao = await post('/integrations')
+      .send({
+        provider: 'DEMO',
+        name: 'Conta auditada',
+        credentials: { semente: 'nao-guardar-na-auditoria' },
+      })
+      .expect(201);
+    const integrationId = (criadaIntegracao.body as { id: string }).id;
+    await patch(`/integrations/${integrationId}`).send({ enabled: false, revision: 0 }).expect(200);
+    await prisma.integration.update({ where: { id: integrationId }, data: { lastSyncAt: new Date() } });
+    const eventosIntegracao = await prisma.securityAuditEvent.findMany({
+      where: { entityId: integrationId, entityType: 'integrations' },
+      orderBy: { id: 'asc' },
+    });
+    expect(eventosIntegracao.map((item) => item.action)).toEqual(['created', 'configuration_changed']);
+    expect(eventosIntegracao[0]).toMatchObject({
+      actorId: ator,
+      requestId: criadaIntegracao.get('X-Request-Id'),
+    });
+    expect(Object.keys(eventosIntegracao[0]).sort()).toEqual(
+      ['id', 'action', 'entityType', 'entityId', 'actorId', 'requestId', 'createdAt'].sort(),
+    );
+
+    const planta = await prisma.plant.create({ data: { name: 'Auditoria', origin: 'MANUAL' } });
+    await patch(`/plants/${planta.id}`)
+      .send({ revision: 0, technicalNotes: 'Texto privado de vistoria' })
+      .expect(200);
+    const eventoUsina = await prisma.plantAuditEvent.findFirstOrThrow({
+      where: { plantId: planta.id, operation: 'EDIT' },
+    });
+    expect(eventoUsina.details).toEqual({ revision: 0, fields: ['technicalNotes'], useRemote: [] });
+    const criadoInversor = await post(`/plants/${planta.id}/inverters`)
+      .send({ manufacturer: 'Teste', model: 'Modelo', serialNumber: randomUUID() })
+      .expect(201);
+    const inversor = criadoInversor.body as { id: string; serialNumber: string };
+    const arquivado = await request(app.getHttpServer())
+      .delete(`/api/plants/${planta.id}/inverters/${inversor.id}`)
+      .set('X-CSRF-Protection', '1')
+      .set('Cookie', cookie)
+      .send({ revision: 0, reason: 'Texto privado', confirmSerialNumber: inversor.serialNumber })
+      .expect(200);
+    const alerta = await prisma.alert.create({
+      data: { plantId: planta.id, message: 'Alerta de teste', severity: 'WARNING', type: 'PLANT_FAULT' },
+    });
+    const reconhecido = await patch(`/alerts/${alerta.id}/ack`).expect(200);
+    for (const [entityId, action, requestId] of [
+      [inversor.id, 'archived', arquivado.get('X-Request-Id')],
+      [alerta.id, 'acknowledged', reconhecido.get('X-Request-Id')],
+    ]) {
+      expect(await prisma.securityAuditEvent.findFirst({ where: { entityId, action } })).toMatchObject({
+        actorId: ator,
+        requestId,
+      });
+    }
+
+    const revertido = randomUUID();
+    await expect(
+      prisma.$transaction(async (tx) => {
+        await tx.client.create({ data: { id: revertido, name: 'Reverter' } });
+        throw new Error('Rollback explícito');
+      }),
+    ).rejects.toThrow('Rollback explícito');
+    expect(await prisma.securityAuditEvent.count({ where: { entityId: revertido } })).toBe(0);
   });
 
   it('cliente sem vínculo recebe listas vazias mesmo se o banco contém um cliente com UUID zero', async () => {

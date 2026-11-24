@@ -53,7 +53,7 @@ export class PlantCatalogService {
       },
     });
     await recordSnapshot(tx, plant.id, createdLink.id, integrationId, next, now);
-    await this.audit(tx, plant.id, actorId, 'IMPORT', { integrationId, externalId: next.externalId });
+    await this.audit(tx, plant.id, actorId, 'IMPORT', { integrationId, linkId: createdLink.id });
     return 'imported' as const;
   }
 
@@ -121,7 +121,8 @@ export class PlantCatalogService {
     const remote = existing
       ? metadata(existing.remoteMetadata as unknown as ReturnType<typeof metadata>)
       : metadata(discovery!.snapshot as unknown as ReturnType<typeof metadata>);
-    if (existing)
+    let linkId: string;
+    if (existing) {
       await tx.plantExternalLink.update({
         where: { id: existing.id },
         data: {
@@ -131,8 +132,9 @@ export class PlantCatalogService {
           revision: { increment: 1 },
         },
       });
-    else
-      await tx.plantExternalLink.create({
+      linkId = existing.id;
+    } else {
+      const created = await tx.plantExternalLink.create({
         data: {
           ...key,
           plantId,
@@ -140,6 +142,8 @@ export class PlantCatalogService {
           observedAt: discovery!.observedAt,
         },
       });
+      linkId = created.id;
+    }
     await tx.plant.update({
       where: { id: plantId },
       data: {
@@ -155,7 +159,7 @@ export class PlantCatalogService {
         data: { resolvedAt: new Date(), plantId },
       });
     await tx.integration.update({ where: { id: key.integrationId }, data: { revision: { increment: 1 } } });
-    await this.audit(tx, plantId, actorId, 'LINK', key);
+    await this.audit(tx, plantId, actorId, 'LINK', { integrationId: key.integrationId, linkId });
   }
 
   async audit(

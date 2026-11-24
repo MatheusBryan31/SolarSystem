@@ -3,6 +3,7 @@ import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import type { Request, Response } from 'express';
 import { PrismaService } from '../prisma/prisma.service';
+import { contextoDaRequisicao } from '../common/request-context';
 import type { JwtPayload, UsuarioAutenticado } from './auth.types';
 import { IS_PUBLIC_KEY } from './public.decorator';
 import { lerTokenDoCookie } from './sessao-cookie';
@@ -66,6 +67,8 @@ export class AuthGuard implements CanActivate {
       role: usuario.role,
       clientId: usuario.clientId,
     };
+    const contexto = contextoDaRequisicao.getStore();
+    if (contexto) contexto.actorId = usuario.id;
     ctx.switchToHttp().getResponse<Response>().setHeader('Cache-Control', 'private, no-store');
     return true;
   }

@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { compare, hash } from 'bcryptjs';
 import { createHash, randomBytes } from 'node:crypto';
 import { PrismaService } from '../prisma/prisma.service';
+import { transacaoComAuditoria } from '../common/audit-transaction';
 import { PasswordMailer } from './password-mailer';
 import type { AlterarSenhaDto, RedefinirSenhaDto } from './password.schema';
 
@@ -64,10 +65,12 @@ export class PasswordService {
     if (!usuario) throw linkInvalido();
     const passwordHash = await hash(novaSenha, 12);
     // A mesma atualização consome o token e escreve a senha. Só um concorrente pode ter sucesso.
-    const { count } = await this.prisma.user.updateMany({
-      where: { ...where(), id: usuario.id },
-      data: { ...RESET_LIMPO, passwordHash, sessionVersion: { increment: 1 } },
-    });
+    const { count } = await transacaoComAuditoria(this.prisma, (tx) =>
+      tx.user.updateMany({
+        where: { ...where(), id: usuario.id },
+        data: { ...RESET_LIMPO, passwordHash, sessionVersion: { increment: 1 } },
+      }),
+    );
     if (!count) throw linkInvalido();
   }
 
@@ -79,10 +82,13 @@ export class PasswordService {
     if (!usuario?.active || !(await compare(senhaAtual, usuario.passwordHash))) {
       throw new BadRequestException('Senha atual incorreta');
     }
-    const { count } = await this.prisma.user.updateMany({
-      where: { id, active: true, passwordHash: usuario.passwordHash },
-      data: { ...RESET_LIMPO, passwordHash: await hash(novaSenha, 12), sessionVersion: { increment: 1 } },
-    });
+    const passwordHash = await hash(novaSenha, 12);
+    const { count } = await transacaoComAuditoria(this.prisma, (tx) =>
+      tx.user.updateMany({
+        where: { id, active: true, passwordHash: usuario.passwordHash },
+        data: { ...RESET_LIMPO, passwordHash, sessionVersion: { increment: 1 } },
+      }),
+    );
     if (!count) throw new BadRequestException('A senha mudou. Entre novamente e tente de novo.');
   }
 }

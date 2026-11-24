@@ -198,6 +198,13 @@ Em conexões diretas, deixe `TRUSTED_PROXY_IPS` vazio. Atrás de um proxy revers
 
 Os contadores ficam em memória por processo. Em uma implantação com várias réplicas, aplique um limite compartilhado no proxy de borda para obter uma cota única entre instâncias.
 
+### Logs, dados pessoais e auditoria
+
+- Erros internos devolvem uma mensagem genérica e um identificador gerado pela API. Use `X-Request-Id` para localizar a falha nos logs. O evento registra status e, quando disponível, código Prisma, sem URL, parâmetros, corpo, IP, cookies, tokens ou a mensagem da exceção. Logs de infraestrutura, como os do proxy reverso, devem aplicar a mesma minimização ao registrar requisições.
+- A listagem de clientes devolve apenas ID e nome. Dados de contato e CPF/CNPJ permanecem disponíveis no detalhe com as permissões existentes. O perfil `CLIENT` continua consultando suas usinas e alertas, com endereço detalhado, coordenadas, observações técnicas e identidade do usuário que reconheceu o alerta suprimidos.
+- As alterações críticas bem-sucedidas em usuários, senhas, clientes, integrações, inversores e reconhecimento de alertas geram eventos em `security_audit_events` na mesma transação. O evento contém ação, entidade, IDs e horário. O ator fica vazio quando não há sessão autenticada, como em uma redefinição por link ou em uma operação direta no banco. O catálogo de usinas mantém sua trilha e passa a registrar identificadores e nomes dos campos alterados em vez dos valores e dos motivos livres.
+- Aplique `npm run db:deploy -w apps/api` antes da publicação. Restrinja leitura e administração da auditoria a perfis autorizados. Se a conta da API tiver privilégios separados, garanta `INSERT` em `security_audit_events` e `USAGE` na sequência, sem conceder alteração ou exclusão de eventos. Os identificadores de auditoria são vinculáveis a pessoas. Defina retenção e acesso conforme a finalidade e revise separadamente históricos e backups já existentes. [LGPD, arts. 6º e 46](https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2018/lei/l13709compilado.htm)
+
 ### Credenciais de integrações em repouso
 
 A API exige `INTEGRATION_CREDENTIALS_KEY` em todos os ambientes. Gere uma chave aleatória exclusiva de 32 bytes em Base64, usando o comando comentado em `apps/api/.env.example`, e guarde-a em um gerenciador de segredos. Todas as réplicas do mesmo banco precisam receber a mesma chave. Guarde também uma cópia recuperável separada do backup. Trocar a variável sem recifrar os dados torna as credenciais antigas inacessíveis.

@@ -2,6 +2,7 @@ import { BadRequestException, ConflictException, Injectable, NotFoundException }
 import { Prisma, Role } from '@prisma/client';
 import { hash } from 'bcryptjs';
 import type { UsuarioAutenticado } from '../auth/auth.types';
+import { transacaoComAuditoria } from '../common/audit-transaction';
 import { ehViolacaoDeUnicidade } from '../common/prisma-errors';
 import { PrismaService } from '../prisma/prisma.service';
 import type { AtualizarUsuarioDto, CriarUsuarioDto, ListarUsuariosDto } from './users.schemas';
@@ -57,10 +58,13 @@ export class UsersService {
   async criar({ senha, clientId, ...dados }: CriarUsuarioDto) {
     const vinculo = await this.validarVinculo(dados.role, clientId ?? null);
     try {
-      return await this.prisma.user.create({
-        data: { ...dados, clientId: vinculo, passwordHash: await hash(senha, CUSTO_BCRYPT) },
-        select: camposPublicos,
-      });
+      const passwordHash = await hash(senha, CUSTO_BCRYPT);
+      return await transacaoComAuditoria(this.prisma, (tx) =>
+        tx.user.create({
+          data: { ...dados, clientId: vinculo, passwordHash },
+          select: camposPublicos,
+        }),
+      );
     } catch (erro) {
       if (ehViolacaoDeUnicidade(erro)) throw new ConflictException('Já existe um usuário com este e-mail');
       throw erro;
@@ -94,20 +98,21 @@ export class UsersService {
     const vinculo = await this.validarVinculo(roleFinal, clientIdFinal);
 
     try {
-      return await this.prisma.user.update({
-        where: { id },
-        data: {
-          ...dados,
-          clientId: vinculo,
-          ...(senha
-            ? { passwordHash: await hash(senha, CUSTO_BCRYPT), sessionVersion: { increment: 1 } }
-            : {}),
-          ...(senha || dados.email !== undefined || dados.active === false
-            ? { passwordResetDigest: null, passwordResetExpiresAt: null }
-            : {}),
-        },
-        select: camposPublicos,
-      });
+      const passwordHash = senha ? await hash(senha, CUSTO_BCRYPT) : undefined;
+      return await transacaoComAuditoria(this.prisma, (tx) =>
+        tx.user.update({
+          where: { id },
+          data: {
+            ...dados,
+            clientId: vinculo,
+            ...(passwordHash ? { passwordHash, sessionVersion: { increment: 1 } } : {}),
+            ...(senha || dados.email !== undefined || dados.active === false
+              ? { passwordResetDigest: null, passwordResetExpiresAt: null }
+              : {}),
+          },
+          select: camposPublicos,
+        }),
+      );
     } catch (erro) {
       if (ehViolacaoDeUnicidade(erro)) throw new ConflictException('Já existe um usuário com este e-mail');
       throw erro;

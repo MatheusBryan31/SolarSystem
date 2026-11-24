@@ -2,6 +2,7 @@ import { ConflictException, Injectable, NotFoundException } from '@nestjs/common
 import { Prisma, Role } from '@prisma/client';
 import type { UsuarioAutenticado } from '../auth/auth.types';
 import { ehViolacaoDeUnicidade } from '../common/prisma-errors';
+import { transacaoComAuditoria } from '../common/audit-transaction';
 import { PrismaService } from '../prisma/prisma.service';
 import type { AtualizarClienteDto, CriarClienteDto, ListarClientesDto } from './clients.schemas';
 
@@ -31,6 +32,7 @@ export class ClientsService {
       this.prisma.client.count({ where }),
       this.prisma.client.findMany({
         where,
+        select: { id: true, name: true },
         orderBy: { name: 'asc' },
         skip: (pagina - 1) * porPagina,
         take: porPagina,
@@ -45,14 +47,25 @@ export class ClientsService {
     if (usuario?.role === Role.CLIENT && usuario.clientId !== id) {
       throw new NotFoundException('Cliente não encontrado');
     }
-    const cliente = await this.prisma.client.findUnique({ where: { id } });
+    const cliente = await this.prisma.client.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        document: true,
+        email: true,
+        phone: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
     if (!cliente) throw new NotFoundException('Cliente não encontrado');
     return cliente;
   }
 
   async criar(dados: CriarClienteDto) {
     try {
-      return await this.prisma.client.create({ data: dados });
+      return await transacaoComAuditoria(this.prisma, (tx) => tx.client.create({ data: dados }));
     } catch (erro) {
       if (ehViolacaoDeUnicidade(erro)) {
         throw new ConflictException('Já existe um cliente com este CPF/CNPJ');
@@ -64,7 +77,9 @@ export class ClientsService {
   async atualizar(id: string, dados: AtualizarClienteDto) {
     await this.buscarPorId(id); // garante 404 se não existir
     try {
-      return await this.prisma.client.update({ where: { id }, data: dados });
+      return await transacaoComAuditoria(this.prisma, (tx) =>
+        tx.client.update({ where: { id }, data: dados }),
+      );
     } catch (erro) {
       if (ehViolacaoDeUnicidade(erro)) {
         throw new ConflictException('Já existe um cliente com este CPF/CNPJ');
@@ -76,6 +91,6 @@ export class ClientsService {
   async remover(id: string) {
     await this.buscarPorId(id);
     // Os usuários desse cliente ficam com clientId nulo (onDelete: SetNull, aula 10)
-    await this.prisma.client.delete({ where: { id } });
+    await transacaoComAuditoria(this.prisma, (tx) => tx.client.delete({ where: { id } }));
   }
 }

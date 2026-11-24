@@ -1,6 +1,7 @@
 import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { definirContextoDeAuditoria } from '../common/audit-transaction';
 
 // Mesmo lock de catálogo em TODOS os escritores: cobre identidades ainda inexistentes,
 // vinculação entre integrações e avaliação de alertas. Versão inicial favorece correção;
@@ -13,6 +14,7 @@ export async function catalogTransaction<T>(
     try {
       return await prisma.$transaction(
         async (tx) => {
+          await definirContextoDeAuditoria(tx);
           await tx.$queryRaw`SELECT pg_advisory_xact_lock(7419260301::bigint)::text`;
           return work(tx);
         },

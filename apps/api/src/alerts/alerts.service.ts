@@ -4,6 +4,7 @@ import type { UsuarioAutenticado } from '../auth/auth.types';
 import { PrismaService } from '../prisma/prisma.service';
 import { avaliarUsina } from './alert-rules';
 import { catalogTransaction } from '../plants/catalog-transaction';
+import { transacaoComAuditoria } from '../common/audit-transaction';
 import { TELEMETRY_MAX_AGE_MS } from '../plants/plant-domain';
 import type { ListarAlertasDto } from './alerts.schemas';
 
@@ -119,7 +120,9 @@ export class AlertsService {
     return {
       itens: itens.map((item) => ({
         ...item,
-        ...(usuario.role === Role.CLIENT ? { integrationId: null, integration: null } : {}),
+        ...(usuario.role === Role.CLIENT
+          ? { integrationId: null, integration: null, acknowledgedById: null, acknowledgedBy: null }
+          : {}),
         ...(item.type === 'SYNC_FAILED' ? { message: 'Falha na coleta da plataforma' } : {}),
       })),
       total,
@@ -133,11 +136,13 @@ export class AlertsService {
     const alerta = await this.prisma.alert.findUnique({ where: { id } });
     if (!alerta) throw new NotFoundException('Alerta não encontrado');
     if (alerta.status === 'RESOLVED') throw new BadRequestException('Este alerta já foi resolvido');
-    const atualizado = await this.prisma.alert.update({
-      where: { id },
-      data: { status: 'ACKNOWLEDGED', acknowledgedAt: new Date(), acknowledgedById: usuario.id },
-      include: incluir,
-    });
+    const atualizado = await transacaoComAuditoria(this.prisma, (tx) =>
+      tx.alert.update({
+        where: { id },
+        data: { status: 'ACKNOWLEDGED', acknowledgedAt: new Date(), acknowledgedById: usuario.id },
+        include: incluir,
+      }),
+    );
     return atualizado.type === 'SYNC_FAILED'
       ? { ...atualizado, message: 'Falha na coleta da plataforma' }
       : atualizado;

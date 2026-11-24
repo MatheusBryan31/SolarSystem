@@ -23,6 +23,7 @@ describe('UsersService', () => {
   // Tipamos os argumentos para o ESLint saber o formato de mock.calls
   type ArgsEscrita = { data: Record<string, unknown>; select: Record<string, unknown> };
   const prismaFalso = {
+    $transaction: jest.fn(),
     user: {
       findUnique: jest.fn(),
       create: jest.fn<Promise<unknown>, [ArgsEscrita]>(),
@@ -33,6 +34,9 @@ describe('UsersService', () => {
 
   beforeEach(async () => {
     jest.resetAllMocks();
+    prismaFalso.$transaction.mockImplementation((work: (tx: typeof prismaFalso) => Promise<unknown>) =>
+      work(prismaFalso),
+    );
     const modulo = await Test.createTestingModule({
       providers: [UsersService, { provide: PrismaService, useValue: prismaFalso }],
     }).compile();

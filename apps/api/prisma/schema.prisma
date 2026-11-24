@@ -15,6 +15,20 @@ enum Role {
   CLIENT
 }
 
+model SecurityAuditEvent {
+  id         BigInt   @id @default(autoincrement())
+  action     String
+  entityType String   @map("entity_type")
+  entityId   String   @map("entity_id")
+  actorId    String?  @map("actor_id")
+  requestId  String?  @map("request_id")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@index([createdAt])
+  @@index([entityType, entityId, createdAt])
+  @@map("security_audit_events")
+}
+
 model Client {
   id        String   @id @default(uuid())
   name      String

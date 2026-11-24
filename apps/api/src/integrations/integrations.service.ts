@@ -16,6 +16,7 @@ import { catalogTransaction } from '../plants/catalog-transaction';
 import { PlantCatalogService } from '../plants/plant-catalog.service';
 import { snapshot, snapshotSchema } from '../plants/plant-domain';
 import { CredentialEncryption } from './credential-encryption';
+import { transacaoComAuditoria } from '../common/audit-transaction';
 
 const ERRO_COLETA = 'Falha na coleta da plataforma';
 
@@ -68,10 +69,12 @@ export class IntegrationsService {
     }
     try {
       return respostaPublica(
-        await this.prisma.integration.create({
-          data: { id, provider, name, credentials: this.criptografia.cifrar(credentials, id, provider) },
-          select: camposPublicos,
-        }),
+        await transacaoComAuditoria(this.prisma, (tx) =>
+          tx.integration.create({
+            data: { id, provider, name, credentials: this.criptografia.cifrar(credentials, id, provider) },
+            select: camposPublicos,
+          }),
+        ),
       );
     } catch {
       throw new ServiceUnavailableException('Não foi possível salvar a integração.');

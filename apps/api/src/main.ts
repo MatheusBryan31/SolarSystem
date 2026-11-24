@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { NestExpressApplication } from '@nestjs/platform-express';
@@ -6,7 +7,11 @@ import type { Env } from './config/env';
 import { configurarHttp } from './config/http';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    bufferLogs: true,
+    autoFlushLogs: false,
+    abortOnError: false,
+  });
   const config = app.get(ConfigService<Env, true>);
 
   const porta = config.get('PORT', { infer: true });
@@ -18,7 +23,17 @@ async function bootstrap() {
     TRUSTED_PROXY_IPS: config.get('TRUSTED_PROXY_IPS', { infer: true }),
   });
 
-  await app.listen(porta);
-  console.log(`SolarSystem API na porta ${porta} (${ambiente})`);
+  try {
+    await app.listen(porta);
+  } catch (erro) {
+    await app.close().catch(() => {});
+    throw erro;
+  }
+  app.flushLogs();
+  Logger.log(`SolarSystem API na porta ${porta} (${ambiente})`, 'Bootstrap');
 }
-void bootstrap();
+void bootstrap().catch(() => {
+  Logger.detachBuffer();
+  Logger.error('Falha ao iniciar a API. Confira a configuração e a disponibilidade do banco.', 'Bootstrap');
+  process.exitCode = 1;
+});

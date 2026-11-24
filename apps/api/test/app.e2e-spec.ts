@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { NestExpressApplication } from '@nestjs/platform-express';
@@ -353,6 +354,39 @@ describe('API HTTP — saúde, sessão e permissões com Prisma isolado', () => 
     const response = await request(app.getHttpServer()).get('/api/health').expect(200);
     expect(response.body).toMatchObject({ status: 'degradado', banco: 'erro', servico: 'solarsystem-api' });
     expect(JSON.stringify(response.body)).not.toContain('erro interno confidencial');
+  });
+
+  it('correlaciona a falha interna sem devolver ou registrar dados da requisição e da exceção', async () => {
+    const { cookie } = await login();
+    const segredo = 'ana-secreta@example.test';
+    prisma.plant.findMany.mockRejectedValue(new Error(`Falha com ${segredo}`));
+    const logger = jest.spyOn(Logger.prototype, 'error').mockImplementation(() => {});
+    try {
+      const resposta = await request(app.getHttpServer())
+        .get('/api/plants')
+        .query({ busca: segredo })
+        .set('X-Request-Id', segredo)
+        .set('Cookie', cookie)
+        .expect(500)
+        .expect('Cache-Control', 'no-store');
+      const requestId = resposta.get('X-Request-Id');
+      expect(requestId).toMatch(/^[0-9a-f-]{36}$/);
+      expect(resposta.body).toEqual({
+        statusCode: 500,
+        message: 'Não foi possível concluir a requisição.',
+        requestId,
+      });
+      expect(logger.mock.calls).toEqual([[{ event: 'api.request_failed', statusCode: 500, requestId }]]);
+      expect(resposta.text).not.toContain(segredo);
+    } finally {
+      logger.mockRestore();
+    }
+  });
+
+  it('rota inexistente não ecoa o caminho fornecido', async () => {
+    const resposta = await request(app.getHttpServer()).get('/api/dado-pessoal-no-caminho').expect(404);
+    expect(resposta.text).not.toContain('dado-pessoal-no-caminho');
+    expect(resposta.get('X-Request-Id')).toBeDefined();
   });
 
   it.each(['/health', '/', '/api'])('não publica a rota antiga/sem prefixo %s', async (path) => {
