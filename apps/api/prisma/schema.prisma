@@ -42,6 +42,9 @@ model User {
   createdAt          DateTime @default(now()) @map("created_at")
   updatedAt          DateTime @updatedAt @map("updated_at")
   acknowledgedAlerts Alert[] // alertas que este usuário reconheceu
+  sessionVersion         Int       @default(0) @map("session_version")
+  passwordResetDigest    String?   @unique @map("password_reset_digest")
+  passwordResetExpiresAt DateTime? @map("password_reset_expires_at") @db.Timestamptz(3)
 
   @@index([clientId])
   @@map("users")

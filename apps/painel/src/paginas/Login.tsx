@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
+import { Link } from 'react-router';
 import { ErroDaApi } from '../api';
 import { useAuth } from '../auth';
 import { Icone, type NomeIcone } from '../componentes/Icone';
@@ -132,6 +133,7 @@ export function Login() {
           <p className="seguranca">
             <Icone nome="escudo" tamanho={16} /> Sessão protegida por cookie httpOnly
           </p>
+          <Link to="/recuperar-senha">Esqueci minha senha</Link>
         </form>
       </main>
     </div>

@@ -55,6 +55,9 @@ export function Layout() {
           <NavLink to="/usinas">
             <Icone nome="usina" /> Usinas
           </NavLink>
+          <NavLink to="/alterar-senha">
+            <Icone nome="cadeado" /> Alterar senha
+          </NavLink>
         </nav>
         <div className="menu-usuario">
           <span className="avatar">{inicial}</span>

@@ -39,9 +39,20 @@ export class AuthGuard implements CanActivate {
     }
 
     // 4. Confere no banco: o usuário ainda existe e está ativo?
-    const usuario = await this.prisma.user.findUnique({ where: { id: payload.sub } });
-    if (!usuario || !usuario.active) {
-      throw new UnauthorizedException('Usuário inativo');
+    const usuario = await this.prisma.user.findUnique({
+      where: { id: payload.sub },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        active: true,
+        clientId: true,
+        sessionVersion: true,
+      },
+    });
+    if (!usuario || !usuario.active || usuario.sessionVersion !== (payload.sv ?? 0)) {
+      throw new UnauthorizedException('Sessão inválida ou expirada');
     }
 
     // 5. Anexa o usuário à requisição para o controller usar

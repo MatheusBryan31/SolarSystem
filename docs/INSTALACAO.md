@@ -198,6 +198,16 @@ Em conexões diretas, deixe `TRUSTED_PROXY_IPS` vazio. Atrás de um proxy revers
 
 Os contadores ficam em memória por processo. Em uma implantação com várias réplicas, aplique um limite compartilhado no proxy de borda para obter uma cota única entre instâncias.
 
+### Recuperação de senha
+
+1. Aplique as migrations com `npm run db:deploy -w apps/api` antes de executar a versão da API que usa os novos campos de usuário.
+2. Configure `SMTP_URL` com uma URL `smtps://` ou `smtp://` e `PASSWORD_RESET_FROM` com um remetente autorizado. Guarde as credenciais SMTP como segredo. Em produção, a conexão SMTP requer TLS. O link usa `WEB_ORIGIN`, e o proxy deve servir o painel também em `/redefinir-senha`. [Transporte SMTP do Nodemailer](https://nodemailer.com/smtp)
+3. Valide a entrega em homologação com um destinatário controlado. A API aceita a solicitação com uma resposta genérica e processa o envio em segundo plano. Sem SMTP configurado, a solicitação continua genérica e nenhum link é emitido. Depois de uma falha de entrega, o usuário pode solicitar outro link.
+
+O link expira em 15 minutos e é de uso único. Enquanto houver um link válido, solicitações adicionais não o substituem nem geram outro e-mail. A troca autenticada exige a senha atual. Troca e redefinição revogam as sessões anteriores da conta. No painel, o token do link é lido do fragmento da URL e removido do endereço ao abrir o formulário. Se precisar recarregar a tela, reabra o link no e-mail.
+
+Para executar o teste de concorrência e entrega local, aplique as migrations em um banco descartável chamado `solarsystem_password_validation` em `127.0.0.1`. Aponte `SOLARSYSTEM_PASSWORD_TEST_DATABASE_URL` para esse banco e execute `node --import tsx --test apps/api/test/password-postgres.test.cjs` na raiz.
+
 ## Build e preview
 
 Na raiz:

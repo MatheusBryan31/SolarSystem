@@ -6,6 +6,8 @@ import { AuthController } from './auth.controller';
 import { AuthGuard } from './auth.guard';
 import { AuthService } from './auth.service';
 import { LoginRateLimitGuard } from './login-rate-limit.guard';
+import { PasswordMailer } from './password-mailer';
+import { PasswordService } from './password.service';
 import { RolesGuard } from './roles.guard';
 
 @Module({
@@ -24,6 +26,8 @@ import { RolesGuard } from './roles.guard';
   providers: [
     AuthService,
     LoginRateLimitGuard,
+    PasswordMailer,
+    PasswordService,
     { provide: APP_GUARD, useClass: AuthGuard }, // GuardGlobal: proteje todas as classes
     { provide: APP_GUARD, useClass: RolesGuard }, // roda depois do AuthGuard
   ],

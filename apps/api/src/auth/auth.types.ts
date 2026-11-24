@@ -4,6 +4,7 @@ import type { Role } from '@prisma/client';
 export interface JwtPayload {
   sub: string; // "subject": o id do usuário (nome padrão do JWT)
   role: Role;
+  sv?: number; // JWTs anteriores à migration correspondem à versão zero.
 }
 
 // O usuário que o Guard anexa à requisição

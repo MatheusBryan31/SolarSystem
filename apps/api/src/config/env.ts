@@ -9,6 +9,22 @@ export const envSchema = z
     DATABASE_URL: z.string().startsWith('postgresql://', 'DATABASE_URL deve começar com postgresql://'),
     JWT_SECRET: z.string().min(32, 'JWT_SECRET precisa ter pelo menos 32 caracteres'),
     JWT_EXPIRES_IN: z.coerce.number().int().positive().default(28800),
+    SMTP_URL: z
+      .union([
+        z.literal(''),
+        z.string().refine((valor) => {
+          const url = URL.parse(valor);
+          return (
+            url !== null &&
+            ['smtp:', 'smtps:'].includes(url.protocol) &&
+            Boolean(url.hostname) &&
+            !url.search &&
+            !url.hash
+          );
+        }, 'Configure uma URL smtp:// ou smtps:// sem parâmetros nem fragmento'),
+      ])
+      .default(''),
+    PASSWORD_RESET_FROM: z.union([z.literal(''), z.email()]).default(''),
     WEB_ORIGIN: z
       .string()
       .default('http://localhost:5173')
@@ -26,6 +42,10 @@ export const envSchema = z
   .refine(({ NODE_ENV, WEB_ORIGIN }) => NODE_ENV !== 'production' || WEB_ORIGIN.startsWith('https://'), {
     path: ['WEB_ORIGIN'],
     message: 'Em produção, WEB_ORIGIN deve usar HTTPS',
+  })
+  .refine(({ SMTP_URL, PASSWORD_RESET_FROM }) => Boolean(SMTP_URL) === Boolean(PASSWORD_RESET_FROM), {
+    path: ['SMTP_URL'],
+    message: 'Configure SMTP_URL e PASSWORD_RESET_FROM em conjunto',
   });
 
 // O TypeScript deduz o tipo a partir do contrato: não precisamos escrevê-lo duas vezes

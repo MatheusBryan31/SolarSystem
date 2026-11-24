@@ -99,7 +99,12 @@ export class UsersService {
         data: {
           ...dados,
           clientId: vinculo,
-          ...(senha ? { passwordHash: await hash(senha, CUSTO_BCRYPT) } : {}),
+          ...(senha
+            ? { passwordHash: await hash(senha, CUSTO_BCRYPT), sessionVersion: { increment: 1 } }
+            : {}),
+          ...(senha || dados.email !== undefined || dados.active === false
+            ? { passwordResetDigest: null, passwordResetExpiresAt: null }
+            : {}),
         },
         select: camposPublicos,
       });

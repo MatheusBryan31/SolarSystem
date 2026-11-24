@@ -1,8 +1,7 @@
 import { Role } from '@prisma/client';
 import { z } from 'zod';
 
-// bcrypt só considera os primeiros 72 bytes da senha; acima disso, o resto seria ignorado em silêncio
-const senha = z.string().min(10, 'A senha deve ter pelo menos 10 caracteres').max(72, 'Senha muito longa');
+import { novaSenhaSchema } from '../auth/password.schema';
 
 const role = z.enum(Role, 'Perfil inválido (use ADMIN, OPERATOR ou CLIENT)');
 
@@ -10,7 +9,7 @@ const role = z.enum(Role, 'Perfil inválido (use ADMIN, OPERATOR ou CLIENT)');
 const camposUsuario = z.object({
   name: z.string().trim().min(2, 'Nome muito curto').max(120, 'Nome muito longo'),
   email: z.string().trim().toLowerCase().email('E-mail inválido'),
-  senha,
+  senha: novaSenhaSchema,
   role,
   // null = "sem cliente"; obrigatório quando role = CLIENT (regra conferida no Service)
   clientId: z.string().uuid('clientId deve ser um UUID').nullable().optional(),

@@ -7,6 +7,15 @@ import type { UsuarioAutenticado } from './auth.types';
 import { CurrentUser } from './current-user.decorator';
 import { LoginRateLimitGuard } from './login-rate-limit.guard';
 import { loginSchema, type LoginDto } from './login.schema';
+import {
+  alterarSenhaSchema,
+  recuperarSenhaSchema,
+  redefinirSenhaSchema,
+  type AlterarSenhaDto,
+  type RecuperarSenhaDto,
+  type RedefinirSenhaDto,
+} from './password.schema';
+import { PasswordService } from './password.service';
 import { Public } from './public.decorator';
 import { NOME_DO_COOKIE, opcoesDoCookie } from './sessao-cookie';
 
@@ -15,6 +24,7 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly config: ConfigService,
+    private readonly senhas: PasswordService,
   ) {}
 
   private get producao() {
@@ -41,6 +51,42 @@ export class AuthController {
   @Header('Cache-Control', 'no-store')
   @HttpCode(204) // 204 No Content: deu certo e não há nada para devolver
   logout(@Res({ passthrough: true }) res: Response) {
+    res.clearCookie(NOME_DO_COOKIE, opcoesDoCookie(this.producao));
+  }
+
+  @Public()
+  @Post('password/forgot')
+  @UseGuards(LoginRateLimitGuard)
+  @Header('Cache-Control', 'no-store')
+  @HttpCode(202)
+  recuperar(@Body(new ZodValidationPipe(recuperarSenhaSchema)) { email }: RecuperarSenhaDto) {
+    this.senhas.solicitar(email);
+    return { message: 'Se houver uma conta elegível, enviaremos as instruções por e-mail.' };
+  }
+
+  @Public()
+  @Post('password/reset')
+  @UseGuards(LoginRateLimitGuard)
+  @Header('Cache-Control', 'no-store')
+  @HttpCode(204)
+  async redefinir(
+    @Body(new ZodValidationPipe(redefinirSenhaSchema)) dados: RedefinirSenhaDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    await this.senhas.redefinir(dados);
+    res.clearCookie(NOME_DO_COOKIE, opcoesDoCookie(this.producao));
+  }
+
+  @Post('password/change')
+  @UseGuards(LoginRateLimitGuard)
+  @Header('Cache-Control', 'no-store')
+  @HttpCode(204)
+  async alterar(
+    @CurrentUser() usuario: UsuarioAutenticado,
+    @Body(new ZodValidationPipe(alterarSenhaSchema)) dados: AlterarSenhaDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    await this.senhas.alterar(usuario.id, dados);
     res.clearCookie(NOME_DO_COOKIE, opcoesDoCookie(this.producao));
   }
 

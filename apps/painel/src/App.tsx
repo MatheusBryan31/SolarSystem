@@ -3,6 +3,7 @@ import { useAuth } from './auth';
 import { Layout } from './componentes/Layout';
 import { Inicio } from './paginas/Inicio';
 import { Login } from './paginas/Login';
+import { FormularioSenha, RecuperarSenha } from './paginas/Senha';
 import { Usinas } from './paginas/Usinas';
 
 // O MAPA DO PAINEL: qual endereço mostra qual tela
@@ -11,6 +12,14 @@ export function App() {
   const local = useLocation();
 
   if (carregando) return <div className="tela-cheia">Carregando...</div>;
+  if (local.pathname === '/recuperar-senha') return <RecuperarSenha />;
+  if (local.pathname === '/redefinir-senha') {
+    return (
+      <main className="tela-cheia">
+        <FormularioSenha redefinir />
+      </main>
+    );
+  }
   if (erroDeSessao) {
     return (
       <div className="tela-cheia">
@@ -41,13 +50,15 @@ export function App() {
 
   // Logado: as telas internas, todas dentro do Layout (menu lateral + topo)
   const retorno: unknown = local.state?.retorno;
-  const destino = typeof retorno === 'string' && /^\/(?:usinas)?(?:[?#]|$)/.test(retorno) ? retorno : '/';
+  const destino =
+    typeof retorno === 'string' && /^\/(?:usinas|alterar-senha)?(?:[?#]|$)/.test(retorno) ? retorno : '/';
   return (
     <Routes>
       <Route path="/login" element={<Navigate to={destino} replace />} />
       <Route element={<Layout />}>
         <Route path="/" element={<Inicio />} />
         <Route path="/usinas" element={<Usinas />} />
+        <Route path="/alterar-senha" element={<FormularioSenha />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

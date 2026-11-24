@@ -32,7 +32,12 @@ export const quandoSessaoExpirar = (fn: () => void) => {
 
 export async function api<T>(caminho: string, opcoes: { metodo?: string; corpo?: unknown } = {}): Promise<T> {
   const versaoDaRequisicao = versaoDaSessao;
-  const alteraSessao = caminho === '/auth/login' || caminho === '/auth/logout';
+  const alteraSessao = [
+    '/auth/login',
+    '/auth/logout',
+    '/auth/password/reset',
+    '/auth/password/change',
+  ].includes(caminho);
   const metodo = (opcoes.metodo ?? 'GET').toUpperCase();
   const resposta = await fetch(`/api${caminho}`, {
     method: metodo,
@@ -45,7 +50,12 @@ export async function api<T>(caminho: string, opcoes: { metodo?: string; corpo?:
   });
 
   if (alteraSessao && resposta.ok) versaoDaSessao++;
-  if (!alteraSessao && resposta.status === 401 && versaoDaRequisicao === versaoDaSessao) {
+  if (
+    caminho !== '/auth/login' &&
+    caminho !== '/auth/logout' &&
+    resposta.status === 401 &&
+    versaoDaRequisicao === versaoDaSessao
+  ) {
     ouvintesDaSessao.forEach((fn) => fn());
   }
 

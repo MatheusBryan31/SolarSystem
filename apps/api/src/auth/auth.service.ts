@@ -13,7 +13,18 @@ export class AuthService {
   ) {}
 
   async login({ email, senha }: LoginDto) {
-    const usuario = await this.prisma.user.findUnique({ where: { email } });
+    const usuario = await this.prisma.user.findUnique({
+      where: { email },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        active: true,
+        passwordHash: true,
+        sessionVersion: true,
+      },
+    });
     const senhaCorreta = usuario ? await compare(senha, usuario.passwordHash) : false;
 
     // Mesma mensagem para "e-mail não existe" e "senha errada": não revelamos qual dos dois
@@ -21,7 +32,7 @@ export class AuthService {
       throw new UnauthorizedException('E-mail ou senha incorretos');
     }
 
-    const payload: JwtPayload = { sub: usuario.id, role: usuario.role };
+    const payload: JwtPayload = { sub: usuario.id, role: usuario.role, sv: usuario.sessionVersion };
     return {
       accessToken: await this.jwt.signAsync(payload),
       // Montamos a resposta campo a campo: o passwordHash NUNCA sai da API

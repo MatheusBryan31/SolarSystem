@@ -48,6 +48,29 @@ test('painel recupera sessão, reautentica na rota anterior e confirma logout', 
       autenticado = true;
       return responder(200, { usuario });
     }
+    if (pathname === '/api/auth/password/forgot') {
+      assert.equal(route.request().postDataJSON().email, usuario.email);
+      return responder(202, {
+        message: 'Se houver uma conta elegível, enviaremos as instruções por e-mail.',
+      });
+    }
+    if (pathname === '/api/auth/password/reset') {
+      assert.deepEqual(route.request().postDataJSON(), {
+        token: 'x'.repeat(43),
+        novaSenha: 'NovaSenha123',
+      });
+      autenticado = false;
+      return route.fulfill({ status: 204 });
+    }
+    if (pathname === '/api/auth/password/change') {
+      assert.equal(autenticado, true);
+      assert.deepEqual(route.request().postDataJSON(), {
+        senhaAtual: 'correta',
+        novaSenha: 'NovaSenha456',
+      });
+      autenticado = false;
+      return route.fulfill({ status: 204 });
+    }
     if (pathname === '/api/auth/logout') {
       if (falharLogout) return route.abort('failed');
       chegadaLogout.resolve();
@@ -133,4 +156,27 @@ test('painel recupera sessão, reautentica na rota anterior e confirma logout', 
   await page.waitForURL('**/login');
   await page.reload();
   await page.getByRole('button', { name: 'Entrar', exact: true }).waitFor();
+
+  await page.getByRole('link', { name: 'Esqueci minha senha' }).click();
+  await page.getByLabel('E-mail').fill(usuario.email);
+  await page.getByRole('button', { name: 'Enviar instruções' }).click();
+  await page.getByRole('status').filter({ hasText: 'Se houver uma conta elegível' }).waitFor();
+
+  await page.goto(new URL(`/redefinir-senha#token=${'x'.repeat(43)}`, origem).href);
+  await page.waitForURL(new URL('/redefinir-senha', origem).href);
+  await page.getByLabel('Nova senha', { exact: true }).fill('NovaSenha123');
+  await page.getByLabel('Confirmar nova senha').fill('SenhaDiferente123');
+  await page.getByRole('button', { name: 'Salvar senha' }).click();
+  await page.getByRole('alert').filter({ hasText: 'As senhas não coincidem.' }).waitFor();
+  await page.getByLabel('Confirmar nova senha').fill('NovaSenha123');
+  await page.getByRole('button', { name: 'Salvar senha' }).click();
+  await page.getByRole('status').filter({ hasText: 'Senha atualizada' }).waitFor();
+  await page.getByRole('link', { name: 'Ir para o login' }).click();
+  await entrar('correta');
+  await page.getByRole('link', { name: 'Alterar senha' }).click();
+  await page.getByLabel('Senha atual').fill('correta');
+  await page.getByLabel('Nova senha', { exact: true }).fill('NovaSenha456');
+  await page.getByLabel('Confirmar nova senha').fill('NovaSenha456');
+  await page.getByRole('button', { name: 'Salvar senha' }).click();
+  await page.waitForURL('**/login');
 });

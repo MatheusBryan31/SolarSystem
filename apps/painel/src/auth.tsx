@@ -13,6 +13,8 @@ interface ValorAuth {
   verificarSessao: () => void;
   entrar: (email: string, senha: string) => Promise<void>;
   sair: () => Promise<void>;
+  redefinirSenha: (token: string, novaSenha: string) => Promise<void>;
+  alterarSenha: (senhaAtual: string, novaSenha: string) => Promise<void>;
 }
 
 const AuthContext = createContext<ValorAuth | null>(null);
@@ -72,8 +74,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const redefinirSenha = async (token: string, novaSenha: string) => {
+    await api('/auth/password/reset', { metodo: 'POST', corpo: { token, novaSenha } });
+    setUsuario(null);
+  };
+
+  const alterarSenha = async (senhaAtual: string, novaSenha: string) => {
+    await api('/auth/password/change', { metodo: 'POST', corpo: { senhaAtual, novaSenha } });
+    setUsuario(null);
+  };
+
   return (
-    <AuthContext.Provider value={{ usuario, carregando, erroDeSessao, verificarSessao, entrar, sair }}>
+    <AuthContext.Provider
+      value={{
+        usuario,
+        carregando,
+        erroDeSessao,
+        verificarSessao,
+        entrar,
+        sair,
+        redefinirSenha,
+        alterarSenha,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

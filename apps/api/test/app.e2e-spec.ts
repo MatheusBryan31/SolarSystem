@@ -31,6 +31,7 @@ interface TestUser {
   name: string;
   email: string;
   passwordHash: string;
+  sessionVersion: number;
   role: Role;
   active: boolean;
   clientId: string | null;
@@ -115,7 +116,7 @@ describe('API HTTP — saúde, sessão e permissões com Prisma isolado', () => 
         clientId: null,
       },
       { id: CLIENTE, name: 'Cliente teste', email: 'client@example.test', role: Role.CLIENT, clientId: DONO },
-    ].map((user) => ({ ...user, active: true, passwordHash }));
+    ].map((user) => ({ ...user, active: true, passwordHash, sessionVersion: 0 }));
     prisma.$queryRaw.mockResolvedValue([{ resultado: 1 }]);
     prisma.user.findUnique.mockImplementation(({ where }: { where: { id?: string; email?: string } }) =>
       Promise.resolve(
@@ -388,6 +389,43 @@ describe('API HTTP — saúde, sessão e permissões com Prisma isolado', () => 
       .set('X-CSRF-Protection', '1')
       .send({ email: ' ADMIN@EXAMPLE.TEST ', senha: SENHA })
       .expect(200);
+  });
+
+  it('recuperação pública dá a mesma resposta para e-mail existente, inativo e desconhecido', async () => {
+    users[1].active = false;
+    const respostas = [];
+    for (const email of ['ADMIN@example.test', 'operator@example.test', 'desconhecido@example.test']) {
+      const resposta = await request(app.getHttpServer())
+        .post('/api/auth/password/forgot')
+        .set('X-CSRF-Protection', '1')
+        .send({ email })
+        .expect('Cache-Control', 'no-store')
+        .expect(202);
+      expect(resposta.get('Set-Cookie')).toBeUndefined();
+      respostas.push(resposta.text);
+    }
+    expect(new Set(respostas).size).toBe(1);
+    expect(respostas[0]).toContain('Se houver uma conta elegível');
+  });
+
+  it('troca de senha exige sessão e redefinição exige o cabeçalho CSRF', async () => {
+    await request(app.getHttpServer())
+      .post('/api/auth/password/change')
+      .set('X-CSRF-Protection', '1')
+      .send({ senhaAtual: SENHA, novaSenha: 'OutraSenha123' })
+      .expect(401);
+    await request(app.getHttpServer())
+      .post('/api/auth/password/reset')
+      .send({ token: 'x'.repeat(43), novaSenha: 'OutraSenha123' })
+      .expect(403);
+  });
+
+  it('o guard rejeita sessões de uma versão anterior à troca de senha', async () => {
+    const { cookie } = await login();
+    users[0].sessionVersion++;
+    await request(app.getHttpServer()).get('/api/auth/me').set('Cookie', cookie).expect(401);
+    const novaSessao = await login();
+    await request(app.getHttpServer()).get('/api/auth/me').set('Cookie', novaSessao.cookie).expect(200);
   });
 
   it('limita tentativas concorrentes por origem e conta normalizada e libera após a janela', async () => {
