@@ -16,6 +16,7 @@ describe('DemoAdapter', () => {
     const a = await adaptador.listarUsinas({ quantidade: '5', semente: 'x' }, MEIO_DIA);
     const b = await adaptador.listarUsinas({ quantidade: '5', semente: 'x' }, MEIO_DIA);
     expect(a).toEqual(b);
+    expect(a[0].externalId).toBe('DEMO2-001');
   });
 
   it('gera energia ao meio-dia e nada à meia-noite', async () => {

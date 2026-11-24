@@ -79,7 +79,7 @@ model Integration {
   id          String       @id @default(uuid())
   provider    ProviderType
   name        String
-  credentials Json         @default("{}") // dados de acesso à plataforma; nunca saem pela API
+  credentials Json         // Envelope autenticado. Nunca sai pela API.
   enabled     Boolean      @default(true)
   archivedAt  DateTime?    @map("archived_at")
   revision    Int          @default(0)

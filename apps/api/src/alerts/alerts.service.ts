@@ -70,7 +70,7 @@ export class AlertsService {
   }
 
   // A sincronização falhou: abre UM alerta (se já houver um ativo, não duplica)
-  async registrarFalhaDeSincronizacao(integrationId: string, nome: string, erro: string) {
+  async registrarFalhaDeSincronizacao(integrationId: string) {
     const ativo = await this.prisma.alert.findFirst({
       where: { integrationId, type: 'SYNC_FAILED', status: { not: 'RESOLVED' } },
     });
@@ -80,7 +80,7 @@ export class AlertsService {
         integrationId,
         type: 'SYNC_FAILED',
         severity: 'WARNING',
-        message: `Falha ao sincronizar a integração ${nome}: ${erro}`,
+        message: 'Falha na coleta da plataforma',
       },
     });
   }
@@ -117,10 +117,11 @@ export class AlertsService {
       }),
     ]);
     return {
-      itens:
-        usuario.role === Role.CLIENT
-          ? itens.map((item) => ({ ...item, integrationId: null, integration: null }))
-          : itens,
+      itens: itens.map((item) => ({
+        ...item,
+        ...(usuario.role === Role.CLIENT ? { integrationId: null, integration: null } : {}),
+        ...(item.type === 'SYNC_FAILED' ? { message: 'Falha na coleta da plataforma' } : {}),
+      })),
       total,
       pagina,
       porPagina,
@@ -132,10 +133,13 @@ export class AlertsService {
     const alerta = await this.prisma.alert.findUnique({ where: { id } });
     if (!alerta) throw new NotFoundException('Alerta não encontrado');
     if (alerta.status === 'RESOLVED') throw new BadRequestException('Este alerta já foi resolvido');
-    return this.prisma.alert.update({
+    const atualizado = await this.prisma.alert.update({
       where: { id },
       data: { status: 'ACKNOWLEDGED', acknowledgedAt: new Date(), acknowledgedById: usuario.id },
       include: incluir,
     });
+    return atualizado.type === 'SYNC_FAILED'
+      ? { ...atualizado, message: 'Falha na coleta da plataforma' }
+      : atualizado;
   }
 }

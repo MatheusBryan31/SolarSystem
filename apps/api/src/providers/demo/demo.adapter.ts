@@ -75,7 +75,7 @@ export class DemoAdapter implements ProviderAdapter {
         rotulo: 'Semente',
         tipo: 'text',
         obrigatorio: false,
-        ajuda: 'Mude para gerar outras usinas',
+        ajuda: 'Mude para variar as características da simulação',
       },
     ],
   };
@@ -113,7 +113,7 @@ export class DemoAdapter implements ProviderAdapter {
       const diasDeUso = 200 + Math.floor(numeroDaChave(`${chave}:idade`) * 1000);
 
       return {
-        externalId: `DEMO-${semente}-${String(i + 1).padStart(3, '0')}`,
+        externalId: `DEMO2-${String(i + 1).padStart(3, '0')}`,
         name: `${NOMES[i % NOMES.length]} (${cidade})`,
         capacityKwp: capacidadeKwp,
         city: cidade,

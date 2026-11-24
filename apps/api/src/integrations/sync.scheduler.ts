@@ -46,20 +46,22 @@ export class SyncScheduler implements OnApplicationBootstrap, OnModuleDestroy {
     try {
       const integracoes = await this.prisma.integration.findMany({
         where: { enabled: true, archivedAt: null },
-        select: { id: true, name: true },
+        select: { id: true },
       });
       for (const integracao of integracoes) {
         // Uma integração com problema NÃO pode impedir as outras de sincronizar
         try {
           const r = await this.integrations.sincronizar(integracao.id);
           this.logger.log(
-            `${integracao.name}: ${r.usinasSincronizadas} usinas | alertas: ` +
+            `Integração ${integracao.id}: ${r.usinasSincronizadas} usinas | alertas: ` +
               `${r.alertas.abertos} abertos, ${r.alertas.resolvidos} resolvidos`,
           );
-        } catch (erro) {
-          this.logger.error(`${integracao.name}: ${erro instanceof Error ? erro.message : String(erro)}`);
+        } catch {
+          this.logger.error(`Falha de sincronização da integração ${integracao.id}`);
         }
       }
+    } catch {
+      this.logger.error('Falha ao consultar integrações para sincronização');
     } finally {
       this.rodando = false; // o finally roda MESMO se der erro: a trava nunca fica presa
     }

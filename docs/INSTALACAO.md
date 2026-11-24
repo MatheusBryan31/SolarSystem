@@ -198,6 +198,21 @@ Em conexões diretas, deixe `TRUSTED_PROXY_IPS` vazio. Atrás de um proxy revers
 
 Os contadores ficam em memória por processo. Em uma implantação com várias réplicas, aplique um limite compartilhado no proxy de borda para obter uma cota única entre instâncias.
 
+### Credenciais de integrações em repouso
+
+A API exige `INTEGRATION_CREDENTIALS_KEY` em todos os ambientes. Gere uma chave aleatória exclusiva de 32 bytes em Base64, usando o comando comentado em `apps/api/.env.example`, e guarde-a em um gerenciador de segredos. Todas as réplicas do mesmo banco precisam receber a mesma chave. Guarde também uma cópia recuperável separada do backup. Trocar a variável sem recifrar os dados torna as credenciais antigas inacessíveis.
+
+As credenciais são gravadas com AES-256-GCM, nonce aleatório por gravação e uma tag autenticada. O ID e o provedor da integração vinculam o envelope ao registro. A aplicação só interpreta o conteúdo autenticado durante a sincronização. [Documentação de criptografia do Node.js](https://nodejs.org/download/release/v26.8.2/docs/api/crypto.html)
+
+**Atualização de banco já populado**
+
+1. Faça um backup com acesso restrito e valide a restauração em uma cópia isolada. Backups, WAL e versões antigas de páginas podem conter os dados legados em claro. Aplique a retenção protegida a essas cópias. Se houve exposição anterior, rotacione as credenciais junto aos provedores.
+2. Na cópia, confirme que as migrations até `20261124060000_password_recovery` estão aplicadas. Gere o cliente com `npm run db:generate -w apps/api`. Injete `DATABASE_URL` da cópia e `INTEGRATION_CREDENTIALS_KEY` no ambiente do comando.
+3. Execute `npm run db:encrypt-integration-credentials -w apps/api -- --check`. O ensaio verifica a chave, a leitura de volta de cada credencial convertida e a integridade dos vínculos. Ele usa os mesmos locks e reverte todas as alterações. Se detectar inconsistências ou colisões dos rótulos DEMO, interrompa e concilie na cópia antes de prosseguir.
+4. Em janela de manutenção, confirme o destino e pare as versões antigas da API, sincronizadores e demais escritores. Execute o ensaio no destino e, se passar, execute `npm run db:encrypt-integration-credentials -w apps/api -- --apply`. O utilitário obtém locks exclusivos e converte em uma transação. A conversão mantém UUIDs, vínculos, medições e datas. Rótulos de demonstração `DEMO-…-001` tornam-se `DEMO2-001` para retirar a semente dos identificadores. Mensagens legadas de falha de sincronização são preservadas de forma cifrada.
+5. Execute `npm run db:deploy -w apps/api` para aplicar `20261124070000_integration_credentials_encrypted`. A restrição rejeita valores legados e o banco deixa de gerar um objeto em claro como padrão. Para banco vazio, aplique as migrations diretamente.
+6. Inicie a versão nova com a chave correta e confirme as contagens e os vínculos. Faça uma coleta controlada e só então reative a agenda. Em caso de falha na conversão, a transação inteira é revertida. Após a conversão, para voltar à versão antiga, restaure o backup verificado em coordenação com a janela de manutenção e com a retenção das escritas realizadas desde o backup.
+
 ### Recuperação de senha
 
 1. Aplique as migrations com `npm run db:deploy -w apps/api` antes de executar a versão da API que usa os novos campos de usuário.

@@ -3,6 +3,7 @@ import { IntegrationsService } from './integrations.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { ProviderRegistry } from '../providers/provider-registry';
 import { ErroDaPlataforma } from '../providers/provider.types';
+import { CredentialEncryption } from './credential-encryption';
 import { AlertsService } from '../alerts/alerts.service';
 import { PlantCatalogService } from '../plants/plant-catalog.service';
 
@@ -10,7 +11,7 @@ describe('Sincronização controlada do catálogo', () => {
   const db = {
     $queryRaw: jest.fn(),
     $transaction: jest.fn(),
-    integration: { findUnique: jest.fn(), update: jest.fn(), create: jest.fn() },
+    integration: { findUnique: jest.fn(), findMany: jest.fn(), update: jest.fn(), create: jest.fn() },
     alert: { findFirst: jest.fn(), create: jest.fn(), updateMany: jest.fn() },
     plantDiscovery: { findFirst: jest.fn(), update: jest.fn() },
   };
@@ -18,11 +19,13 @@ describe('Sincronização controlada do catálogo', () => {
   const registry = { obter: jest.fn() };
   const alerts = { avaliarUsinasTx: jest.fn() };
   const catalog = { apply: jest.fn() };
+  const criptografia = new CredentialEncryption(Buffer.alloc(32, 5).toString('base64'));
   const service = new IntegrationsService(
     db as unknown as PrismaService,
     registry as unknown as ProviderRegistry,
     alerts as unknown as AlertsService,
     catalog as unknown as PlantCatalogService,
+    criptografia,
   );
   const integration = {
     id: 'i',
@@ -30,7 +33,7 @@ describe('Sincronização controlada do catálogo', () => {
     enabled: true,
     archivedAt: null,
     revision: 0,
-    credentials: {},
+    credentials: criptografia.cifrar({ se: 'segredo-de-teste' }, 'i', 'DEMO'),
   };
   const remote = {
     externalId: '001',
@@ -60,6 +63,7 @@ describe('Sincronização controlada do catálogo', () => {
       descobertasPendentes: 1,
     });
     expect(catalog.apply).toHaveBeenCalledTimes(1);
+    expect(adapter.listarUsinas).toHaveBeenCalledWith({ se: 'segredo-de-teste' }, expect.any(Date));
     expect(alerts.avaliarUsinasTx).toHaveBeenCalledWith(db, 'i', expect.any(Date));
   });
   it.each([{ enabled: false }, { archivedAt: new Date() }])(
@@ -95,6 +99,35 @@ describe('Sincronização controlada do catálogo', () => {
       'Não foi possível conectar à plataforma. Confira os dados da integração.',
     );
     expect(db.integration.create).not.toHaveBeenCalled();
+  });
+  it('cria com envelope vinculado ao ID e omite o envelope na resposta', async () => {
+    adapter.testarConexao.mockResolvedValue({ usinasEncontradas: 1 });
+    db.integration.create.mockResolvedValue({ id: 'conta', lastError: null });
+    const resposta = await service.criar({
+      name: 'Teste',
+      provider: 'DEMO',
+      credentials: { chave: 'secreta' },
+    });
+    const [[chamada]] = db.integration.create.mock.calls as [
+      { data: { id: string; credentials: string }; select: { credentials?: boolean } },
+    ][];
+    expect(chamada.select.credentials).toBeUndefined();
+    expect(chamada.data.credentials).not.toContain('secreta');
+    expect(criptografia.decifrar(chamada.data.credentials, chamada.data.id, 'DEMO')).toEqual({
+      chave: 'secreta',
+    });
+    expect(resposta).not.toHaveProperty('credentials');
+  });
+  it('nega coleta com credencial legada ou corrompida antes de chamar o adaptador', async () => {
+    db.integration.findUnique.mockResolvedValue({ ...integration, credentials: { segredo: 'legado' } });
+    await expect(service.sincronizar('i')).rejects.toThrow('Falha ao coletar os dados da plataforma');
+    expect(adapter.listarUsinas).not.toHaveBeenCalled();
+  });
+  it('oculta detalhes históricos de erros na listagem', async () => {
+    db.integration.findMany.mockResolvedValue([{ id: 'i', lastError: 'erro contendo segredo' }]);
+    await expect(service.listar()).resolves.toEqual([
+      { id: 'i', lastError: 'Falha na coleta da plataforma' },
+    ]);
   });
   it('importação exige revisar a versão atual da descoberta', async () => {
     db.plantDiscovery.findFirst.mockResolvedValue({ id: 'd', revision: 2, resolvedAt: null });

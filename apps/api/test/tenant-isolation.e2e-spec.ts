@@ -12,6 +12,7 @@ import { NOME_DO_COOKIE } from '../src/auth/sessao-cookie';
 import { ClientsModule } from '../src/clients/clients.module';
 import { configurarHttp } from '../src/config/http';
 import { InvertersModule } from '../src/inverters/inverters.module';
+import { CredentialEncryption } from '../src/integrations/credential-encryption';
 import { MeasurementsModule } from '../src/measurements/measurements.module';
 import { PlantsModule } from '../src/plants/plants.module';
 import { PrismaModule } from '../src/prisma/prisma.module';
@@ -86,8 +87,15 @@ suite('Isolamento de clientes via HTTP e PostgreSQL', () => {
     const nome = randomUUID();
     const a = await prisma.client.create({ data: { name: `Cliente A ${nome}` } });
     const b = await prisma.client.create({ data: { name: `Cliente B ${nome}` } });
+    const integrationId = randomUUID();
+    const cipher = new CredentialEncryption(Buffer.alloc(32, 7).toString('base64'));
     const integracao = await prisma.integration.create({
-      data: { provider: 'DEMO', name: 'Conta compartilhada', credentials: { segredo: 'nao-expor' } },
+      data: {
+        id: integrationId,
+        provider: 'DEMO',
+        name: 'Conta compartilhada',
+        credentials: cipher.cifrar({ segredo: 'nao-expor' }, integrationId, 'DEMO'),
+      },
     });
     const criarPlanta = (clientId: string, externalId: string) =>
       prisma.$transaction(async (tx) => {

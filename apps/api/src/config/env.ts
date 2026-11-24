@@ -1,5 +1,6 @@
 import { isIP } from 'node:net';
 import { z } from 'zod';
+import { chaveDeCredenciaisValida } from '../integrations/credential-encryption';
 
 // O "contrato": quais variáveis existem e que formato cada uma deve ter
 export const envSchema = z
@@ -9,6 +10,9 @@ export const envSchema = z
     DATABASE_URL: z.string().startsWith('postgresql://', 'DATABASE_URL deve começar com postgresql://'),
     JWT_SECRET: z.string().min(32, 'JWT_SECRET precisa ter pelo menos 32 caracteres'),
     JWT_EXPIRES_IN: z.coerce.number().int().positive().default(28800),
+    INTEGRATION_CREDENTIALS_KEY: z
+      .string()
+      .refine(chaveDeCredenciaisValida, 'Configure 32 bytes aleatórios em Base64 canônico'),
     SMTP_URL: z
       .union([
         z.literal(''),

@@ -4,16 +4,24 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
+  ServiceUnavailableException,
 } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import { AlertsService } from '../alerts/alerts.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { ProviderRegistry } from '../providers/provider-registry';
-import { ErroDaPlataforma, type Credenciais, type UsinaLida } from '../providers/provider.types';
 import type { CriarIntegracaoDto } from './integrations.schemas';
 import type { EstadoIntegracaoDto } from './integrations.schemas';
 import { catalogTransaction } from '../plants/catalog-transaction';
 import { PlantCatalogService } from '../plants/plant-catalog.service';
 import { snapshot, snapshotSchema } from '../plants/plant-domain';
+import { CredentialEncryption } from './credential-encryption';
+
+const ERRO_COLETA = 'Falha na coleta da plataforma';
+
+function respostaPublica<T extends { lastError: string | null }>(integracao: T): T {
+  return { ...integracao, lastError: integracao.lastError === null ? null : ERRO_COLETA };
+}
 
 // O que pode sair da API. As credenciais NÃO estão aqui: senha de plataforma não volta para a tela.
 const camposPublicos = {
@@ -36,25 +44,38 @@ export class IntegrationsService {
     private readonly registry: ProviderRegistry,
     private readonly alerts: AlertsService,
     private readonly catalog: PlantCatalogService,
+    private readonly criptografia: CredentialEncryption,
   ) {}
 
-  listar() {
-    return this.prisma.integration.findMany({ select: camposPublicos, orderBy: { name: 'asc' } });
+  async listar() {
+    const contas = await this.prisma.integration.findMany({
+      select: camposPublicos,
+      orderBy: { name: 'asc' },
+    });
+    return contas.map(respostaPublica);
   }
 
   async criar(dados: CriarIntegracaoDto) {
+    const { provider, name, credentials } = dados;
+    const id = randomUUID();
     // Só salva credenciais que FUNCIONAM: testa antes de gravar
     try {
-      await this.registry.obter(dados.provider).testarConexao(dados.credentials);
-    } catch (erro) {
-      if (erro instanceof ErroDaPlataforma) {
-        throw new BadRequestException(
-          'Não foi possível conectar à plataforma. Confira os dados da integração.',
-        );
-      }
-      throw erro;
+      await this.registry.obter(provider).testarConexao(credentials);
+    } catch {
+      throw new BadRequestException(
+        'Não foi possível conectar à plataforma. Confira os dados da integração.',
+      );
     }
-    return this.prisma.integration.create({ data: dados, select: camposPublicos });
+    try {
+      return respostaPublica(
+        await this.prisma.integration.create({
+          data: { id, provider, name, credentials: this.criptografia.cifrar(credentials, id, provider) },
+          select: camposPublicos,
+        }),
+      );
+    } catch {
+      throw new ServiceUnavailableException('Não foi possível salvar a integração.');
+    }
   }
 
   // Busca as usinas na plataforma, grava/atualiza no banco e avalia os alertas
@@ -64,13 +85,14 @@ export class IntegrationsService {
     if (!integracao.enabled || integracao.archivedAt)
       throw new BadRequestException('Integração pausada ou arquivada');
 
-    const adaptador = this.registry.obter(integracao.provider);
     const agora = new Date();
 
     // ETAPA 1: falar com a plataforma e gravar. Só ESTA parte é "falha de sincronização".
-    let usinas: UsinaLida[];
+    let snapshots: ReturnType<typeof snapshot>[];
     try {
-      usinas = await adaptador.listarUsinas(integracao.credentials as Credenciais, agora);
+      const credenciais = this.criptografia.decifrar(integracao.credentials, id, integracao.provider);
+      const usinas = await this.registry.obter(integracao.provider).listarUsinas(credenciais, agora);
+      snapshots = usinas.map((value) => snapshot(value, agora));
     } catch {
       // Registra a falha para aparecer na tela e abre um alerta SYNC_FAILED
       await catalogTransaction(this.prisma, async (tx) => {
@@ -79,7 +101,7 @@ export class IntegrationsService {
         // Mensagem do provedor pode conter credenciais. Nunca persistir/devolver o erro bruto.
         await tx.integration.update({
           where: { id },
-          data: { lastSyncAt: agora, lastError: 'Falha na coleta da plataforma' },
+          data: { lastSyncAt: agora, lastError: ERRO_COLETA },
         });
         const active = await tx.alert.findFirst({
           where: { integrationId: id, type: 'SYNC_FAILED', status: { not: 'RESOLVED' } },
@@ -90,14 +112,13 @@ export class IntegrationsService {
               integrationId: id,
               type: 'SYNC_FAILED',
               severity: 'WARNING',
-              message: 'Falha na coleta da plataforma',
+              message: ERRO_COLETA,
             },
           });
       });
       throw new BadGatewayException('Falha ao coletar os dados da plataforma');
     }
 
-    const snapshots = usinas.map((value) => snapshot(value, agora));
     if (new Set(snapshots.map((value) => value.externalId)).size !== snapshots.length)
       throw new BadRequestException('Identidades duplicadas no lote');
     return catalogTransaction(this.prisma, async (tx) => {
@@ -141,15 +162,17 @@ export class IntegrationsService {
         throw new ConflictException('Integração alterada. Recarregue os dados.');
       if (current.archivedAt && input.enabled)
         throw new BadRequestException('Integração arquivada não pode ser reativada');
-      return tx.integration.update({
-        where: { id },
-        data: {
-          enabled: input.archive ? false : input.enabled,
-          archivedAt: input.archive ? new Date() : undefined,
-          revision: { increment: 1 },
-        },
-        select: camposPublicos,
-      });
+      return respostaPublica(
+        await tx.integration.update({
+          where: { id },
+          data: {
+            enabled: input.archive ? false : input.enabled,
+            archivedAt: input.archive ? new Date() : undefined,
+            revision: { increment: 1 },
+          },
+          select: camposPublicos,
+        }),
+      );
     });
   }
 

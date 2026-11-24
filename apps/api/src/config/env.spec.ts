@@ -3,6 +3,7 @@ import { validateEnv } from './env';
 const base = {
   DATABASE_URL: 'postgresql://teste@localhost/teste',
   JWT_SECRET: 'segredo-de-teste-com-mais-de-trinta-e-dois-caracteres',
+  INTEGRATION_CREDENTIALS_KEY: Buffer.alloc(32, 4).toString('base64'),
 };
 
 describe('configuração da origem web', () => {

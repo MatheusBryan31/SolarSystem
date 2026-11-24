@@ -45,4 +45,14 @@ export function configurarHttp(
     }
     next();
   });
+
+  app.useBodyParser('json');
+  app.useBodyParser('urlencoded', { extended: true });
+  app.use((erro: unknown, _req: Request, res: Response, next: NextFunction) => {
+    if (erro && typeof erro === 'object' && 'type' in erro && erro.type === 'entity.parse.failed') {
+      res.status(400).json({ statusCode: 400, message: 'Formato do corpo da requisição inválido.' });
+      return;
+    }
+    next(erro);
+  });
 }

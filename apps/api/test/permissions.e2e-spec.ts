@@ -277,4 +277,21 @@ describe('Matriz HTTP de autorização', () => {
       await req.expect(status);
     }
   });
+
+  it('não ecoa conteúdo do corpo em erros de parsing ou validação da integração', async () => {
+    const post = () =>
+      request(app.getHttpServer())
+        .post('/api/integrations')
+        .set('X-CSRF-Protection', '1')
+        .set('Cookie', `${NOME_DO_COOKIE}=${jwt.sign({ sub: Role.ADMIN, role: Role.ADMIN })}`);
+    const malformado = await post()
+      .type('json')
+      .send('{"credentials":{"amostra-secreta": falha}}')
+      .expect(400);
+    expect(malformado.text).not.toContain('amostra-secreta');
+    const invalido = await post()
+      .send({ name: 'Conta teste', provider: 'DEMO', credentials: { 'amostra-secreta': 123 } })
+      .expect(400);
+    expect(invalido.text).not.toContain('amostra-secreta');
+  });
 });
