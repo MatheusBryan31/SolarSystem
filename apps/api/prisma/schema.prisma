@@ -89,6 +89,7 @@ model Integration {
   plants        Plant[]
   externalLinks PlantExternalLink[]
   discoveries   PlantDiscovery[]
+  inverters     Inverter[]
 
   @@map("integrations")
 }
@@ -122,10 +123,52 @@ model Plant {
   externalLinks PlantExternalLink[]
   discoveries   PlantDiscovery[]
   auditEvents   PlantAuditEvent[]
+  inverters     Inverter[]
 
   @@unique([integrationId, externalId]) // a mesma usina nunca entra duas vezes
   @@index([clientId])
   @@map("plants")
+}
+
+enum InverterOrigin {
+  MANUAL
+  IMPORTED
+}
+
+enum InverterStatus {
+  UNKNOWN
+  ONLINE
+  OFFLINE
+  FAULT
+  MAINTENANCE
+}
+
+model Inverter {
+  id                  String         @id @default(uuid())
+  plantId             String         @map("plant_id")
+  manufacturer        String
+  manufacturerKey     String         @map("manufacturer_key")
+  model               String
+  serialNumber        String         @map("serial_number")
+  serialKey           String         @map("serial_key")
+  status              InverterStatus @default(UNKNOWN)
+  origin              InverterOrigin @default(MANUAL)
+  integrationId       String?        @map("integration_id")
+  externalId          String?        @map("external_id")
+  lastCommunicationAt DateTime?      @map("last_communication_at")
+  revision            Int            @default(0)
+  archivedAt          DateTime?      @map("archived_at")
+  archiveReason       String?        @map("archive_reason")
+  archivedById        String?        @map("archived_by_id")
+  createdAt           DateTime       @default(now()) @map("created_at")
+  updatedAt           DateTime       @updatedAt @map("updated_at")
+  plant               Plant          @relation(fields: [plantId], references: [id], onDelete: Restrict)
+  integration         Integration?   @relation(fields: [integrationId], references: [id], onDelete: Restrict)
+
+  @@unique([manufacturerKey, serialKey])
+  @@unique([integrationId, externalId])
+  @@index([plantId, archivedAt])
+  @@map("inverters")
 }
 
 model PlantExternalLink {
