@@ -316,6 +316,25 @@ describe('API HTTP — saúde, sessão e permissões com Prisma isolado', () => 
     expect(prisma.user.findUnique).not.toHaveBeenCalled();
   });
 
+  it('cookie com codificação inválida retorna 401 sem consultar usuários', async () => {
+    await request(app.getHttpServer()).get('/api/auth/me').set('Cookie', `${NOME_DO_COOKIE}=%ZZ`).expect(401);
+    expect(prisma.user.findUnique).not.toHaveBeenCalled();
+  });
+
+  it('permite reautenticação após expirar e após sair', async () => {
+    const agent = request.agent(app.getHttpServer());
+    const credenciais = { email: 'client@example.test', senha: SENHA };
+    const expirado = jwt.sign({ sub: CLIENTE, role: Role.CLIENT }, { expiresIn: -1 });
+    await agent.get('/api/auth/me').set('Cookie', `${NOME_DO_COOKIE}=${expirado}`).expect(401);
+    for (let tentativa = 0; tentativa < 2; tentativa++) {
+      await agent.post('/api/auth/login').send(credenciais).expect('Cache-Control', 'no-store').expect(200);
+      const sessao = await agent.get('/api/auth/me').expect('Cache-Control', 'no-store').expect(200);
+      expect(sessao.body).toMatchObject({ id: CLIENTE, role: Role.CLIENT, clientId: DONO });
+      await agent.post('/api/auth/logout').expect('Cache-Control', 'no-store').expect(204);
+      await agent.get('/api/auth/me').expect(401);
+    }
+  });
+
   it('Bearer sozinho não substitui o cookie de sessão', async () => {
     const token = jwt.sign({ sub: ADMIN, role: Role.ADMIN });
     await request(app.getHttpServer()).get('/api/auth/me').auth(token, { type: 'bearer' }).expect(401);

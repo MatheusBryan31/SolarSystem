@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, Post, Res } from '@nestjs/common';
+import { Body, Controller, Get, Header, HttpCode, Post, Res } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Response } from 'express';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
@@ -22,6 +22,7 @@ export class AuthController {
 
   @Public()
   @Post('login')
+  @Header('Cache-Control', 'no-store')
   @HttpCode(200) // login não cria nada: 200 OK em vez do 201 padrão do POST
   async login(
     @Body(new ZodValidationPipe(loginSchema)) dados: LoginDto,
@@ -35,12 +36,14 @@ export class AuthController {
 
   @Public() // quem tem a sessão vencida também precisa conseguir "sair"
   @Post('logout')
+  @Header('Cache-Control', 'no-store')
   @HttpCode(204) // 204 No Content: deu certo e não há nada para devolver
   logout(@Res({ passthrough: true }) res: Response) {
     res.clearCookie(NOME_DO_COOKIE, opcoesDoCookie(this.producao));
   }
 
   @Get('me') // sem @Public(): protegida pelo Guard
+  @Header('Cache-Control', 'no-store')
   me(@CurrentUser() usuario: UsuarioAutenticado) {
     return usuario;
   }

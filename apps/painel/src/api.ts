@@ -20,12 +20,18 @@ export class ErroDaApi extends Error {
 }
 
 // Quem quiser saber que a sessão caiu (o AuthProvider) se registra aqui
-let aoExpirar: () => void = () => {};
+const ouvintesDaSessao = new Set<() => void>();
+let versaoDaSessao = 0;
 export const quandoSessaoExpirar = (fn: () => void) => {
-  aoExpirar = fn;
+  ouvintesDaSessao.add(fn);
+  return () => {
+    ouvintesDaSessao.delete(fn);
+  };
 };
 
 export async function api<T>(caminho: string, opcoes: { metodo?: string; corpo?: unknown } = {}): Promise<T> {
+  const versaoDaRequisicao = versaoDaSessao;
+  const alteraSessao = caminho === '/auth/login' || caminho === '/auth/logout';
   const resposta = await fetch(`/api${caminho}`, {
     method: opcoes.metodo ?? 'GET',
     credentials: 'same-origin', // envia o cookie de sessão (o painel e a API têm a mesma origem, via proxy)
@@ -33,7 +39,10 @@ export async function api<T>(caminho: string, opcoes: { metodo?: string; corpo?:
     body: opcoes.corpo !== undefined ? JSON.stringify(opcoes.corpo) : undefined,
   });
 
-  if (resposta.status === 401) aoExpirar(); // sessão vencida, inválida ou inexistente
+  if (alteraSessao && resposta.ok) versaoDaSessao++;
+  if (!alteraSessao && resposta.status === 401 && versaoDaRequisicao === versaoDaSessao) {
+    ouvintesDaSessao.forEach((fn) => fn());
+  }
 
   const dados: unknown = await resposta.json().catch(() => null); // 204 não tem corpo
   if (!resposta.ok) {

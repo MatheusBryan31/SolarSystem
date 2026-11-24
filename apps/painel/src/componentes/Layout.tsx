@@ -16,6 +16,19 @@ const nomeDoPerfil: Record<Perfil, string> = {
 export function Layout() {
   const { usuario, sair } = useAuth();
   const [alertasAtivos, setAlertasAtivos] = useState(0);
+  const [saindo, setSaindo] = useState(false);
+  const [erroAoSair, setErroAoSair] = useState(false);
+
+  async function encerrarSessao() {
+    setSaindo(true);
+    setErroAoSair(false);
+    try {
+      await sair();
+    } catch {
+      setErroAoSair(true);
+      setSaindo(false);
+    }
+  }
 
   // O sininho: quantos alertas precisam de atenção (atualiza a cada minuto)
   useEffect(() => {
@@ -61,12 +74,13 @@ export function Layout() {
               {alertasAtivos > 0 && <b>{alertasAtivos}</b>}
             </span>
             <span className="avatar pequeno">{inicial}</span>
-            <button className="botao-sair" onClick={() => void sair()}>
-              <Icone nome="sair" tamanho={18} /> Sair
+            <button className="botao-sair" type="button" disabled={saindo} onClick={encerrarSessao}>
+              <Icone nome="sair" tamanho={18} /> {saindo ? 'Saindo...' : 'Sair'}
             </button>
           </div>
         </header>
         <main className="pagina">
+          {erroAoSair && <p role="alert">Não foi possível encerrar a sessão. Tente sair novamente.</p>}
           <Outlet />
         </main>
       </div>
