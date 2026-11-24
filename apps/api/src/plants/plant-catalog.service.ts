@@ -1,6 +1,7 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { metadata, json, readOverrides, project, Snapshot, telemetry } from './plant-domain';
+import { recordSnapshot } from '../measurements/measurement-writer';
 
 @Injectable()
 export class PlantCatalogService {
@@ -42,7 +43,7 @@ export class PlantCatalogService {
         externalId: next.externalId,
       },
     });
-    await tx.plantExternalLink.create({
+    const createdLink = await tx.plantExternalLink.create({
       data: {
         ...key,
         plantId: plant.id,
@@ -51,6 +52,7 @@ export class PlantCatalogService {
         observedAt: now,
       },
     });
+    await recordSnapshot(tx, plant.id, createdLink.id, integrationId, next, now);
     await this.audit(tx, plant.id, actorId, 'IMPORT', { integrationId, externalId: next.externalId });
     return 'imported' as const;
   }
@@ -62,6 +64,7 @@ export class PlantCatalogService {
     now: Date,
   ) {
     const sample = telemetry(next, link.lastSample);
+    await recordSnapshot(tx, link.plantId, link.id, link.integrationId, next, now);
     await tx.plantExternalLink.update({
       where: { id: link.id },
       data: {

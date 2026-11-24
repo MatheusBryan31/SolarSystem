@@ -24,12 +24,19 @@ describe('PlantCatalogService', () => {
     plantExternalLink: { findUnique: jest.fn(), findFirst: jest.fn(), create: jest.fn(), update: jest.fn() },
     plantDiscovery: { upsert: jest.fn(), findUnique: jest.fn(), update: jest.fn() },
     plant: { create: jest.fn(), update: jest.fn(), findUnique: jest.fn() },
-    integration: { findUnique: jest.fn(), update: jest.fn() },
+    integration: { findUnique: jest.fn(), findUniqueOrThrow: jest.fn(), update: jest.fn() },
+    measurement: { createMany: jest.fn(), findFirstOrThrow: jest.fn() },
     plantAuditEvent: { create: jest.fn() },
   };
   const tx = mock as unknown as Prisma.TransactionClient;
   beforeEach(() => {
     jest.resetAllMocks();
+    mock.plantExternalLink.create.mockResolvedValue({ id: 'created-link' });
+    mock.integration.findUniqueOrThrow.mockResolvedValue({ provider: 'DEMO' });
+    mock.measurement.createMany.mockImplementation(({ data }: { data: Record<string, unknown>[] }) => {
+      mock.measurement.findFirstOrThrow.mockResolvedValue(data[0]);
+      return Promise.resolve({ count: 1 });
+    });
   });
 
   it('nova identidade vira descoberta; nunca cria uma duplicata silenciosamente', async () => {

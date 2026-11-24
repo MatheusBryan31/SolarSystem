@@ -14,6 +14,7 @@ import { PlantsModule } from '../src/plants/plants.module';
 import { PrismaModule } from '../src/prisma/prisma.module';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { UsersModule } from '../src/users/users.module';
+import { MeasurementsModule } from '../src/measurements/measurements.module';
 
 const SENHA = 'SenhaApenasParaTeste123';
 const ADMIN = '11111111-1111-4111-8111-111111111111';
@@ -50,6 +51,9 @@ describe('API HTTP — saúde, sessão e permissões com Prisma isolado', () => 
       create: jest.fn(),
     },
     plantAuditEvent: { create: jest.fn() },
+    measurement: { count: jest.fn(), findMany: jest.fn() },
+    plantExternalLink: { findFirst: jest.fn() },
+    inverter: { findFirst: jest.fn() },
   };
 
   beforeAll(async () => {
@@ -74,6 +78,7 @@ describe('API HTTP — saúde, sessão e permissões com Prisma isolado', () => 
         AuthModule,
         UsersModule,
         PlantsModule,
+        MeasurementsModule,
       ],
       controllers: [AppController],
       providers: [AppService],
@@ -383,5 +388,56 @@ describe('API HTTP — saúde, sessão e permissões com Prisma isolado', () => 
     users[0].role = Role.CLIENT;
     await request(app.getHttpServer()).get('/api/users').set('Cookie', cookie).expect(403);
     expect(prisma.user.findMany).not.toHaveBeenCalled();
+  });
+  it('histórico exige sessão autenticada', async () => {
+    await request(app.getHttpServer()).get(`/api/plants/${USINA}/measurements`).expect(401);
+  });
+  it('histórico valida datas e fuso no transporte HTTP', async () => {
+    const { cookie } = await login();
+    await request(app.getHttpServer())
+      .get(`/api/plants/${USINA}/measurements`)
+      .set('Cookie', cookie)
+      .query({ from: 'invalid', to: '2026-01-02T00:00:00Z' })
+      .expect(400);
+    await request(app.getHttpServer())
+      .get(`/api/plants/${USINA}/measurements/aggregations`)
+      .set('Cookie', cookie)
+      .query({
+        sourceLinkId: ADMIN,
+        from: '2026-01-01T00:00:00Z',
+        to: '2026-01-02T00:00:00Z',
+        period: 'day',
+        timeZone: 'Invalid/Zone',
+      })
+      .expect(400);
+  });
+  it('CLIENT não consulta histórico de usina alheia', async () => {
+    const { cookie } = await login('client@example.test');
+    prisma.plant.findFirst.mockResolvedValue(null);
+    await request(app.getHttpServer())
+      .get(`/api/plants/${USINA}/measurements`)
+      .set('Cookie', cookie)
+      .query({ from: '2026-01-01T00:00:00Z', to: '2026-01-02T00:00:00Z' })
+      .expect(404);
+    expect(prisma.measurement.findMany).not.toHaveBeenCalled();
+  });
+  it('consulta histórica real aplica escopo, intervalo e filtro de simulação', async () => {
+    const { cookie } = await login('client@example.test');
+    prisma.plant.findFirst.mockResolvedValue({ id: USINA });
+    prisma.measurement.findMany.mockResolvedValue([]);
+    prisma.measurement.count.mockResolvedValue(0);
+    prisma.$transaction.mockImplementation((promises: Promise<unknown>[]) => Promise.all(promises));
+    await request(app.getHttpServer())
+      .get(`/api/plants/${USINA}/measurements`)
+      .set('Cookie', cookie)
+      .query({ from: '2026-01-01T00:00:00Z', to: '2026-01-02T00:00:00Z' })
+      .expect(200, { itens: [], total: 0, pagina: 1, porPagina: 100 });
+    const call = (prisma.measurement.findMany.mock.calls[0] as [{ where: Record<string, unknown> }])[0];
+    expect(call.where).toMatchObject({
+      plantId: USINA,
+      plant: { clientId: DONO },
+      inverterId: null,
+      isSimulated: false,
+    });
   });
 });

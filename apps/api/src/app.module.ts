@@ -11,6 +11,7 @@ import { IntegrationsModule } from './integrations/integrations.module';
 import { PlantsModule } from './plants/plants.module';
 import { AlertsModule } from './alerts/alerts.module';
 import { InvertersModule } from './inverters/inverters.module';
+import { MeasurementsModule } from './measurements/measurements.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { InvertersModule } from './inverters/inverters.module';
     PlantsModule,
     AlertsModule,
     InvertersModule,
+    MeasurementsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

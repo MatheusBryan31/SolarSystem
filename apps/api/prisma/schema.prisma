@@ -143,6 +143,7 @@ model Plant {
   externalLinks PlantExternalLink[]
   discoveries   PlantDiscovery[]
   auditEvents   PlantAuditEvent[]
+  measurements  Measurement[]
   inverters     Inverter[]
 
   @@unique([integrationId, externalId]) // a mesma usina nunca entra duas vezes
@@ -184,7 +185,9 @@ model Inverter {
   updatedAt           DateTime       @updatedAt @map("updated_at")
   plant               Plant          @relation(fields: [plantId], references: [id], onDelete: Restrict)
   integration         Integration?   @relation(fields: [integrationId], references: [id], onDelete: Restrict)
+  measurements        Measurement[]
 
+  @@unique([id, plantId])
   @@unique([manufacturerKey, serialKey])
   @@unique([integrationId, externalId])
   @@index([plantId, archivedAt])
@@ -205,11 +208,46 @@ model PlantExternalLink {
   observedAt     DateTime       @map("observed_at")
   plant          Plant          @relation(fields: [plantId], references: [id], onDelete: Restrict)
   integration    Integration    @relation(fields: [integrationId], references: [id], onDelete: Restrict)
+  measurements   Measurement[]
 
+  @@unique([id, plantId])
   @@unique([integrationId, externalId])
   // Uma fonte ACTIVE por usina: índice parcial na migration SQL.
   @@index([plantId, state])
   @@map("plant_external_links")
+}
+
+enum MeasurementQuality {
+  VALID
+  PARTIAL
+  INVALID
+}
+
+model Measurement {
+  id                String             @id @default(uuid())
+  plantId           String             @map("plant_id")
+  inverterId        String?            @map("inverter_id")
+  sourceLinkId      String             @map("source_link_id")
+  sourceProvider    ProviderType       @map("source_provider")
+  isSimulated       Boolean            @default(false) @map("is_simulated")
+  measuredAt        DateTime           @map("measured_at") @db.Timestamptz(3)
+  powerKw           Float?             @map("power_kw")
+  totalEnergyKwh    Float?             @map("total_energy_kwh")
+  periodEnergyKwh   Float?             @map("period_energy_kwh")
+  periodStartAt     DateTime?          @map("period_start_at") @db.Timestamptz(3)
+  operationalStatus HealthStatus?      @map("operational_status")
+  quality           MeasurementQuality
+  qualityReason     String?            @map("quality_reason")
+  recordedAt        DateTime           @default(now()) @map("recorded_at") @db.Timestamptz(3)
+  plant             Plant              @relation(fields: [plantId], references: [id], onDelete: Restrict)
+  inverter          Inverter?          @relation(fields: [inverterId, plantId], references: [id, plantId], onDelete: Restrict, onUpdate: Restrict)
+  sourceLink        PlantExternalLink  @relation(fields: [sourceLinkId, plantId], references: [id, plantId], onDelete: Restrict, onUpdate: Restrict)
+
+  // Leituras da usina sem inverterId: unicidade adicional parcial na migration.
+  @@unique([sourceLinkId, inverterId, measuredAt])
+  @@index([plantId, measuredAt, id])
+  @@index([inverterId, measuredAt])
+  @@map("measurements")
 }
 
 model PlantDiscovery {
