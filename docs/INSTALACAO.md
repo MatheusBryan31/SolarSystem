@@ -1,250 +1,295 @@
-# Guia de instalação - SolarSystem
+# Instalação do SolarSystem no Windows 10/11
 
-Este guia leva um computador **sem nada instalado** até o SolarSystem rodando localmente.
-Foi escrito e testado no **Windows 10/11** com o PowerShell. Em Linux/macOS os comandos são os mesmos, exceto onde indicado.
+Guia para ambiente **local de desenvolvimento**, usando PowerShell na raiz do repositório, salvo indicação diferente. Não execute migrations ou seed contra um banco existente sem conferir destino e backup. Os comandos de banco abaixo são instruções para instalação; não foram executados na atualização desta documentação.
 
-> Tempo estimado: 40-60 minutos na primeira vez.
+## Pré-requisitos
 
-Para abrir apenas o painel HTML, siga as [instruções do front-end no README](../README.md#executar-o-front-end). As etapas de banco e API abaixo atendem ao ambiente de back-end.
+| Ferramenta | Versão/configuração                                                      |
+| ---------- | ------------------------------------------------------------------------ |
+| Node.js    | **26**, conforme `.nvmrc`; instalar com npm                              |
+| npm        | Versão fornecida com o Node 26; lockfile raiz v3                         |
+| Git        | Cliente Git para Windows                                                 |
+| PostgreSQL | **17**, com SQL Shell (`psql`) ou pgAdmin                                |
+| Navegador  | Edge/Chrome atual para uso; Edge ou Chromium Playwright para testes HTML |
+| Python     | **3**, somente para servir manualmente o protótipo HTML                  |
+| Editor     | VS Code opcional; recomendações em `.vscode/extensions.json`             |
 
-## Sumário
+Downloads oficiais: [Node.js](https://nodejs.org/en/download), [Git para Windows](https://git-scm.com/downloads/win), [PostgreSQL para Windows](https://www.postgresql.org/download/windows/).
 
-1. [Requisitos](#1-requisitos)
-2. [Node.js](#2-nodejs)
-3. [Git](#3-git)
-4. [PostgreSQL](#4-postgresql)
-5. [VS Code](#5-vs-code-recomendado)
-6. [Baixar o projeto](#6-baixar-o-projeto)
-7. [Instalar as dependências](#7-instalar-as-dependências)
-8. [Configurar as variáveis de ambiente](#8-configurar-as-variáveis-de-ambiente)
-9. [Criar as tabelas do banco](#9-criar-as-tabelas-do-banco)
-10. [Criar o primeiro administrador](#10-criar-o-primeiro-administrador)
-11. [Rodar o sistema](#11-rodar-o-sistema)
-12. [Verificar a instalação](#13-verificar-a-instalação)
-13. [Rotina de trabalho](#13-rotina-de-trabalho)
-14. [Problemas comuns](#14-problemas-comuns)
-15. [Referência de comandos](#15-referencia-de-comandos)
+Instale Node/npm e Git, reabra o PowerShell e confira:
 
----
-
-## 1. Requisitos
-
-| Ferramenta | Versão                            | Para quê                                    |
-| ---------- | --------------------------------- | ------------------------------------------- |
-| Node.js    | 22.12 ou superior (veja `.nvmrc`) | Executa a API e as ferramentas do front-end |
-| npm        | vem com o Node                    | Instala as bibliotecas                      |
-| Git        | 2.40 ou superior                  | Controle de versão e download do projeto    |
-| PostgreSQL | 17                                | Banco de dados                              |
-| VS Code    | atual                             | Editor (recomendado)                        |
-
-Espaço em disco: ~1,5GB (ferramentas + dependências).
-
-## 2. Node.js
-
-1. Baixe o instalador **LTS** em <https://nodejs.org>.
-2. Instale com as opções padrão (inclui o npm e adiciona ao `PATH`).
-3. **Feche e abra** o terminal (ele só enxergo o `PATH` novo ao reabrir) e confira:
-
-   ```bash
-   node -v
-   npm -v
-   ```
-
-## 3. Git
-
-1. Baixe em <https://git-scm.com> e instale com as opções padrão.
-2. Configure sua identidade (aparece em cada commit):
-
-   ```bash
-   git config --global user.name "Seu Nome"
-   git config --global user.email "seu-email@exemplo.com"
-   git config --global init.defaultBranch main
-   ```
-
-3. Confira: `git --version.`
-
-## 4. PostgreSQL
-
-### 4.1 Instalar
-
-1. Baixe o instalador da versão **17** em <https://www.postgresql.org/download/windows/>.
-2. Durante a instalação:
-   - defina e **anote** a senha do superusuário `postgres`;
-   - **anote a porta**. O padrão é `5432`, se já houver outro PostgreSQL na máquina ou outro sistema utilizando a porta, use outra (ex: `5433`) - ela será usada no `.env`.
-3. O Stack Builder ao final pode ser cancelado.
-
-### 4.2 Criar o usuário e o banco do sistema
-
-Por segurança (princípio do **menor privilégio**), o sistema **não** usa o superusuário `postgres`, e sim um usuário próprio, dono apenas do banco do SolarSystem.
-
-Abra o **SQL Shell (psql)**, confirme sevidor/porta/usuário(`postgres`) e rode:
-
-```sql
-CREATE ROLE nome WITH LOGIN PASSWORD 'troque-esta-senha';
-CREATE DATABASE solarsystem OWNER nome;
-
--- Somente em DESENVOLVIMENTO: o "prisma migrate dev" precisa criar um banco-sombra temporário
-ALTER ROLE nome CREATEDB;
+```powershell
+node --version
+npm --version
+git --version
 ```
 
-> Atenção: nomes sem aspas viram **minúsculas** no PostgreSQL (`Nome` -> `nome`).
-> Use sempre minúsculas.
+Não instale uma versão antiga apenas porque o manifesto raiz aceita `>=22.12.0`: o Router resolvido exige `>=22.22.0`. A versão de referência do projeto é a 26. A validação anterior dos testes da API usou Node 24.22.3 e npm 11.6.2; isso não substitui validar seu ambiente Node 26.
 
-Teste a conexão com o novo usuário:
+Se `npm.ps1` for bloqueado pela política do PowerShell, use `npm.cmd` nos comandos abaixo; não é necessário desativar a política do sistema. Se `psql` não estiver no PATH, abra o SQL Shell pelo menu Iniciar ou use o caminho da instalação, por exemplo:
 
-```sql
-\c solarsystem nome
+```powershell
+& 'C:\Program Files\PostgreSQL\17\bin\psql.exe' --version
 ```
 
-O prompt deve mudar para `solarsystem=>`. Saia com `\q`.
+## Obter ou abrir o repositório
 
-## 5. VS Code (recomendado)
+Para uma instalação nova, escolha uma pasta de trabalho e execute:
 
-1. Instale em <https://code.visualstudio.com>.
-2. Ao abrir a pasta do projeto, aceite instalar as **extensões recomendades** (ESLint, Prettier, Prisma, EditorConfig - Listadas em `.vscode/extensions.json`).
-
-## 6. Baixar o projeto
-
-```bash
-cd $HOME\Documents
+```powershell
 git clone https://github.com/MatheusBryan31/SolarSystem.git
-cd caminho
-code .
+Set-Location SolarSystem
+git status --short
+git branch --show-current
 ```
 
-## 7. Instalar as dependências
+Se já possui o projeto, abra a pasta existente e confira branch/alterações antes de atualizar. Não clone por cima, não use `reset --hard` e não substitua arquivos locais para seguir este guia.
 
-Na **raiz** do projeto:
+## Configurar o PostgreSQL local
 
-```bash
-npm install
+No instalador PostgreSQL 17, defina uma senha própria para `postgres` e anote a porta. Os exemplos usam **5432**; se sua instalação usa **5433**, substitua em todos os pontos correspondentes. pgAdmin é opcional e Stack Builder não é necessário para este projeto.
+
+Abra SQL Shell, conecte-se como `postgres` à instância local correta e crie um usuário dedicado e um banco **novos**. Os valores abaixo são placeholders; escolha uma senha própria, nunca reutilize a do exemplo:
+
+```sql
+CREATE ROLE solarsystem_app WITH LOGIN PASSWORD 'SUBSTITUA_POR_UMA_SENHA_LOCAL';
+CREATE DATABASE solarsystem OWNER solarsystem_app;
 ```
 
-Esse comando:
+Se o usuário/banco já existir, não remova nem recrie: confira sua configuração. A aplicação não precisa usar o superusuário `postgres`.
 
-- Instala as bibliotecas de **todos** os apps (npm workspaces),
-  nas versões exatas do `package-lock.json`;
-- Executa o `postinstall` da API, que **gera o Prisma Client** automaticamente.
+Para testar em uma conexão nova, a partir do PowerShell:
 
-## 8. Configurar as variáveis de ambiente
-
-Os valores de configuração (senha, portas) ficam em `apps/api/.env`, que **nunca** vai para o Git.
-Crie-o a partir do modelo:
-
-```bash
-Copy-Item apps\api\.env.example apps\api\.env
+```powershell
+& 'C:\Program Files\PostgreSQL\17\bin\psql.exe' -h localhost -p 5432 -U solarsystem_app -d solarsystem
 ```
 
-(Linux/macOS: `cp apps/api/.env.example apps/api/.env`)
+Digite a senha quando solicitada. No psql, `SELECT current_database(), current_user;` confere o destino; `\q` encerra. Cada comando SQL precisa terminar com `;`.
 
-Abra `apps/api/.env` e preencha:
+Não é necessário conceder `CREATEDB` para aplicar migrations existentes com `db:deploy`. Somente para **criar novas migrations em desenvolvimento**, `migrate dev` pode precisar de um banco-sombra. Nesse caso, um administrador pode conceder `ALTER ROLE solarsystem_app CREATEDB;` exclusivamente no ambiente local aprovado, ou configurar uma estratégia de banco-sombra separada. Não conceda esse privilégio por padrão em produção.
 
-| Variável              | Obrigatória    | Exemplo                                                            | Descrição                                         |
-| --------------------- | -------------- | ------------------------------------------------------------------ | ------------------------------------------------- |
-| `NODE_ENV`            | não            | `development`                                                      | `development`, `test` ou `production`             |
-| `PORT`                | não            | `3333`                                                             | Porta da API                                      |
-| `DATABASE_URL`        | **sim**        | `postgresql://nome:SENHA@localhost:5433/solarsystem?schema=public` | Conexão com o banco                               |
-| `JWT_SECRET`          | **sim**        | (96 caracteres aleatórios)                                         | Chave que assina os logins — mínimo 32 caracteres |
-| `JWT_EXPIRES_IN`      | não            | `28800`                                                            | Validade do login em segundos (28800 = 8 h)       |
-| `WEB_ORIGIN`          | não            | `http://localhost:5173`                                            | Endereço do front-end (CORS)                      |
-| `SEED_ADMIN_EMAIL`    | só para o seed | `admin@empresa.com`                                                | E-mail do primeiro administrador                  |
-| `SEED_ADMIN_PASSWORD` | só para o seed | (senha forte)                                                      | Senha inicial do primeiro administrador           |
+## Variáveis de ambiente
 
-**Anatomia da `DATABASE_URL`:**
-`postgresql://usuario:senha@servidor:porta/banco?schema=public`
+Na raiz, copie o modelo apenas se o arquivo real ainda não existir:
 
-> Se a senha do banco tiver `@ : / #`, substitua por `%40 %3A %2F %23`.
-
-**Gerar o `JWT_SECRET`:**
-
-```bash
-node -e
-"console.log(require('crypto').randomBytes(48).toString('hex'))"
+```powershell
+if (-not (Test-Path apps/api/.env)) {
+    Copy-Item apps/api/.env.example apps/api/.env
+}
 ```
 
-A API **valida** essas variáveis ao iniciar. Se algo estiver faltando ou errado, ela não sobe e mostra exatamente qual variável corrigir.
+Edite `apps/api/.env` com seu editor. Nunca publique esse arquivo; `.gitignore` já o exclui. O modelo versionado contém placeholders, não segredos utilizáveis.
 
-## 9. Criar as tabelas do banco
+| Variável              | Valor/obrigatoriedade                            | Efeito no código                                             |
+| --------------------- | ------------------------------------------------ | ------------------------------------------------------------ |
+| `NODE_ENV`            | Padrão `development`; aceita `test`/`production` | Produção marca cookie como Secure e requer HTTPS             |
+| `PORT`                | Padrão `3333`, inteiro positivo                  | Porta HTTP NestJS                                            |
+| `DATABASE_URL`        | Obrigatória; começa com `postgresql://`          | Conexão Prisma/PostgreSQL                                    |
+| `JWT_SECRET`          | Obrigatória, pelo menos 32 caracteres            | Assinatura/verificação de JWT; gerar aleatoriamente          |
+| `JWT_EXPIRES_IN`      | Padrão `28800`, inteiro positivo                 | Validade em segundos: 8 horas                                |
+| `WEB_ORIGIN`          | Padrão `http://localhost:5173`                   | Origem autorizada por CORS, com credenciais                  |
+| `SYNC_INTERVAL_MIN`   | Padrão `10`, inteiro de 0 a 1440                 | Sincronização periódica; `0` desativa o agendador            |
+| `SEED_ADMIN_EMAIL`    | Somente seed                                     | E-mail do administrador inicial; normalizado para minúsculas |
+| `SEED_ADMIN_PASSWORD` | Somente seed, mínimo 8 caracteres                | Senha do administrador inicial; armazenada como hash bcrypt  |
 
-```bash
+Exemplo de conexão, substituindo usuário/senha/porta pelos escolhidos:
+
+```dotenv
+DATABASE_URL="postgresql://solarsystem_app:SUBSTITUA_PELA_SENHA@localhost:5432/solarsystem?schema=public"
+```
+
+Codifique caracteres especiais de usuário/senha na URL: `@` → `%40`, `:` → `%3A`, `/` → `%2F`, `#` → `%23`, `%` → `%25`. Isso não altera a senha real cadastrada no PostgreSQL.
+
+Gere uma chave JWT e copie o resultado para `JWT_SECRET` no `.env`:
+
+```powershell
+node -e "console.log(require('node:crypto').randomBytes(48).toString('hex'))"
+```
+
+Esse comando produz uma chave nova; não cole o resultado em commits ou mensagens. Não use a chave pública de um exemplo anterior. O código não oferece tela de recuperação de senha ou cadastro público real; não confunda o modal demonstrativo do HTML com provisionamento de usuários.
+
+Para primeira inspeção local sem coleta automática, pode configurar `SYNC_INTERVAL_MIN=0`. Com valor maior que zero, a API sincroniza integrações habilitadas também ao iniciar; o trabalho pode gravar usinas/alertas no banco configurado. Isso é comportamento real, mesmo quando o provedor é DEMO.
+
+## Instalar dependências e gerar o cliente Prisma
+
+Na raiz, com o lockfile versionado:
+
+```powershell
+npm ci
+npm run db:generate -w apps/api
+```
+
+`npm ci` instala as resoluções do lockfile e recria `node_modules`; não atualiza o lockfile para conciliar manifestos divergentes. [Referência oficial do npm](https://docs.npmjs.com/cli/v11/commands/npm-ci/). O `postinstall` da API já executa `prisma generate`; o segundo comando deixa explícita a geração e é útil se os scripts foram desativados na instalação. Gerar o cliente não aplica migrations, não cria usuários e não conecta por si só a um banco para sincronizar dados.
+
+Os workspaces raiz incluem `apps/api` e `apps/painel`. Os testes HTML ficam em `apps/web/tests`, com instalação separada. Não instale TypeScript/Jest globalmente para substituir as versões locais: API e painel resolvem versões distintas de TypeScript.
+
+## Aplicar migrations existentes
+
+Confirme que `DATABASE_URL` aponta ao banco local correto e execute:
+
+```powershell
 npm run db:deploy -w apps/api
 ```
 
-Aplica, em ordem, todas as migrations de `apps/api/prisma/migrations`.
+O script usa `prisma migrate deploy` para aplicar as migrations versionadas em `apps/api/prisma/migrations`. Ele altera o schema conforme o SQL dessas migrations; **não é garantia de ausência de perda de dados** em um banco já populado. Este guia não recomenda reset, limpeza ou remoção de migrations.
 
-> Em **desenvolvimento**, ao alterar o `schema.prisma`, use `npm run db:migrate -w apps/api -- --name descricao`
-> Gera uma migration nova. Em **produção**, use **sempre** `db:deploy` - ele nunca apaga dados.
+`npm run db:migrate -w apps/api -- --name descricao` é uma tarefa diferente: cria/aplica migrations de desenvolvimento e pode solicitar reset em caso de divergências. Não é necessário para instalar as migrations que já estão no repositório.
 
-## 10. Criar o projeto administrador
+## Criar o administrador inicial
 
-Com `SEED_ADMIN_EMAIL` e `SEED_ADMIN_PASSWORD` preenchidos no `.env`:
+Preencha `SEED_ADMIN_EMAIL` com um endereço escolhido para seu ambiente e `SEED_ADMIN_PASSWORD` com uma senha forte própria, de no mínimo oito caracteres. Depois:
 
-```bash
+```powershell
 npm run db:seed -w apps/api
 ```
 
-Pode ser executado mais de uma vez: se o administrador já existir, nada é alterado.
-Depois do primeiro login, troque a senha inicial.
+Prisma executa `tsx prisma/seed.ts`. O seed cria “Administrador” com perfil `ADMIN` e hash bcrypt. Se o e-mail já existe, o `upsert` não altera esse usuário: não redefine senha, não reativa e não promove automaticamente um usuário existente para administrador. A mensagem do seed não substitui a conferência desse caso.
 
-## 11. Rodar o sistema
+O seed não cria usinas, clientes ou integrações. Não há botão de troca de senha implementado no painel React; mudanças posteriores de usuário dependem dos endpoints administrativos e permissões existentes. Não orientar o usuário a procurar uma tela que ainda não existe.
 
-```bash
+## Iniciar API e painel
+
+Abra dois terminais na raiz do repositório.
+
+**Terminal 1 — API:**
+
+```powershell
 npm run start:dev -w apps/api
 ```
 
-Aguarde a mensagem `SolarSystem API em http://localhost:3333/api (development)`.
-o modo `start:dev` reinicia sozinho ao salvar arquivos de `src/` - mas **não** ao alterar o `.env` (neste caso, pare com `Ctrl+C` e rode novamente).
+API: [http://localhost:3333/api](http://localhost:3333/api). Para verificar a saúde, abra [http://localhost:3333/api/health](http://localhost:3333/api/health). A resposta inclui `status`, `banco`, `servico` e `horario`; indisponibilidade durante a consulta resulta em `degradado`/`erro` com HTTP 200. Uma falha de conexão na inicialização do Prisma também pode impedir a API de subir.
 
-## 12. Verificar a instalação
+**Terminal 2 — painel React:**
 
-1. Abra <http://localhost:3333/api/health> - deve mostrar `"status": "ok"` e `"banco": "ok"`.
-2. Em outro terminal, rode os testes:
-
-```bash
-npm run test -w apps/api
+```powershell
+npm run dev -w apps/painel
 ```
 
-3. Opcional - painel visual do banco: `npm run db:studio -w apps/api` (abre <http://localhost:5555>).
+Abra [http://localhost:5173/login](http://localhost:5173/login) e use o administrador criado. A Visão geral é [http://localhost:5173/](http://localhost:5173/). O Vite configura porta 5173, mas pode escolher outra se ela estiver ocupada; confira a URL exibida e libere a porta esperada para evitar inconsistências com CORS, cookies e origens de dados.
 
-## 13. Rotina de trabalho
+A tela pode ficar sem usinas porque o seed só cria o administrador. O catálogo atual tem apenas `DEMO`. Cadastrar uma integração requer `POST /api/integrations` por administrador; sincronizar usa `POST /api/integrations/:id/sync` por administrador/operador. Essas ações gravam dados e não possuem tela no painel atual. Não são executadas automaticamente por este guia.
 
-```bash
-git switch main
-git pull                        # traz o que mudou
-npm install                     # se o package-lock.json mudou
-npm run db:deploy -w apps/api   # se chegaram migrations novas
-git switch -c tipo/descricao    # ex.: feat/cadastro-clientes
+Reinicie a API após alterar `.env`. O modo de desenvolvimento acompanha arquivos de código; não dependa de recarga automática das variáveis. `Ctrl+C` encerra cada processo.
+
+### Proxy, cookies e origens
+
+- `src/api.ts` do painel chama `/api/...` com `credentials: 'same-origin'`.
+- `apps/painel/vite.config.ts` encaminha `/api` para `http://localhost:3333`, sem remover o prefixo. O navegador acessa a origem do Vite; não precisa contornar CORS com extensões.
+- Alterar `PORT` na API exige ajustar também o destino do proxy; mudar somente `WEB_ORIGIN` não faz isso. `WEB_ORIGIN` governa apenas o CORS configurado em `main.ts`.
+- Login envia `{ email, senha }`, recebe `{ usuario }` e cookie `solarsystem_sessao`. Cookie: HttpOnly, SameSite Strict, Path `/api`, duração `JWT_EXPIRES_IN`, Secure somente com `NODE_ENV=production`.
+- `/api/auth/me` restaura o usuário do cookie; 401 limpa o contexto React. `/api/auth/logout` responde 204 e expira o cookie. Não enviar token por Bearer nem gravá-lo no localStorage para usar o fluxo atual.
+- Use consistentemente `localhost`; `127.0.0.1` é outro host. Se testar o legado, preserve o endereço original dos cadastros.
+- Publicação requer HTTPS, encaminhamento de `/api` e fallback SPA. Não é configurada pelo servidor de desenvolvimento nem pelo comando de preview abaixo.
+
+## Build e preview
+
+Na raiz:
+
+```powershell
+npm run build -w apps/api
+npm run build -w apps/painel
 ```
 
-Ao terminar: `npm run format`, commit, `git push -u origin <branch>`, Pull Request, merge, `git switch main` e `git pull`.
+A API gera `apps/api/dist`; o painel gera `apps/painel/dist` depois da checagem TypeScript. O build Nest limpa sua pasta de saída conforme `nest-cli.json`; não guarde arquivos manuais em `dist`.
 
-## 14. Problemas comuns
+```powershell
+npm run start:prod -w apps/api
+npm run preview -w apps/painel
+```
 
-| Sintoma                                              | Causa                                                                                       | Solução                                                                                       |
-| ---------------------------------------------------- | ------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| `git`/`node` "não é reconhecido como nome de cmdlet" | Terminal aberto antes da instalação, ou PowerShell de administrador sem o `PATH` do usuário | Feche e abra o terminal; use um PowerShell **normal**                                         |
-| `autenticação do tipo senha falhou para o usuário`   | Porta errada (há outro PostgreSQL na máquina) ou senha errada                               | Confira a porta na `DATABASE_URL`; teste no psql com `\c solarsystem bryan`                   |
-| `\c` diz que o banco/usuário não existe              | Nome com maiúscula, ou ordem trocada                                                        | É `\c banco usuário`, tudo minúsculo                                                          |
-| psql mostra `-#` e não executa                       | Faltou o `;` no fim do comando                                                              | Digite `;` e Enter                                                                            |
-| `Missing script: "..."`                              | Nome do script digitado errado, ou `package.json` do app incompleto                         | `npm run -w apps/api` lista os scripts existentes                                             |
-| `Variáveis de ambiente inválidas`                    | `.env` ausente ou com valor inválido                                                        | Leia a lista exibida e corrija o `.env`                                                       |
-| `P3014` / erro ao criar _shadow database_            | Usuário do banco sem permissão de criar bancos                                              | `ALTER ROLE bryan CREATEDB;` (só em desenvolvimento)                                          |
-| `@prisma/client did not initialize yet`              | Prisma Client não gerado                                                                    | `npm run db:generate -w apps/api`                                                             |
-| `Cannot find module './prisma/...'`                  | Arquivo `.ts` salvo fora de `apps/api/src/`                                                 | Todo código da API fica em `src/`; a pasta `apps/api/prisma/` é só do schema e das migrations |
-| `EADDRINUSE: address already in use :::3333`         | A API já está rodando em outro terminal                                                     | Feche o outro terminal, ou mude `PORT`                                                        |
-| Avisos `LF will be replaced by CRLF`                 | Quebras de linha do Windows                                                                 | Já tratado pelo `.gitattributes`; se surgir, `git add --renormalize .`                        |
-| Acentos estranhos no psql (`relaþ§es`)               | Página de código do console                                                                 | Rode `chcp 1252` antes do psql                                                                |
+`start:prod` executa o código compilado; não define `NODE_ENV=production` por si só. `preview` serve o build local do Vite, normalmente na porta 4173, mas não deve ser usado como substituto de hospedagem. O proxy explicitamente configurado no projeto está em `server.proxy`; antes de usar preview com API, confira o comportamento/configuração de preview e a origem autorizada. Para o fluxo local suportado neste guia, prefira `dev` na porta 5173.
 
-## 15. Referência de comandos
+## Testes e qualidade
 
-| Comando                                      | O que faz                                            |
-| -------------------------------------------- | ---------------------------------------------------- |
-| `npm install`                                | Instala dependências de todos os apps                |
-| `npm run start:dev -w apps/api`              | API em modo desenvolvimento                          |
-| `npm run build -w apps/api`                  | Compila a API para `apps/api/dist`                   |
-| `npm run test -w apps/api`                   | Testes da API                                        |
-| `npm run db:migrate -w apps/api -- --name x` | Cria e aplica uma migration (desenvolvimento)        |
-| `npm run db:deploy -w apps/api`              | Aplica migrations pendentes (produção/outra máquina) |
-| `npm run db:seed -w apps/api`                | Cria o primeiro administrador                        |
-| `npm run db:studio -w apps/api`              | Painel visual do banco                               |
-| `npm run format`                             | Formata todo o código com o Prettier                 |
+Depois de instalar dependências e gerar o Prisma Client, na raiz:
+
+```powershell
+# Unitários da API
+npm test -w apps/api -- --runInBand
+
+# E2E HTTP com Prisma controlado, sem banco real ou .env
+npm run test:e2e -w apps/api -- --runInBand
+
+# Cobertura dos unitários; gera apps/api/coverage
+npm run test:cov -w apps/api -- --runInBand
+
+# Formatação: somente verifica
+npm run "format: check"
+```
+
+Os E2E atuais usam os controllers/serviços/guards reais de saúde, autenticação, usuários e usinas; substituem Prisma por mocks e não importam AppModule nem SyncScheduler. Testam disponibilidade/indisponibilidade simulada do banco, cookie, login, `/me`, logout e perfis. Não medem integração PostgreSQL, CORS completo ou implantação. O script inclui `--experimental-vm-modules`; o aviso experimental é esperado com o runtime validado.
+
+Na Tarefa 03 passaram 31 E2E e 26 unitários, em Node 24.22.3. O documento `DIAGNOSTICO_VALIDACAO.md` registra a auditoria anterior a essa correção e não descreve o E2E atual.
+
+ESLint API **sem correção**, na raiz:
+
+```powershell
+Set-Location apps/api
+node ../../node_modules/eslint/bin/eslint.js "{src,apps,libs,test}/**/*.ts" --no-fix
+Set-Location ../..
+```
+
+Não usar `npm run lint -w apps/api` em auditoria de leitura: contém `--fix`. Da mesma forma, `npm run format` e os scripts `format` dos workspaces escrevem arquivos. Não há script de lint/testes do painel React; seu `build` inclui `tsc --noEmit`.
+
+### Testes HTML com Edge instalado
+
+Na raiz:
+
+```powershell
+Set-Location apps/web/tests
+npm ci
+$env:BROWSER_CHANNEL = 'msedge'
+npm test
+Remove-Item Env:BROWSER_CHANNEL
+Set-Location ../../..
+```
+
+Alternativa com Chromium gerenciado pelo Playwright: após `npm ci`, execute `npx --no-install playwright install chromium`, deixe `BROWSER_CHANNEL` ausente e rode `npm test`. O download do navegador exige rede e espaço; o comando não instala dependências do projeto inteiro.
+
+A suíte cria servidor temporário e contextos isolados, sem modificar o perfil pessoal do navegador nem usar API/banco. Seis casos cobrem os fluxos legados, conflitos/erros de armazenamento e reflow; não há integração automática dos dados antigos no React.
+
+## Executar apenas o protótipo HTML
+
+Com Python 3, sem precisar de API/PostgreSQL:
+
+```powershell
+py -3 -m http.server 5174 --bind 127.0.0.1 --directory apps/web
+```
+
+Abra [http://127.0.0.1:5174/paginas/login.html](http://127.0.0.1:5174/paginas/login.html). A porta 5174 evita competir com o Vite. **Se seus cadastros estavam na porta 5173 ou em localhost, esse novo endereço não os mostrará**. Para reencontrá-los, use exatamente a origem/perfil anterior; pare o React se precisar reutilizar a porta.
+
+Os dados ficam em `solaris.plants.v1`; a preferência de e-mail em `solarsystem.rememberedEmail`. Não limpar localStorage para solucionar problemas. O CSV é um resumo filtrado, não backup completo. Leia a [estratégia de preservação](ESTRATEGIA_FRONTEND.md) antes de transferir qualquer cadastro.
+
+## Problemas comuns
+
+| Sintoma                           | Conferir/solução                                                                                     |
+| --------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `node`/`npm` não reconhecido      | Instalação/PATH; reabrir terminal; conferir Node 26 e npm                                            |
+| `npm.ps1` bloqueado               | Usar `npm.cmd`; não desativar políticas globalmente                                                  |
+| `EBADENGINE`                      | Versão efetiva do Node e `.nvmrc`; mínimo da raiz ainda não expressa todos os requisitos             |
+| `npm ci` acusa divergência        | Conferir branch, manifestos e lockfile; não apagar lockfile para esconder o problema                 |
+| Prisma Client não gerado          | `npm run db:generate -w apps/api`; conferir instalação concluída                                     |
+| Variáveis de ambiente inválidas   | Preencher `.env`, especialmente DATABASE_URL/JWT_SECRET; reiniciar API                               |
+| Conexão/senha PostgreSQL falha    | Instância, serviço, host, porta 5432/5433, usuário e senha codificada na URL                         |
+| Migration pede reset              | Interromper; conferir banco/histórico e backup. Instalação usa `db:deploy`, não reset                |
+| Login 401                         | Verificar usuário ativo, e-mail e senha no banco correto; repetir seed não redefine senha existente  |
+| `/auth/me` 401 ao abrir login     | Sem sessão é esperado; se persistir após login, conferir cookie, host e HTTPS/NODE_ENV               |
+| 403                               | Perfil sem permissão; não remover guards para contornar                                              |
+| `/` da API retorna 404            | Usar `/api/health`; frontend é servido separadamente pelo Vite                                       |
+| Painel vazio                      | Não há usinas sincronizadas/visíveis ao perfil; seed cria apenas administrador                       |
+| API indisponível/proxy falha      | API iniciada em 3333 e destino em `vite.config.ts`; conferir terminais                               |
+| `EADDRINUSE`/Vite usa 5174        | Processo já usa a porta; encerrar instância conhecida ou alinhar configuração, sem confundir origens |
+| E2E acusa ESM                     | Usar `npm run test:e2e -w apps/api`, que inclui VM Modules, e runtime compatível                     |
+| Playwright não encontra navegador | Usar Edge com `BROWSER_CHANNEL=msedge` ou instalar Chromium da versão local do Playwright            |
+| Cadastros legados desapareceram   | Conferir perfil, esquema, hostname e porta originais; não restaurar apagando dados                   |
+| Caracteres estranhos              | Arquivos em UTF-8; conferir encoding do terminal/editor antes de regravar fontes                     |
+
+## Referências do projeto
+
+- [README](../README.md).
+- [ADR do monorepo](adr/0001-monorepo-com-npm-workspaces.md).
+- [ADR do backend](adr/0002-arquitetura-do-back-end.md).
+- [Estratégia frontend](ESTRATEGIA_FRONTEND.md).
+- [Auditoria histórica da Tarefa 02](DIAGNOSTICO_VALIDACAO.md).
+
+Os exemplos foram conferidos contra os scripts e configurações do checkout. Não foi executada uma instalação completa de Windows/PostgreSQL, migrations, seed ou publicação durante a Tarefa 04.

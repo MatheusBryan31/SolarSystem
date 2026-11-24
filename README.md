@@ -1,154 +1,131 @@
 # SolarSystem
 
-O software "SolarSystem" centraliza o monitoramento de usinas fotovoltaicas de clientes de empresas do ramo de energia solar.
+O SolarSystem centraliza o monitoramento de usinas fotovoltaicas e o acesso de equipes e clientes aos seus dados. O repositório reúne uma API NestJS, um painel React em evolução e um protótipo HTML legado preservado durante a transição.
 
-> Construção do projeto
-> [Roteiro](#roteiro).
+## Arquitetura atual
 
-## Funcionalidades planejadas para a plataforma
+```text
+Navegador → apps/painel (React + TypeScript + Vite)
+                    /api → API NestJS → Prisma → PostgreSQL
+                                      → adaptador DEMO
+                                      → sincronização e regras de alertas
 
-- Coleta automática dos dados de várias plataformas (Sungrow, Growatt, Huawei, Deye/Solarman e GoodWe) em um só lugar
-- Painel com potência atual, energia gerada (dia, mês e total), economia estimada em R$ e CO₂ evitado
-- Alertas de usina sem comunicação (ex.: inversor desconectado do Wi-Fi), falha no inversor, geração zerada em horário de sol e desempenho abaixo das outras usinas
-- Avisos por e-mail quando um alerta é aberto ou resolvido
-- Cadastro de clientes e vínculo de cada usina ao seu dono
-- Portal do cliente: cada cliente vê apenas as próprias usinas
-
-## Tecnologias
-
-| Camada           | Tecnologia                |
-| ---------------- | ------------------------- |
-| Linguagem da API | TypeScript                |
-| Back-end         | Node.js · NestJS          |
-| Banco de dados   | PostgreSQL                |
-| Front-end        | HTML5 · CSS3 · JavaScript |
-
-## Executar o front-end
-
-Na raiz do repositório, inicie um servidor estático com Python 3:
-
-```sh
-python -m http.server 5173 --bind 127.0.0.1 --directory apps/web
+apps/web → protótipo HTML independente → localStorage do navegador
 ```
 
-Abra [a tela de login](http://127.0.0.1:5173/paginas/login.html). No Windows com o Python Launcher, também funciona `py -m http.server 5173 --bind 127.0.0.1 --directory apps/web`. Para reencontrar os cadastros, use o mesmo navegador, endereço e porta.
+O painel React já possui login real e Visão geral integrada à API. Sua adoção como interface principal completa depende da [estratégia de transição](docs/ESTRATEGIA_FRONTEND.md): ele ainda não substitui todos os fluxos do HTML. Não há migração automática entre localStorage e banco.
 
-| Situação               | Recursos do front-end                                                                                                                                                                   |
-| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Disponíveis localmente | Cadastro e edição de usinas e inversores, remoção de inversores, consulta e atualização de alarmes, pesquisa, filtros e exportação dos cadastros filtrados em CSV.                      |
-| Simulados              | Entrada com e-mail e senha fictícios, cadastro de conta, perfil de técnico, gráficos de produção e mapa esquemático. A simulação de login abre o painel sem autenticar ou criar sessão. |
-| Integração futura      | Autenticação pela API, recuperação de senha, contas reais, notificações e telemetria dos inversores no painel.                                                                          |
+| Camada           | Tecnologias                                                                 |
+| ---------------- | --------------------------------------------------------------------------- |
+| API              | Node.js, TypeScript, NestJS, Express, Zod                                   |
+| Persistência     | PostgreSQL, Prisma 6                                                        |
+| Autenticação     | JWT em cookie httpOnly, bcrypt para senhas, guards de autenticação e perfil |
+| Painel           | React 19, TypeScript, Vite 8, React Router 8                                |
+| Protótipo legado | HTML, CSS e JavaScript, armazenamento local                                 |
+| Qualidade        | Jest, ts-jest, Supertest, Playwright, ESLint e Prettier                     |
 
-Os cadastros ficam na chave `solaris.plants.v1`. A preferência “Lembrar e-mail” usa `solarsystem.rememberedEmail`. A senha é descartada. Na primeira visita, o painel exibe três usinas de exemplo. Em Configurações, a restauração acrescenta os exemplos ausentes, preservando os cadastros existentes. Dados ilegíveis bloqueiam gravações.
+## Funcionalidades implementadas
 
-### Testes do front-end
+**API:** saúde em `/api/health`; login, consulta da sessão e logout; gestão de usuários e clientes conforme perfil; consulta de usinas e vínculo com cliente; cadastro e sincronização de integrações; consulta e reconhecimento de alertas. Perfis `ADMIN`, `OPERATOR` e `CLIENT`, com isolamento dos dados de usinas/alertas por cliente. A API não oferece cadastro/edição manual geral de usinas nem recurso independente de inversores equivalente ao legado.
 
-Com Node.js 22.12+ e npm, instale as ferramentas isoladas de teste e execute a suíte:
+**Painel React:** rotas `/login` e `/`, formulário com mostrar/ocultar senha, sessão consultada na abertura, layout com usuário/perfil e Sair; Visão geral com indicadores, ranking de geração, status e alertas consultados na API a cada minuto. As métricas agregam atualmente uma página de até 100 registros; conjuntos maiores e leituras ausentes/antigas precisam de refinamento.
 
-```sh
-cd apps/web/tests
-npm ci
-npx playwright install chromium
-npm test
-```
+**HTML legado:** cadastro/edição local de usinas, adição/edição/remoção de inversores, busca e filtros, consulta e alteração local de alarmes, relatórios e exportação resumida em CSV, configurações informativas, menu e modal de perfil compartilhados.
 
-Os testes iniciam um servidor temporário e usam um perfil de navegador isolado. Para usar o Edge instalado, defina `BROWSER_CHANNEL=msedge` (no PowerShell, `$env:BROWSER_CHANNEL = 'msedge'`) antes de executar os testes.
+## O que é demonstrativo
 
-## Executar a API
+- O único provedor implementado na API é `DEMO`: gera telemetria simulada e a sincroniza no banco. Dados recebidos pela API não significam integração com fabricantes reais.
+- No HTML, login e cadastro de conta não autenticam nem enviam e-mails. Sair apenas volta à tela de login; perfil “Técnico”, gráficos de produção e mapa são ilustrativos.
+- Relatórios HTML de capacidade e contagem de alarmes usam os cadastros locais; a série temporal de produção é fictícia.
 
-### Pré-requisitos
+## Funcionalidades pendentes
 
-- Node.js 22.12 ou superior
-- PostgreSQL 17
-- Git
-
-### Instalação
-
-```bash
-npm install
-```
+- Portar ao React Usinas, Detalhes, Cadastro/Edição, Inversores, Alarmes completos, Relatórios, Configurações e modal de perfil.
+- Definir compatibilidade dos cadastros locais e contratos de escrita necessários, com backup integral e aprovação antes de migrar.
+- Adaptadores para Sungrow, Growatt, Huawei, Deye/Solarman, GoodWe e demais fabricantes.
+- Cadastro público real, recuperação de senha, confirmação por e-mail e notificações por e-mail.
+- Histórico temporal real, demais indicadores planejados, ampliação dos testes do painel e configuração de CI/publicação.
 
 ## Estrutura de pastas
 
+```text
+apps/
+  api/
+    src/                 # módulos NestJS, autenticação, serviços e adaptadores
+    prisma/              # schema, migrations e seed do administrador
+    test/                # E2E HTTP com Prisma mockado
+  painel/
+    src/                 # páginas React, layout, autenticação e cliente HTTP
+    public/              # imagens estáticas
+  web/
+    paginas/             # oito páginas HTML legadas
+    estilos/             # CSS compartilhado e específico
+    scripts/             # operações locais e componentes compartilhados
+    imgs/                # imagens
+    tests/               # testes Playwright com pacote/lockfile próprios
+docs/                    # instalação, estratégia, auditoria e ADRs
+package.json             # npm workspaces: apps/*
+package-lock.json        # versões resolvidas dos workspaces
 ```
-├── apps/
-│   ├── api/   # back-end
-│   └── web/   # front-end
-├── docs/      # documentação
-└── package.json
+
+## Executar localmente
+
+Siga o [guia completo para Windows 10/11](docs/INSTALACAO.md) para preparar banco, variáveis e administrador. Use Node **26**, conforme `.nvmrc`, npm e PostgreSQL **17**. O mínimo declarado na raiz (`>=22.12.0`) ainda é mais permissivo que o React Router resolvido (`>=22.22.0`); não use o mínimo da raiz como garantia de compatibilidade.
+
+Depois de configurar o ambiente e instalar as dependências, na raiz do repositório:
+
+```powershell
+# Terminal 1
+npm run start:dev -w apps/api
+
+# Terminal 2
+npm run dev -w apps/painel
 ```
 
-## Instalação e preparação do ambiente
+- Painel: [http://localhost:5173](http://localhost:5173), login em `/login`.
+- Saúde da API: [http://localhost:3333/api/health](http://localhost:3333/api/health). A raiz `/` não oferece uma página ou “Hello World”.
+- O painel inicialmente vazio é esperado quando não há usinas sincronizadas. O seed cria apenas o administrador, não exemplos de usinas.
 
-> Guia completo, com explicações e solução de problemas: **[docs/INSTALACAO.md](docs/INSTALACAO.md)**.
+### Comunicação e sessão
 
-### Requisitos
+O navegador chama `/api` na origem do painel. O proxy de desenvolvimento do Vite encaminha essas requisições a `http://localhost:3333`. O cliente HTTP React usa `credentials: 'same-origin'`; não há URL de API ou token configurado em variável `VITE_*` atualmente.
 
-- [Node.js](https://nodejs.org) 22.12+ (LTS)
-- [Git](https://git-scm.com)
-- [PostgreSQL](https://www.postgresql.org) 17
-- [VS Code](https://code.visualstudio.com) (com as extensões do projeto)
+O login envia `{ email, senha }` a `/api/auth/login`. A resposta contém o usuário e um cookie `solarsystem_sessao`, com `HttpOnly`, `SameSite=Strict`, caminho `/api` e `Secure` em produção. O token não fica no localStorage. `/api/auth/me` consulta o usuário atual e `/api/auth/logout` remove o cookie. HttpOnly limita a leitura do token por JavaScript, mas não substitui as demais proteções da aplicação.
 
-### Caminho rápido
+`WEB_ORIGIN` configura o CORS da API; não muda o destino do proxy nem o cliente HTTP. Em produção, será necessário servir painel e `/api` sob uma origem coerente, com HTTPS e fallback de rotas SPA. O proxy descrito é o de desenvolvimento; `vite preview` não substitui essa configuração de publicação.
 
-1. **Banco de dados** - no psql, como `postgres`:
+### Protótipo HTML legado
 
-   ```sql
-   CREATE ROLE nome WITH LOGIN PASSWORD 'troque-esta-senha';
-   CREATE DATABASE solarsystem OWNER nome;
-   ALTER ROLE nome CREATEBD;
-   ```
+Opcional, sem API ou banco, com Python 3 instalado:
 
-2. **Projeto:**
+```powershell
+py -m http.server 5174 --bind 127.0.0.1 --directory apps/web
+```
 
-   ```bash
-   git clone https://github.com/MatheusBryan31/SolarSystem.git
-   cd SolarSystem
-   npm install
-   ```
+Abra [http://127.0.0.1:5174/paginas/login.html](http://127.0.0.1:5174/paginas/login.html). A porta 5174 evita conflito com o React. **Se já possui cadastros, mantenha o navegador, esquema, hostname e porta originais**: trocar de `localhost` para `127.0.0.1` ou mudar porta não transporta localStorage. Para usar a antiga porta 5173, pare o React antes.
 
-3. **Configuração** - copie o modelo e preencha senha do banco, porta e `JWT_SECRET`:
+Cadastros: `solaris.plants.v1`. Preferência de e-mail: `solarsystem.rememberedEmail`. Senhas são descartadas. Sem chave persistida, três exemplos são mostrados em memória; lista vazia é preservada. A restauração em Configurações acrescenta exemplos ausentes e dados ilegíveis bloqueiam gravação. O CSV de usinas filtradas não é backup integral de inversores, alarmes e campos adicionais.
 
-   ```bash
-   Copy-Item apps\api\.env.example apps\api\.env
-   ```
+## Testes e verificações
 
-4. **Tabelas e primeiro administrador:**
+Após instalar dependências e gerar o Prisma Client:
 
-   ```bash
-   npm run db:deploy -w apps/api
-   npm run db:seed -w apps/api
+```powershell
+npm test -w apps/api -- --runInBand
+npm run test:e2e -w apps/api -- --runInBand
+npm run build -w apps/api
+npm run build -w apps/painel
+npm run "format: check"
+```
 
-   ```
+Os E2E atuais exercitam HTTP, autenticação, cookies e permissões reais com Prisma mockado, sem banco, sem `.env` e sem agendador. O script habilita VM Modules para as dependências ESM do Jest; pode aparecer aviso experimental. Não certifica integração com PostgreSQL ou configuração de produção.
 
-5. **Rodar:**
-
-   ```bash
-   npm run start:dev -w apps/api
-   ```
-
-   Verifique em <http://localhost:3333/api/health>.
-
-### Scripts principais
-
-| Comando                                      | Descrição                        |
-| -------------------------------------------- | -------------------------------- |
-| `npm run start:dev -w apps/api`              | API em modo desenvolvimento      |
-| `npm run test -w apps/api`                   | Testes da API                    |
-| `npm run db:migrate -w apps/api -- --name x` | Nova migration (desenvolvimento) |
-| `npm run db:studio -w apps/api`              | Painel visual do banco           |
-| `npm run format`                             | Formata o código                 |
-
-## Roteiro
-
-- [x] Ambiente de desenvolvimento
-- [x] Estrutura do monorepo
-- [x] Documentação inicial
-- [ ] Back-end
-- [ ] Front-end
-- [ ] Testes e CI
-- [ ] Publicação
+Na validação da Tarefa 03: **31 E2E e 26 unitários aprovados**, em Node 24.22.3, além de TypeScript da API e checks dos arquivos alterados. Esses resultados não representam uma execução de todos os checks em Node 26. Veja no [guia](docs/INSTALACAO.md#testes-e-qualidade) os testes HTML e comandos de lint sem correções. O script `lint` da API inclui `--fix`; não o use para auditoria somente leitura.
 
 ## Documentação
 
-- [Decisões de arquitetura](docs/adr/)
+- [Instalação no Windows e solução de problemas](docs/INSTALACAO.md).
+- [Estratégia de consolidação do front-end](docs/ESTRATEGIA_FRONTEND.md).
+- [Auditoria da Tarefa 02](docs/DIAGNOSTICO_VALIDACAO.md) — registro histórico; os bloqueios e o E2E antigo ali descritos antecedem as correções da Tarefa 03.
+- [ADR 0001 — Monorepo com npm workspaces](docs/adr/0001-monorepo-com-npm-workspaces.md).
+- [ADR 0002 — Arquitetura do backend](docs/adr/0002-arquitetura-do-back-end.md).

@@ -25,9 +25,10 @@ O SolarSystem precisa:
 4. **Tarefas em segundo plano (coleta e alertas) com fila no próprio PostgreSQL (pg-boss)**
    - Não precisa de Redis ou outro serviço.
 5. **API REST com JSON**
-   - O front-end React (cliente-servidor) consumirá a API.
+   - O front-end React (cliente-servidor) consome a API nas telas implementadas.
 
-O painel atual é estático e usa armazenamento local. O cliente React citado nesta decisão correspondia ao planejamento inicial.
+O painel React está em `apps/painel` e já utiliza autenticação e consultas pela API.
+O protótipo `apps/web` é independente e mantém cadastros locais no navegador.
 
 ## Alternativas consideradas
 
@@ -61,3 +62,20 @@ A coleta automática usa `setInterval` dentro da própria API (`SyncScheduler`),
 sobreposição de ciclos. Motivo: o sistema roda em **uma** instância, e isso evita uma dependência
 a mais. Limitação conhecida: com várias instâncias, cada uma coletaria em paralelo. Plano de saída:
 migrar para o pg-boss (fila no próprio PostgreSQL), que garante uma execução por ciclo.
+
+## Atualização de implementação — 23/11/2026
+
+- Os módulos atuais incluem autenticação, usuários, clientes, usinas, integrações,
+  provedores e alertas. A Visão geral é composta no React a partir dos endpoints
+  de usinas e alertas; não existe um módulo de dashboard próprio na API.
+- Os papéis implementados são `ADMIN`, `OPERATOR` e `CLIENT`, detalhando o grupo
+  de equipe/cliente citado no contexto. A sessão usa JWT em cookie httpOnly,
+  SameSite Strict, Path `/api` e Secure em produção, com guards globais.
+- O catálogo de provedores contém somente `DEMO`. Os fabricantes e os e-mails
+  mencionados no contexto continuam objetivos, não recursos entregues.
+- O item 4 registra a direção original da fila; **pg-boss não está instalado nem
+  implementado**. O agendador atual usa `setInterval` e trava em memória, sem
+  coordenação entre instâncias. `SYNC_INTERVAL_MIN=0` desativa sua execução;
+  caso contrário há uma coleta na inicialização e ciclos periódicos.
+- A proposta de separar um worker permanece futura. Não existe fila atual a
+  reutilizar até implementar a alternativa aprovada.

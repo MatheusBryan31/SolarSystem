@@ -11,7 +11,9 @@ nas duas — por exemplo, um novo campo na usina precisa ser salvo pela API e
 exibido pelo painel. Precisávamos decidir se cada aplicação teria o seu próprio
 repositório (polyrepo) ou se ficariam juntas (monorepo).
 
-O painel entregue em `apps/web` usa HTML, CSS e JavaScript estáticos. React foi considerado no contexto original.
+Na implementação atual, `apps/painel` contém o painel React + TypeScript + Vite.
+`apps/web` permanece como protótipo HTML/CSS/JavaScript legado, com cadastros locais
+e fluxos ainda não portados. A coexistência não altera a decisão de monorepo.
 
 ## Decisão
 
@@ -29,7 +31,17 @@ de manter versões e mudanças sincronizadas) e ferramentas como Turborepo/Nx
 - Uma mudança que envolve API e painel vai em um único commit e um único pull request.
 - Um só lugar para documentação, configuração de qualidade e CI.
 - Sem ferramenta extra para instalar: o npm já resolve.
-- O repositório cresce com as duas aplicações; o CI testa tudo a cada mudança, mesmo
-  quando só uma app foi alterada.
-- É preciso indicar a aplicação nos comandos (`npm run dev -w apps/api`).
+- O repositório cresce com as aplicações; uma futura configuração de CI deverá
+  definir quais verificações rodam por mudança. Não há pipeline `.github` neste checkout.
+- É preciso indicar a aplicação nos comandos (`npm run start:dev -w apps/api`
+  ou `npm run dev -w apps/painel`).
 - Se o projeto crescer muito, podemos adotar Turborepo ou Nx sem mudar a estrutura de pastas.
+
+## Atualização de implementação — 23/11/2026
+
+API e painel React são workspaces com manifestos próprios. O legado `apps/web`
+não tem manifesto na sua raiz; seu pacote de testes fica em `apps/web/tests`
+e exige instalação separada. Para instalar as resoluções versionadas sem alterar
+o lockfile, o guia atual usa `npm ci`; `npm install` continua disponível para
+alterações intencionais nas dependências. A transição funcional do legado segue
+a [estratégia frontend](../ESTRATEGIA_FRONTEND.md), ainda sem migração automática.
