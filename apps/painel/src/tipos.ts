@@ -36,6 +36,29 @@ export interface Usina {
   totalEnergyKwh: number | null;
   lastDataAt: string | null; // datas chegam como texto (JSON não tem tipo Date)
   client: { id: string; name: string } | null;
+  clientId: string | null;
+  origin: 'MANUAL' | 'IMPORTED';
+  revision: number;
+  integrationId: string | null;
+  externalId: string | null;
+  monitoring: 'UNLINKED' | 'PAUSED' | 'WAITING' | 'STALE' | 'ACTIVE';
+  metadataSources: Record<'name' | 'city' | 'state' | 'capacityKwp', 'MANUAL' | 'REMOTE' | 'UNSET'>;
+}
+
+export interface Integracao {
+  id: string;
+  name: string;
+  revision: number;
+  enabled: boolean;
+  archivedAt: string | null;
+}
+export interface Descoberta {
+  id: string;
+  integrationId: string;
+  externalId: string;
+  revision: number;
+  observedAt: string;
+  snapshot: { name: string; city: string | null; state: string | null; capacityKwp: number | null };
 }
 
 export interface Alerta {

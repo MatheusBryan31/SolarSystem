@@ -1,5 +1,6 @@
 import { HealthStatus } from '@prisma/client';
 import { z } from 'zod';
+import { metadataSchema } from './plant-domain';
 
 export const listarUsinasSchema = z.object({
   busca: z.string().trim().optional(),
@@ -16,3 +17,44 @@ export const vincularClienteSchema = z.object({
 
 export type ListarUsinasDto = z.infer<typeof listarUsinasSchema>;
 export type VincularClienteDto = z.infer<typeof vincularClienteSchema>;
+
+export const criarUsinaSchema = metadataSchema
+  .partial()
+  .required({ name: true })
+  .extend({
+    clientId: z.string().uuid().nullable().optional(),
+  })
+  .strict();
+export const editarUsinaSchema = metadataSchema
+  .partial()
+  .extend({
+    revision: z.number().int().nonnegative(),
+    useRemote: z
+      .array(z.enum(['name', 'city', 'state', 'capacityKwp']))
+      .max(4)
+      .default([]),
+  })
+  .strict()
+  .refine(
+    (body) =>
+      Object.keys(body).some((key) => !['revision', 'useRemote'].includes(key)) || body.useRemote.length > 0,
+    'Informe os campos a alterar',
+  );
+export const vincularPlataformaSchema = z
+  .object({
+    integrationId: z.string().uuid(),
+    externalId: z.string().min(1).max(300),
+    revision: z.number().int().nonnegative(),
+    discoveryRevision: z.number().int().nonnegative().optional(),
+  })
+  .strict();
+export const desvincularPlataformaSchema = z
+  .object({
+    revision: z.number().int().nonnegative(),
+    reason: z.string().trim().min(3).max(500),
+  })
+  .strict();
+export type CriarUsinaDto = z.infer<typeof criarUsinaSchema>;
+export type EditarUsinaDto = z.infer<typeof editarUsinaSchema>;
+export type VincularPlataformaDto = z.infer<typeof vincularPlataformaSchema>;
+export type DesvincularPlataformaDto = z.infer<typeof desvincularPlataformaSchema>;

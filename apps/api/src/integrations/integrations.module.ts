@@ -4,9 +4,10 @@ import { ProvidersModule } from '../providers/providers.module';
 import { IntegrationsController } from './integrations.controller';
 import { IntegrationsService } from './integrations.service';
 import { SyncScheduler } from './sync.scheduler';
+import { PlantsModule } from '../plants/plants.module';
 
 @Module({
-  imports: [ProvidersModule, AlertsModule], // registro de adaptadores + serviço de alertas
+  imports: [ProvidersModule, AlertsModule, PlantsModule],
   controllers: [IntegrationsController],
   providers: [IntegrationsService, SyncScheduler],
 })

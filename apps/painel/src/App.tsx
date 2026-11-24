@@ -3,6 +3,7 @@ import { useAuth } from './auth';
 import { Layout } from './componentes/Layout';
 import { Inicio } from './paginas/Inicio';
 import { Login } from './paginas/Login';
+import { Usinas } from './paginas/Usinas';
 
 // O MAPA DO PAINEL: qual endereço mostra qual tela
 export function App() {
@@ -25,6 +26,7 @@ export function App() {
     <Routes>
       <Route element={<Layout />}>
         <Route path="/" element={<Inicio />} />
+        <Route path="/usinas" element={<Usinas />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

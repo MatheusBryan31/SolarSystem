@@ -10,3 +10,14 @@ export const criarIntegracaoSchema = z.object({
 });
 
 export type CriarIntegracaoDto = z.infer<typeof criarIntegracaoSchema>;
+
+export const estadoIntegracaoSchema = z
+  .object({
+    revision: z.number().int().nonnegative(),
+    enabled: z.boolean().optional(),
+    archive: z.literal(true).optional(),
+  })
+  .strict()
+  .refine((value) => value.enabled !== undefined || value.archive, 'Informe enabled ou archive');
+export const importarDescobertaSchema = z.object({ revision: z.number().int().nonnegative() }).strict();
+export type EstadoIntegracaoDto = z.infer<typeof estadoIntegracaoSchema>;

@@ -39,7 +39,9 @@ export function Layout() {
           <NavLink to="/" end>
             <Icone nome="painel" /> Visão geral
           </NavLink>
-          {/* As próximas aulas acrescentam aqui: Usinas, Alertas, Clientes, Usuários */}
+          <NavLink to="/usinas">
+            <Icone nome="usina" /> Usinas
+          </NavLink>
         </nav>
         <div className="menu-usuario">
           <span className="avatar">{inicial}</span>

@@ -26,9 +26,9 @@ O painel React já possui login real e Visão geral integrada à API. Sua adoç�
 
 ## Funcionalidades implementadas
 
-**API:** saúde em `/api/health`; login, consulta da sessão e logout; gestão de usuários e clientes conforme perfil; consulta de usinas e vínculo com cliente; cadastro e sincronização de integrações; consulta e reconhecimento de alertas. Perfis `ADMIN`, `OPERATOR` e `CLIENT`, com isolamento dos dados de usinas/alertas por cliente. A API não oferece cadastro/edição manual geral de usinas nem recurso independente de inversores equivalente ao legado.
+**API:** saúde em `/api/health`; login, sessão e logout; gestão de usuários/clientes conforme perfil; cadastro/edição manual de usinas, vínculo com cliente e com plataforma, desvinculação segura e histórico de identidades; descobertas remotas com importação explícita, pausa/arquivamento de integrações e alertas. Perfis `ADMIN`, `OPERATOR` e `CLIENT`, com isolamento de usinas/alertas por cliente. Ainda não há gestão independente de inversores equivalente ao legado. O novo catálogo exige a migration descrita em [Implementação de usinas](docs/IMPLEMENTACAO_USINAS.md), que não foi aplicada ao banco do usuário.
 
-**Painel React:** rotas `/login` e `/`, formulário com mostrar/ocultar senha, sessão consultada na abertura, layout com usuário/perfil e Sair; Visão geral com indicadores, ranking de geração, status e alertas consultados na API a cada minuto. As métricas agregam atualmente uma página de até 100 registros; conjuntos maiores e leituras ausentes/antigas precisam de refinamento.
+**Painel React:** rotas `/login`, `/` e `/usinas`, formulário com mostrar/ocultar senha, sessão consultada na abertura, layout com usuário/perfil e Sair; Visão geral com indicadores, ranking, status e alertas consultados a cada minuto. As consultas percorrem as páginas disponíveis e os indicadores distinguem ausência de leitura atual de zero. A gestão de usinas separa cadastro manual, identidade remota e origem dos campos.
 
 **HTML legado:** cadastro/edição local de usinas, adição/edição/remoção de inversores, busca e filtros, consulta e alteração local de alarmes, relatórios e exportação resumida em CSV, configurações informativas, menu e modal de perfil compartilhados.
 
@@ -40,7 +40,7 @@ O painel React já possui login real e Visão geral integrada à API. Sua adoç�
 
 ## Funcionalidades pendentes
 
-- Portar ao React Usinas, Detalhes, Cadastro/Edição, Inversores, Alarmes completos, Relatórios, Configurações e modal de perfil.
+- Completar no React Detalhes, Inversores, Alarmes completos, Relatórios, Configurações e modal de perfil. A rota `/usinas` já oferece cadastro/edição manual, origem dos campos e associação explícita com descobertas remotas, com reconexão pelo histórico.
 - Definir compatibilidade dos cadastros locais e contratos de escrita necessários, com backup integral e aprovação antes de migrar.
 - Adaptadores para Sungrow, Growatt, Huawei, Deye/Solarman, GoodWe e demais fabricantes.
 - Cadastro público real, recuperação de senha, confirmação por e-mail e notificações por e-mail.
@@ -165,6 +165,7 @@ Na validação da Tarefa 03: **31 E2E e 26 unitários aprovados**, em Node 24.22
 
 - [Instalação no Windows e solução de problemas](docs/INSTALACAO.md).
 - [Estratégia de consolidação do front-end](docs/ESTRATEGIA_FRONTEND.md).
+- [Modelagem aprovada de usinas](docs/MODELAGEM_USINAS.md) e [implementação, contratos e implantação](docs/IMPLEMENTACAO_USINAS.md).
 - [Auditoria da Tarefa 02](docs/DIAGNOSTICO_VALIDACAO.md) — registro histórico; os bloqueios e o E2E antigo ali descritos antecedem as correções da Tarefa 03.
 - [ADR 0001 — Monorepo com npm workspaces](docs/adr/0001-monorepo-com-npm-workspaces.md).
 - [ADR 0002 — Arquitetura do backend](docs/adr/0002-arquitetura-do-back-end.md).

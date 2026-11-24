@@ -5,7 +5,7 @@ generator client {
 // Localidade do banco
 datasource db {
   provider = "postgresql"
-  url = env("DATABASE_URL")
+  url      = env("DATABASE_URL")
 }
 
 // Perfis de acesso (empresa + clientes)
@@ -16,31 +16,31 @@ enum Role {
 }
 
 model Client {
-  id String @id @default(uuid())
-  name String
-  document String? @unique // CPF/CNPJ, opcional (?), mas sem repetição
-  email String?
-  phone String?
+  id        String   @id @default(uuid())
+  name      String
+  document  String?  @unique // CPF/CNPJ, opcional (?), mas sem repetição
+  email     String?
+  phone     String?
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  users User[] // Um cliente pode ter vários usuários
+  users  User[] // Um cliente pode ter vários usuários
   plants Plant[]
 
   @@map("clients")
 }
 
 model User {
-  id String @id @default(uuid())
-  name String
-  email String @unique
-  passwordHash String @map("password_hash") // Não é a senha real
-  role Role @default(OPERATOR)
-  active Boolean @default(true)
-  clientId String? @map("client_id") // só usuários clientes têm
-  client Client? @relation(fields: [clientId], references: [id], onDelete: SetNull)
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id                 String   @id @default(uuid())
+  name               String
+  email              String   @unique
+  passwordHash       String   @map("password_hash") // Não é a senha real
+  role               Role     @default(OPERATOR)
+  active             Boolean  @default(true)
+  clientId           String?  @map("client_id") // só usuários clientes têm
+  client             Client?  @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
   acknowledgedAlerts Alert[] // alertas que este usuário reconheceu
 
   @@index([clientId])
@@ -61,6 +61,16 @@ enum HealthStatus {
   UNKNOWN
 }
 
+enum PlantOrigin {
+  MANUAL
+  IMPORTED
+}
+
+enum PlantLinkState {
+  ACTIVE
+  DETACHED
+}
+
 // Uma conta numa plataforma (ex.: o login da empresa no portal do fabricante)
 model Integration {
   id          String       @id @default(uuid())
@@ -68,43 +78,105 @@ model Integration {
   name        String
   credentials Json         @default("{}") // dados de acesso à plataforma; nunca saem pela API
   enabled     Boolean      @default(true)
+  archivedAt  DateTime?    @map("archived_at")
+  revision    Int          @default(0)
   lastSyncAt  DateTime?    @map("last_sync_at")
   lastError   String?      @map("last_error")
   createdAt   DateTime     @default(now()) @map("created_at")
   updatedAt   DateTime     @updatedAt @map("updated_at")
-  alerts Alert[]
+  alerts      Alert[]
 
-  plants Plant[]
+  plants        Plant[]
+  externalLinks PlantExternalLink[]
+  discoveries   PlantDiscovery[]
 
   @@map("integrations")
 }
 
 // Uma usina, como a plataforma a descreve + o vínculo com o nosso cliente
 model Plant {
-  id             String       @id @default(uuid())
-  integrationId  String       @map("integration_id")
-  externalId     String       @map("external_id") // o id da usina LÁ na plataforma
-  name           String
-  clientId       String?      @map("client_id")
-  capacityKwp    Float?       @map("capacity_kwp")
-  city           String?
-  state          String?
-  status         HealthStatus @default(UNKNOWN)
-  currentPowerKw Float?       @map("current_power_kw")
-  todayEnergyKwh Float?       @map("today_energy_kwh")
-  totalEnergyKwh Float?       @map("total_energy_kwh")
-  lastDataAt     DateTime?    @map("last_data_at")
-  createdAt      DateTime     @default(now()) @map("created_at")
-  updatedAt      DateTime     @updatedAt @map("updated_at")
+  id              String       @id @default(uuid())
+  // Projeção de compatibilidade. A identidade remota pertence ao vínculo.
+  integrationId   String?      @map("integration_id")
+  externalId      String?      @map("external_id")
+  origin          PlantOrigin  @default(IMPORTED)
+  manualOverrides Json         @default("{}") @map("manual_overrides")
+  revision        Int          @default(0)
+  name            String
+  clientId        String?      @map("client_id")
+  capacityKwp     Float?       @map("capacity_kwp")
+  city            String?
+  state           String?
+  status          HealthStatus @default(UNKNOWN)
+  currentPowerKw  Float?       @map("current_power_kw")
+  todayEnergyKwh  Float?       @map("today_energy_kwh")
+  totalEnergyKwh  Float?       @map("total_energy_kwh")
+  lastDataAt      DateTime?    @map("last_data_at")
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
 
-  integration Integration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
-  client      Client?     @relation(fields: [clientId], references: [id], onDelete: SetNull)
-  alerts      Alert[]
+  integration   Integration?        @relation(fields: [integrationId], references: [id], onDelete: Restrict)
+  client        Client?             @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  alerts        Alert[]
+  externalLinks PlantExternalLink[]
+  discoveries   PlantDiscovery[]
+  auditEvents   PlantAuditEvent[]
 
   @@unique([integrationId, externalId]) // a mesma usina nunca entra duas vezes
   @@index([clientId])
   @@map("plants")
 }
+
+model PlantExternalLink {
+  id             String         @id @default(uuid())
+  plantId        String         @map("plant_id")
+  integrationId  String         @map("integration_id")
+  externalId     String         @map("external_id")
+  state          PlantLinkState @default(ACTIVE)
+  revision       Int            @default(0)
+  linkedAt       DateTime       @default(now()) @map("linked_at")
+  detachedAt     DateTime?      @map("detached_at")
+  remoteMetadata Json           @map("remote_metadata")
+  lastSample     Json?          @map("last_sample")
+  observedAt     DateTime       @map("observed_at")
+  plant          Plant          @relation(fields: [plantId], references: [id], onDelete: Restrict)
+  integration    Integration    @relation(fields: [integrationId], references: [id], onDelete: Restrict)
+
+  @@unique([integrationId, externalId])
+  // Uma fonte ACTIVE por usina: índice parcial na migration SQL.
+  @@index([plantId, state])
+  @@map("plant_external_links")
+}
+
+model PlantDiscovery {
+  id            String      @id @default(uuid())
+  integrationId String      @map("integration_id")
+  externalId    String      @map("external_id")
+  snapshot      Json
+  revision      Int         @default(0)
+  observedAt    DateTime    @map("observed_at")
+  resolvedAt    DateTime?   @map("resolved_at")
+  plantId       String?     @map("plant_id")
+  integration   Integration @relation(fields: [integrationId], references: [id], onDelete: Restrict)
+  plant         Plant?      @relation(fields: [plantId], references: [id], onDelete: Restrict)
+
+  @@unique([integrationId, externalId])
+  @@map("plant_discoveries")
+}
+
+model PlantAuditEvent {
+  id        String   @id @default(uuid())
+  plantId   String   @map("plant_id")
+  actorId   String?  @map("actor_id")
+  operation String
+  details   Json
+  createdAt DateTime @default(now()) @map("created_at")
+  plant     Plant    @relation(fields: [plantId], references: [id], onDelete: Restrict)
+
+  @@index([plantId, createdAt])
+  @@map("plant_audit_events")
+}
+
 // O que aconteceu
 enum AlertType {
   PLANT_OFFLINE // usina parou de enviar dados
@@ -139,8 +211,8 @@ model Alert {
   resolvedAt       DateTime?     @map("resolved_at")
   updatedAt        DateTime      @updatedAt @map("updated_at")
 
-  plant          Plant?       @relation(fields: [plantId], references: [id], onDelete: Cascade)
-  integration    Integration? @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+  plant          Plant?       @relation(fields: [plantId], references: [id], onDelete: Restrict)
+  integration    Integration? @relation(fields: [integrationId], references: [id], onDelete: Restrict)
   acknowledgedBy User?        @relation(fields: [acknowledgedById], references: [id], onDelete: SetNull)
 
   @@index([status])

@@ -41,7 +41,15 @@ describe('API HTTP — saúde, sessão e permissões com Prisma isolado', () => 
     $queryRaw: jest.fn(),
     $transaction: jest.fn(),
     user: { findUnique: jest.fn(), count: jest.fn(), findMany: jest.fn() },
-    plant: { count: jest.fn(), findMany: jest.fn(), findFirst: jest.fn(), update: jest.fn() },
+    plant: {
+      count: jest.fn(),
+      findMany: jest.fn(),
+      findFirst: jest.fn(),
+      findUnique: jest.fn(),
+      update: jest.fn(),
+      create: jest.fn(),
+    },
+    plantAuditEvent: { create: jest.fn() },
   };
 
   beforeAll(async () => {
@@ -104,7 +112,27 @@ describe('API HTTP — saúde, sessão e permissões com Prisma isolado', () => 
     prisma.plant.findMany.mockResolvedValue([]);
     prisma.plant.findFirst.mockResolvedValue({ id: USINA, clientId: null });
     prisma.plant.update.mockResolvedValue({ id: USINA, clientId: null });
-    prisma.$transaction.mockImplementation((queries: Promise<unknown>[]) => Promise.all(queries));
+    prisma.$transaction.mockImplementation(
+      (queries: Promise<unknown>[] | ((tx: typeof prisma) => Promise<unknown>)) =>
+        typeof queries === 'function' ? queries(prisma) : Promise.all(queries),
+    );
+    prisma.plant.create.mockImplementation(({ data }: { data: Record<string, unknown> }) =>
+      Promise.resolve({
+        id: USINA,
+        clientId: null,
+        client: null,
+        integration: null,
+        integrationId: null,
+        externalId: null,
+        lastDataAt: null,
+        currentPowerKw: null,
+        todayEnergyKwh: null,
+        totalEnergyKwh: null,
+        externalLinks: [],
+        revision: 0,
+        ...data,
+      }),
+    );
   });
 
   afterAll(async () => {
@@ -120,6 +148,61 @@ describe('API HTTP — saúde, sessão e permissões com Prisma isolado', () => 
     if (!setCookie) throw new Error('Login não emitiu cookie');
     return { response, setCookie, cookie: setCookie.split(';')[0] };
   }
+
+  it.each([
+    ['admin@example.test', 201],
+    ['operator@example.test', 201],
+    ['client@example.test', 403],
+  ])('cadastro manual respeita perfil %s (HTTP %i)', async (email, status) => {
+    const { cookie } = await login(email);
+    const response = await request(app.getHttpServer())
+      .post('/api/plants')
+      .set('Cookie', cookie)
+      .send({ name: 'Minha usina', capacityKwp: 30 })
+      .expect(status);
+    if (status === 201) {
+      expect(response.body).toMatchObject({
+        id: USINA,
+        origin: 'MANUAL',
+        integrationId: null,
+        monitoring: 'UNLINKED',
+        status: 'UNKNOWN',
+        currentPowerKw: null,
+      });
+      expect(prisma.plantAuditEvent.create).toHaveBeenCalled();
+    } else expect(prisma.plant.create).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    { name: 'Usina teste', integrationId: ADMIN },
+    { name: 'Usina teste', origin: 'IMPORTED' },
+    { name: 'Usina teste', status: 'ONLINE' },
+    { name: 'Usina teste', capacityKwp: -1 },
+  ])('não aceita controle de identidade/telemetria ou capacidade inválida: %j', async (body) => {
+    const { cookie } = await login();
+    await request(app.getHttpServer()).post('/api/plants').set('Cookie', cookie).send(body).expect(400);
+    expect(prisma.plant.create).not.toHaveBeenCalled();
+  });
+
+  it('revisão antiga impede sobrescrever cadastro', async () => {
+    const { cookie } = await login();
+    prisma.plant.findUnique.mockResolvedValue({ id: USINA, revision: 2 });
+    await request(app.getHttpServer())
+      .patch(`/api/plants/${USINA}`)
+      .set('Cookie', cookie)
+      .send({ revision: 1, name: 'Nome novo' })
+      .expect(409);
+    expect(prisma.plant.update).not.toHaveBeenCalled();
+  });
+
+  it.each(['external-link', 'external-link/detach'])('operador não altera %s', async (route) => {
+    const { cookie } = await login('operator@example.test');
+    await request(app.getHttpServer())
+      .post(`/api/plants/${USINA}/${route}`)
+      .set('Cookie', cookie)
+      .send({ revision: 0, integrationId: ADMIN, externalId: '001', reason: 'Teste seguro' })
+      .expect(403);
+  });
 
   it('GET /api/health é público e informa banco disponível', async () => {
     const response = await request(app.getHttpServer()).get('/api/health').expect(200);

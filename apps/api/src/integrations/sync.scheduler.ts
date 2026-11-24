@@ -45,7 +45,7 @@ export class SyncScheduler implements OnApplicationBootstrap, OnModuleDestroy {
     this.rodando = true;
     try {
       const integracoes = await this.prisma.integration.findMany({
-        where: { enabled: true },
+        where: { enabled: true, archivedAt: null },
         select: { id: true, name: true },
       });
       for (const integracao of integracoes) {

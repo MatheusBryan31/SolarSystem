@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import { api } from '../api';
+import { listarTudo } from '../api';
 import { useAuth } from '../auth';
 import { Icone, type NomeIcone } from '../componentes/Icone';
 import * as f from '../formatos';
-import type { Alerta, Pagina, StatusUsina, Usina } from '../tipos';
+import type { Alerta, StatusUsina, Usina } from '../tipos';
 
 const statusInfo: Record<StatusUsina, { rotulo: string; classe: string }> = {
   ONLINE: { rotulo: 'Online', classe: 'ok' },
@@ -25,13 +25,10 @@ export function Inicio() {
 
   useEffect(() => {
     const carregar = () =>
-      Promise.all([
-        api<Pagina<Usina>>('/plants?porPagina=100'),
-        api<Pagina<Alerta>>('/alerts?ativos=true&porPagina=100'),
-      ])
+      Promise.all([listarTudo<Usina>('/plants'), listarTudo<Alerta>('/alerts?ativos=true')])
         .then(([u, a]) => {
-          setUsinas(u.itens);
-          setAlertas(a.itens);
+          setUsinas(u);
+          setAlertas(a);
           setErro('');
         })
         .catch((e: unknown) => setErro(e instanceof Error ? e.message : 'Falha ao carregar'));
@@ -48,7 +45,14 @@ export function Inicio() {
   const potenciaAgora = soma(usinas, (u) => u.currentPowerKw);
   const energiaHoje = soma(usinas, (u) => u.todayEnergyKwh);
   const energiaTotal = soma(usinas, (u) => u.totalEnergyKwh);
-  const fator = capacidadeTotal > 0 ? potenciaAgora / capacidadeTotal : 0;
+  const temPotencia = usinas.some((u) => u.currentPowerKw !== null);
+  const temEnergiaHoje = usinas.some((u) => u.todayEnergyKwh !== null);
+  const temEnergiaTotal = usinas.some((u) => u.totalEnergyKwh !== null);
+  const capacidadeMonitorada = soma(
+    usinas.filter((u) => u.monitoring === 'ACTIVE' && u.currentPowerKw !== null),
+    (u) => u.capacityKwp,
+  );
+  const fator = capacidadeMonitorada > 0 ? potenciaAgora / capacidadeMonitorada : 0;
   const online = usinas.filter((u) => u.status === 'ONLINE').length;
   const criticos = alertas.filter((a) => a.severity === 'CRITICAL').length;
   const leituras = usinas.map((u) => u.lastDataAt).filter((d): d is string => d !== null);
@@ -74,14 +78,18 @@ export function Inicio() {
       cor: 'azul',
       rotulo: 'Potência instalada',
       valor: f.capacidade(capacidadeTotal),
-      detalhe: `${f.potencia(potenciaAgora)} gerando agora`,
+      detalhe: temPotencia
+        ? `${f.potencia(potenciaAgora)} nas leituras disponíveis`
+        : 'Sem leitura atual de potência',
     },
     {
       icone: 'grafico',
       cor: 'ambar',
       rotulo: 'Energia gerada hoje',
-      valor: f.energia(energiaHoje),
-      detalhe: `${f.energia(energiaTotal)} acumulados`,
+      valor: temEnergiaHoje ? f.energia(energiaHoje) : '—',
+      detalhe: temEnergiaTotal
+        ? `${f.energia(energiaTotal)} nas leituras disponíveis`
+        : 'Sem leitura de energia',
     },
     {
       icone: 'alerta',
@@ -103,7 +111,8 @@ export function Inicio() {
             <Icone nome="sol" tamanho={16} /> {f.saudacao()}, {usuario?.nome.split(' ')[0]}
           </span>
           <h1>
-            {f.potencia(potenciaAgora)} <small>sendo gerados agora</small>
+            {temPotencia ? f.potencia(potenciaAgora) : '—'}{' '}
+            <small>{temPotencia ? 'nas leituras atuais disponíveis' : 'sem leitura atual de potência'}</small>
           </h1>
           <p>
             {usinas.length} usina(s) monitorada(s)
@@ -113,8 +122,11 @@ export function Inicio() {
         <div className={`faixa-status ${criticos > 0 ? 'tem-alerta' : ''}`}>
           <Icone nome={criticos > 0 ? 'alerta' : 'check'} tamanho={22} />
           <div>
-            <strong>{criticos > 0 ? `${criticos} alerta(s) crítico(s)` : 'Tudo operando'}</strong>
-            <small>{criticos > 0 ? 'Precisam de atenção' : 'Nenhum problema crítico'}</small>
+            <strong>{criticos > 0 ? `${criticos} alerta(s) crítico(s)` : 'Sem alertas críticos'}</strong>
+            <small>
+              {usinas.filter((u) => u.monitoring === 'ACTIVE').length} com leitura atual •{' '}
+              {usinas.filter((u) => u.monitoring !== 'ACTIVE').length} sem leitura atual
+            </small>
           </div>
         </div>
       </section>
@@ -148,14 +160,22 @@ export function Inicio() {
             <article className="cartao">
               <header className="cartao-topo">
                 <h2>Desempenho agora</h2>
-                <span className="etiqueta">Ao vivo</span>
+                <span className="etiqueta">
+                  {usinas.some((u) => u.monitoring === 'ACTIVE')
+                    ? 'Leituras disponíveis'
+                    : 'Sem leitura atual'}
+                </span>
               </header>
               <div className="anel-area">
                 <svg
                   viewBox="0 0 120 120"
                   className="anel"
                   role="img"
-                  aria-label={`Fator de capacidade ${f.porcentagem(fator)}`}
+                  aria-label={
+                    capacidadeMonitorada > 0
+                      ? `Fator de capacidade monitorada ${f.porcentagem(fator)}`
+                      : 'Fator de capacidade indisponível'
+                  }
                 >
                   <circle cx="60" cy="60" r="52" className="anel-fundo" />
                   <circle
@@ -168,14 +188,14 @@ export function Inicio() {
                   />
                 </svg>
                 <div className="anel-texto">
-                  <strong>{f.porcentagem(fator)}</strong>
-                  <span>da capacidade</span>
+                  <strong>{capacidadeMonitorada > 0 ? f.porcentagem(fator) : '—'}</strong>
+                  <span>da capacidade monitorada</span>
                 </div>
               </div>
               <dl className="numeros">
                 <div>
                   <dt>Gerando agora</dt>
-                  <dd>{f.potencia(potenciaAgora)}</dd>
+                  <dd>{temPotencia ? f.potencia(potenciaAgora) : '—'}</dd>
                 </div>
                 <div>
                   <dt>Capacidade</dt>
@@ -187,7 +207,11 @@ export function Inicio() {
             <article className="cartao largo">
               <header className="cartao-topo">
                 <h2>Geração de hoje por usina</h2>
-                <span className="sutil">{f.energia(energiaHoje)} no total</span>
+                <span className="sutil">
+                  {temEnergiaHoje
+                    ? `${f.energia(energiaHoje)} nas leituras disponíveis`
+                    : 'Sem leitura de energia'}
+                </span>
               </header>
               <ul className="barras">
                 {ranking.map((u) => (
@@ -201,7 +225,9 @@ export function Inicio() {
                         style={{ width: `${((u.todayEnergyKwh ?? 0) / maiorGeracao) * 100}%` }}
                       />
                     </span>
-                    <span className="barras-numero">{f.energia(u.todayEnergyKwh ?? 0)}</span>
+                    <span className="barras-numero">
+                      {u.todayEnergyKwh === null ? '—' : f.energia(u.todayEnergyKwh)}
+                    </span>
                   </li>
                 ))}
               </ul>

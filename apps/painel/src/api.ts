@@ -46,3 +46,19 @@ export async function api<T>(caminho: string, opcoes: { metodo?: string; corpo?:
   }
   return dados as T;
 }
+
+// Percorre as páginas existentes; uma listagem não é um snapshot transacional do banco.
+export async function listarTudo<T extends { id: string }>(caminho: string): Promise<T[]> {
+  const itens = new Map<string, T>();
+  let pagina = 1;
+  let totalPaginas = 1;
+  do {
+    const response = await api<{ itens: T[]; total: number }>(
+      `${caminho}${caminho.includes('?') ? '&' : '?'}porPagina=100&pagina=${pagina}`,
+    );
+    response.itens.forEach((item) => itens.set(item.id, item));
+    totalPaginas = Math.ceil(response.total / 100);
+    pagina++;
+  } while (pagina <= totalPaginas);
+  return [...itens.values()];
+}

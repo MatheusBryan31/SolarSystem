@@ -169,7 +169,7 @@ npm run dev -w apps/painel
 
 Abra [http://localhost:5173/login](http://localhost:5173/login) e use o administrador criado. A Visão geral é [http://localhost:5173/](http://localhost:5173/). O Vite configura porta 5173, mas pode escolher outra se ela estiver ocupada; confira a URL exibida e libere a porta esperada para evitar inconsistências com CORS, cookies e origens de dados.
 
-A tela pode ficar sem usinas porque o seed só cria o administrador. O catálogo atual tem apenas `DEMO`. Cadastrar uma integração requer `POST /api/integrations` por administrador; sincronizar usa `POST /api/integrations/:id/sync` por administrador/operador. Essas ações gravam dados e não possuem tela no painel atual. Não são executadas automaticamente por este guia.
+A tela pode ficar sem usinas porque o seed só cria o administrador. O catálogo atual tem apenas `DEMO`. Cadastrar uma integração requer `POST /api/integrations` por administrador. Com a migration do cadastro único aplicada em ambiente autorizado, `/usinas` permite cadastro manual e revisão das descobertas: sincronizar não importa automaticamente uma identidade nova; o administrador decide importar ou vincular a uma usina existente. Esses fluxos gravam dados e não são executados por este guia. Leia [contratos e implantação do catálogo](IMPLEMENTACAO_USINAS.md) antes de atualizar um banco existente.
 
 Reinicie a API após alterar `.env`. O modo de desenvolvimento acompanha arquivos de código; não dependa de recarga automática das variáveis. `Ctrl+C` encerra cada processo.
 

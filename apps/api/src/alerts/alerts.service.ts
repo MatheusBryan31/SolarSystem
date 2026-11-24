@@ -3,6 +3,8 @@ import { Prisma, Role } from '@prisma/client';
 import type { UsuarioAutenticado } from '../auth/auth.types';
 import { PrismaService } from '../prisma/prisma.service';
 import { avaliarUsina } from './alert-rules';
+import { catalogTransaction } from '../plants/catalog-transaction';
+import { TELEMETRY_MAX_AGE_MS } from '../plants/plant-domain';
 import type { ListarAlertasDto } from './alerts.schemas';
 
 const incluir = {
@@ -22,11 +24,19 @@ export class AlertsService {
    *  - alerta ativo cuja condição sumiu -> RESOLVE automaticamente
    */
   async avaliarUsinas(integrationId: string, agora: Date) {
-    const usinas = await this.prisma.plant.findMany({
-      where: { integrationId },
+    return catalogTransaction(this.prisma, (tx) => this.avaliarUsinasTx(tx, integrationId, agora));
+  }
+
+  async avaliarUsinasTx(tx: Prisma.TransactionClient, integrationId: string, agora: Date) {
+    const usinas = await tx.plant.findMany({
+      where: {
+        externalLinks: {
+          some: { integrationId, state: 'ACTIVE', integration: { enabled: true, archivedAt: null } },
+        },
+      },
       select: { id: true, name: true, status: true, lastDataAt: true },
     });
-    const ativos = await this.prisma.alert.findMany({
+    const ativos = await tx.alert.findMany({
       where: { plantId: { in: usinas.map((u) => u.id) }, status: { not: 'RESOLVED' } },
       select: { id: true, plantId: true, type: true },
     });
@@ -43,17 +53,19 @@ export class AlertsService {
         }
       }
       for (const a of ativosDaUsina) {
-        if (!condicoes.some((c) => c.tipo === a.type)) resolver.push(a.id);
+        const leituraConfiavel =
+          usina.lastDataAt &&
+          usina.status !== 'UNKNOWN' &&
+          agora.getTime() - usina.lastDataAt.getTime() <= TELEMETRY_MAX_AGE_MS;
+        if (leituraConfiavel && !condicoes.some((c) => c.tipo === a.type)) resolver.push(a.id);
       }
     }
 
-    await this.prisma.$transaction([
-      this.prisma.alert.createMany({ data: abrir }),
-      this.prisma.alert.updateMany({
-        where: { id: { in: resolver } },
-        data: { status: 'RESOLVED', resolvedAt: agora },
-      }),
-    ]);
+    await tx.alert.createMany({ data: abrir });
+    await tx.alert.updateMany({
+      where: { id: { in: resolver } },
+      data: { status: 'RESOLVED', resolvedAt: agora },
+    });
     return { abertos: abrir.length, resolvidos: resolver.length };
   }
 

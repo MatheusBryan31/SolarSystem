@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
 import { Role } from '@prisma/client';
 import type { UsuarioAutenticado } from '../auth/auth.types';
 import { CurrentUser } from '../auth/current-user.decorator';
@@ -11,10 +11,65 @@ import {
   type VincularClienteDto,
 } from './plants.schemas';
 import { PlantsService } from './plants.service';
+import {
+  criarUsinaSchema,
+  editarUsinaSchema,
+  vincularPlataformaSchema,
+  desvincularPlataformaSchema,
+  type CriarUsinaDto,
+  type EditarUsinaDto,
+  type VincularPlataformaDto,
+  type DesvincularPlataformaDto,
+} from './plants.schemas';
 
 @Controller('plants')
 export class PlantsController {
   constructor(private readonly plantsService: PlantsService) {}
+
+  @Post()
+  @Roles(Role.ADMIN, Role.OPERATOR)
+  criar(
+    @Body(new ZodValidationPipe(criarUsinaSchema)) input: CriarUsinaDto,
+    @CurrentUser() user: UsuarioAutenticado,
+  ) {
+    return this.plantsService.criar(input, user);
+  }
+
+  @Patch(':id')
+  @Roles(Role.ADMIN, Role.OPERATOR)
+  editar(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body(new ZodValidationPipe(editarUsinaSchema)) input: EditarUsinaDto,
+    @CurrentUser() user: UsuarioAutenticado,
+  ) {
+    return this.plantsService.editar(id, input, user);
+  }
+
+  @Post(':id/external-link')
+  @Roles(Role.ADMIN)
+  vincularPlataforma(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body(new ZodValidationPipe(vincularPlataformaSchema)) input: VincularPlataformaDto,
+    @CurrentUser() user: UsuarioAutenticado,
+  ) {
+    return this.plantsService.vincularPlataforma(id, input, user);
+  }
+
+  @Get(':id/external-links')
+  @Roles(Role.ADMIN)
+  vinculos(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: UsuarioAutenticado) {
+    return this.plantsService.vinculos(id, user);
+  }
+
+  @Post(':id/external-link/detach')
+  @Roles(Role.ADMIN)
+  desvincularPlataforma(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body(new ZodValidationPipe(desvincularPlataformaSchema)) input: DesvincularPlataformaDto,
+    @CurrentUser() user: UsuarioAutenticado,
+  ) {
+    return this.plantsService.desvincularPlataforma(id, input, user);
+  }
 
   @Get()
   listar(
