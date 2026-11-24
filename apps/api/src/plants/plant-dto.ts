@@ -26,6 +26,7 @@ export function plantDto(plant: Prisma.PlantGetPayload<{ include: typeof include
             : 'ACTIVE';
   return {
     ...record,
+    operationStartDate: plant.operationStartDate?.toISOString().slice(0, 10) ?? null,
     ...(monitoring === 'ACTIVE' ? {} : NO_TELEMETRY),
     activeLink: externalLinks?.[0] ?? null,
     monitoring,

@@ -12,6 +12,7 @@ import type {
 import { catalogTransaction } from './catalog-transaction';
 import { includePlant, plantDto } from './plant-dto';
 import { PlantCatalogService } from './plant-catalog.service';
+import { checkCoordinates, detailsForDatabase, splitPlantFields } from './plant-details';
 import {
   json,
   metadata,
@@ -110,7 +111,9 @@ export class PlantsService {
   }
 
   async criar(input: CriarUsinaDto, user: UsuarioAutenticado) {
-    const { clientId, ...overrides } = input;
+    const { clientId, ...fields } = input;
+    const { metadata: overrides, details } = splitPlantFields(fields);
+    checkCoordinates(details);
     const effective = metadataSchema.parse({ city: null, state: null, capacityKwp: null, ...overrides });
     return catalogTransaction(this.prisma, async (tx) => {
       if (input.clientId && !(await tx.client.findUnique({ where: { id: input.clientId } })))
@@ -118,6 +121,7 @@ export class PlantsService {
       const plant = await tx.plant.create({
         data: {
           ...effective,
+          ...detailsForDatabase(details),
           origin: 'MANUAL',
           clientId,
           manualOverrides: json(overrides),
@@ -127,6 +131,7 @@ export class PlantsService {
       });
       await this.catalog.audit(tx, plant.id, user.id, 'CREATE', {
         metadata: effective,
+        details,
         clientId: clientId ?? null,
       });
       return plantDto(plant);
@@ -139,7 +144,9 @@ export class PlantsService {
       if (!plant) throw new NotFoundException('Usina não encontrada');
       if (plant.revision !== input.revision)
         throw new ConflictException('Usina alterada. Recarregue antes de salvar.');
-      const { revision, useRemote, ...changes } = input;
+      const { revision, useRemote, ...fields } = input;
+      const { metadata: changes, details } = splitPlantFields(fields);
+      checkCoordinates({ ...plant, ...details });
       const overrides = { ...readOverrides(plant.manualOverrides), ...changes };
       const link = await tx.plantExternalLink.findFirst({ where: { plantId: id, state: 'ACTIVE' } });
       if (useRemote.length && !link) throw new BadRequestException('Usina sem fonte ativa para esses campos');
@@ -154,6 +161,7 @@ export class PlantsService {
         where: { id },
         data: {
           ...effective,
+          ...detailsForDatabase(details),
           manualOverrides: json(overrides),
           revision: { increment: 1 },
         },
@@ -163,6 +171,7 @@ export class PlantsService {
         revision,
         before: metadata(plant),
         after: effective,
+        details,
         useRemote,
       });
       return plantDto(updated);

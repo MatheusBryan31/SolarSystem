@@ -1,6 +1,11 @@
 import { plantDto } from './plant-dto';
 type RecordPlant = Parameters<typeof plantDto>[0];
 describe('DTO do cadastro único', () => {
+  it('retorna data de operação como data civil sem horário', () => {
+    expect(
+      plantDto({ ...base, operationStartDate: new Date('2024-02-29T00:00:00Z') }, now).operationStartDate,
+    ).toBe('2024-02-29');
+  });
   const now = new Date('2026-11-23T12:00:00Z');
   const base = {
     integrationId: 'i',

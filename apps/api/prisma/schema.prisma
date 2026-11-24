@@ -95,27 +95,47 @@ model Integration {
 }
 
 // Uma usina, como a plataforma a descreve + o vínculo com o nosso cliente
+enum InstallationType {
+  GROUND
+  ROOFTOP
+  HYBRID
+  CARPORT
+  FLOATING
+  OTHER
+}
+
 model Plant {
-  id              String       @id @default(uuid())
+  id                 String            @id @default(uuid())
   // Projeção de compatibilidade. A identidade remota pertence ao vínculo.
   // Triggers diferidos garantem coerência com o vínculo ACTIVE no commit.
-  integrationId   String?      @map("integration_id")
-  externalId      String?      @map("external_id")
-  origin          PlantOrigin  @default(IMPORTED)
-  manualOverrides Json         @default("{}") @map("manual_overrides")
-  revision        Int          @default(0)
-  name            String
-  clientId        String?      @map("client_id")
-  capacityKwp     Float?       @map("capacity_kwp")
-  city            String?
-  state           String?
-  status          HealthStatus @default(UNKNOWN)
-  currentPowerKw  Float?       @map("current_power_kw")
-  todayEnergyKwh  Float?       @map("today_energy_kwh")
-  totalEnergyKwh  Float?       @map("total_energy_kwh")
-  lastDataAt      DateTime?    @map("last_data_at")
-  createdAt       DateTime     @default(now()) @map("created_at")
-  updatedAt       DateTime     @updatedAt @map("updated_at")
+  integrationId      String?           @map("integration_id")
+  externalId         String?           @map("external_id")
+  origin             PlantOrigin       @default(IMPORTED)
+  manualOverrides    Json              @default("{}") @map("manual_overrides")
+  revision           Int               @default(0)
+  name               String
+  clientId           String?           @map("client_id")
+  capacityKwp        Float?            @map("capacity_kwp")
+  city               String?
+  state              String?
+  installationType   InstallationType? @map("installation_type")
+  nominalPowerKw     Float?            @map("nominal_power_kw")
+  moduleTiltDegrees  Float?            @map("module_tilt_degrees")
+  operationStartDate DateTime?         @map("operation_start_date") @db.Date
+  postalCode         String?           @map("postal_code")
+  street             String?
+  addressNumber      String?           @map("address_number")
+  addressComplement  String?           @map("address_complement")
+  latitude           Float?
+  longitude          Float?
+  technicalNotes     String?           @map("technical_notes")
+  status             HealthStatus      @default(UNKNOWN)
+  currentPowerKw     Float?            @map("current_power_kw")
+  todayEnergyKwh     Float?            @map("today_energy_kwh")
+  totalEnergyKwh     Float?            @map("total_energy_kwh")
+  lastDataAt         DateTime?         @map("last_data_at")
+  createdAt          DateTime          @default(now()) @map("created_at")
+  updatedAt          DateTime          @updatedAt @map("updated_at")
 
   integration   Integration?        @relation(fields: [integrationId], references: [id], onDelete: Restrict)
   client        Client?             @relation(fields: [clientId], references: [id], onDelete: SetNull)

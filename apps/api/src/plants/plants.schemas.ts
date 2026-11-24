@@ -1,6 +1,7 @@
 import { HealthStatus } from '@prisma/client';
 import { z } from 'zod';
 import { metadataSchema } from './plant-domain';
+import { brazilianStateSchema, plantDetailsSchema } from './plant-details';
 
 export const listarUsinasSchema = z.object({
   busca: z.string().trim().optional(),
@@ -22,12 +23,16 @@ export const criarUsinaSchema = metadataSchema
   .partial()
   .required({ name: true })
   .extend({
+    ...plantDetailsSchema.shape,
+    state: brazilianStateSchema.nullable().optional(),
     clientId: z.string().uuid().nullable().optional(),
   })
   .strict();
 export const editarUsinaSchema = metadataSchema
   .partial()
   .extend({
+    ...plantDetailsSchema.shape,
+    state: brazilianStateSchema.nullable().optional(),
     revision: z.number().int().nonnegative(),
     useRemote: z
       .array(z.enum(['name', 'city', 'state', 'capacityKwp']))

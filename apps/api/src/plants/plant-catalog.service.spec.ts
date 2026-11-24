@@ -72,6 +72,36 @@ describe('PlantCatalogService', () => {
     const data = (mock.plant.update.mock.calls[0] as [{ data: Record<string, unknown> }])[0].data;
     expect(data).not.toHaveProperty('clientId');
     expect(data).not.toHaveProperty('origin');
+    for (const field of [
+      'installationType',
+      'nominalPowerKw',
+      'moduleTiltDegrees',
+      'operationStartDate',
+      'postalCode',
+      'street',
+      'addressNumber',
+      'addressComplement',
+      'latitude',
+      'longitude',
+      'technicalNotes',
+    ]) {
+      expect(data).not.toHaveProperty(field);
+    }
+    for (const field of [
+      'installationType',
+      'nominalPowerKw',
+      'moduleTiltDegrees',
+      'operationStartDate',
+      'postalCode',
+      'street',
+      'addressNumber',
+      'addressComplement',
+      'latitude',
+      'longitude',
+      'technicalNotes',
+    ]) {
+      expect(data).not.toHaveProperty(field);
+    }
     expect(mock.plant.create).not.toHaveBeenCalled();
   });
   it('não transfere identidade já pertencente a outra usina', async () => {

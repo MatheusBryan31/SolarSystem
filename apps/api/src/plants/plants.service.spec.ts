@@ -1,4 +1,4 @@
-import { ConflictException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
 import { Role } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { PlantsService } from './plants.service';
@@ -98,6 +98,82 @@ describe('PlantsService: cadastro, edição e desvinculação', () => {
     ).rejects.toThrow(NotFoundException);
     expect(db.plant.findFirst).toHaveBeenCalledWith(
       partial({ where: { id: 'third-party', clientId: 'own-client' } }),
+    );
+  });
+  it('cadastra detalhes separados dos overrides e converte data civil para persistência', async () => {
+    db.plant.create.mockResolvedValue({ ...original, externalLinks: [] });
+    await service.criar(
+      {
+        name: 'Usina nova',
+        street: 'Rua Solar',
+        latitude: 0,
+        longitude: 0,
+        operationStartDate: '2024-02-29',
+      },
+      user,
+    );
+    expect(db.plant.create).toHaveBeenCalledWith(
+      partial({
+        data: partial({
+          street: 'Rua Solar',
+          operationStartDate: new Date('2024-02-29T00:00:00Z'),
+          latitude: 0,
+          longitude: 0,
+          manualOverrides: { name: 'Usina nova' },
+        }),
+      }),
+    );
+  });
+  it('edita detalhes de uma importada sem sobrescrever metadados remotos nem o cliente', async () => {
+    db.plant.findUnique.mockResolvedValue({
+      ...original,
+      origin: 'IMPORTED',
+      latitude: 10,
+      longitude: 20,
+      street: 'Rua existente',
+    });
+    db.plantExternalLink.findFirst.mockResolvedValue({
+      remoteMetadata: { name: 'Remoto', city: 'Cidade remota', state: 'SP', capacityKwp: 20 },
+    });
+    await service.editar(
+      'plant',
+      { revision: 3, useRemote: [], technicalNotes: 'Inspeção', latitude: 11 },
+      user,
+    );
+    const call = (db.plant.update.mock.calls[0] as [{ data: unknown }])[0];
+    const data = call.data;
+    expect(data).toMatchObject({
+      latitude: 11,
+      technicalNotes: 'Inspeção',
+      name: 'Usina manual',
+      city: 'Cidade remota',
+      manualOverrides: original.manualOverrides,
+    });
+    expect(data).not.toHaveProperty('street');
+    expect(data).not.toHaveProperty('longitude');
+    expect(data).not.toHaveProperty('clientId');
+    expect(data).not.toHaveProperty('remoteMetadata');
+  });
+  it('não permite deixar coordenada isolada; null explícito limpa detalhes sem criar overrides', async () => {
+    db.plant.findUnique.mockResolvedValue({ ...original, latitude: 10, longitude: 20 });
+    await expect(
+      service.editar('plant', { revision: 3, useRemote: [], latitude: null }, user),
+    ).rejects.toThrow(BadRequestException);
+    expect(db.plant.update).not.toHaveBeenCalled();
+    await service.editar(
+      'plant',
+      { revision: 3, useRemote: [], latitude: null, longitude: null, technicalNotes: null },
+      user,
+    );
+    expect(db.plant.update).toHaveBeenCalledWith(
+      partial({
+        data: partial({
+          latitude: null,
+          longitude: null,
+          technicalNotes: null,
+          manualOverrides: original.manualOverrides,
+        }),
+      }),
     );
   });
 });
