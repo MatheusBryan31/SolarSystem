@@ -76,10 +76,10 @@ Depois de configurar o ambiente e instalar as dependências, na raiz do reposit�
 
 ```powershell
 # Terminal 1
-npm run start:dev -w apps/api
+npm run dev:api
 
 # Terminal 2
-npm run dev -w apps/painel
+npm run dev:painel
 ```
 
 - Painel: [http://localhost:5173](http://localhost:5173), login em `/login`.
@@ -106,16 +106,55 @@ Abra [http://127.0.0.1:5174/paginas/login.html](http://127.0.0.1:5174/paginas/lo
 
 Cadastros: `solaris.plants.v1`. Preferência de e-mail: `solarsystem.rememberedEmail`. Senhas são descartadas. Sem chave persistida, três exemplos são mostrados em memória; lista vazia é preservada. A restauração em Configurações acrescenta exemplos ausentes e dados ilegíveis bloqueiam gravação. O CSV de usinas filtradas não é backup integral de inversores, alarmes e campos adicionais.
 
+## Comandos padronizados na raiz
+
+Após configurar o banco local, o `.env` e instalar as dependências, use os comandos abaixo na raiz. Os comandos anteriores com `-w apps/api` e `-w apps/painel` continuam disponíveis.
+
+| Comando                                      | Função                                                             |
+| -------------------------------------------- | ------------------------------------------------------------------ |
+| `npm run dev:api`                            | Inicia a API NestJS em modo watch                                  |
+| `npm run dev:painel`                         | Inicia o Vite do painel                                            |
+| `npm run dev`                                | Inicia API e painel juntos com concurrently                        |
+| `npm run build`                              | Compila API e depois painel; para se houver erro                   |
+| `npm run build:api` / `npm run build:painel` | Compila somente o aplicativo escolhido                             |
+| `npm run test:api`                           | Executa unitários da API em série                                  |
+| `npm run test:e2e`                           | Executa E2E HTTP em série, com Prisma mockado                      |
+| `npm run test:web`                           | Executa os testes isolados do HTML legado                          |
+| `npm run format:check`                       | Verifica Prettier sem escrever arquivos                            |
+| `npm run typecheck`                          | Verifica TypeScript da API e do painel sem emitir arquivos         |
+| `npm run lint:check`                         | Verifica ESLint da API com `--no-fix`                              |
+| `npm run check`                              | Executa formatação, TypeScript e ESLint, parando na primeira falha |
+
+`dev` mantém portas e proxy existentes (API 3333 e Vite 5173). Não inicia PostgreSQL nem executa migrations ou seeds. Se um processo encerrar, concurrently encerra o outro; `Ctrl+C` encerra ambos. A API ainda depende do banco configurado e pode sincronizar integrações ao iniciar, conforme `SYNC_INTERVAL_MIN`; os atalhos não mudam esse comportamento.
+
+`check` não faz build, não inicia serviços, não roda testes, não conecta ao banco e não aplica correções. O lint abrange somente a API; o painel participa pela checagem TypeScript. `format` e o `lint` antigo da API continuam comandos de escrita. O alias anterior `npm run "format: check"` foi preservado.
+
+Os testes HTML precisam de dependências separadas e navegador. Exemplo PowerShell com Edge já instalado:
+
+```powershell
+npm --prefix apps/web/tests ci
+$env:BROWSER_CHANNEL = 'msedge'
+npm run test:web
+Remove-Item Env:BROWSER_CHANNEL
+```
+
+Em outros sistemas, use Chromium instalado pelo Playwright e deixe `BROWSER_CHANNEL` ausente, ou selecione canal compatível. Os scripts npm não usam atribuição de variáveis exclusiva de PowerShell; apenas o exemplo de seleção de navegador acima é específico do Windows.
+
+### Validação dos atalhos — Tarefa 05
+
+Em Node 24.22.3/npm 11.6.2 no Windows, passaram `build` (API e painel), `typecheck`, `lint:check`, 26 unitários, 31 E2E e seis testes HTML no Edge. Os três comandos `dev` foram verificados apenas pelas opções de ajuda, sem iniciar API ou conectar ao banco; a execução simultânea com serviços reais não foi validada.
+
+`check` retorna falha de formatação em `docs/DIAGNOSTICO_VALIDACAO.md` e `docs/ESTRATEGIA_FRONTEND.md`, anteriores à padronização. Esses documentos não foram reformatados automaticamente. TypeScript e ESLint foram executados separadamente e passaram. O aviso experimental de VM Modules nos E2E permanece. `.nvmrc` continua indicando Node 26; não houve execução desses atalhos em Node 26 ou Linux/macOS nesta tarefa.
+
 ## Testes e verificações
 
 Após instalar dependências e gerar o Prisma Client:
 
 ```powershell
-npm test -w apps/api -- --runInBand
-npm run test:e2e -w apps/api -- --runInBand
-npm run build -w apps/api
-npm run build -w apps/painel
-npm run "format: check"
+npm run test:api
+npm run test:e2e
+npm run build
+npm run check
 ```
 
 Os E2E atuais exercitam HTTP, autenticação, cookies e permissões reais com Prisma mockado, sem banco, sem `.env` e sem agendador. O script habilita VM Modules para as dependências ESM do Jest; pode aparecer aviso experimental. Não certifica integração com PostgreSQL ou configuração de produção.

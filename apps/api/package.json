@@ -6,6 +6,8 @@
   "license": "UNLICENSED",
   "scripts": {
     "build": "nest build",
+    "typecheck": "tsc --noEmit --incremental false -p tsconfig.json",
+    "lint:check": "eslint \"{src,apps,libs,test}/**/*.ts\" --no-fix",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",

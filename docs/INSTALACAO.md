@@ -149,6 +149,8 @@ O seed não cria usinas, clientes ou integrações. Não há botão de troca de 
 
 ## Iniciar API e painel
 
+Atalhos na raiz: `npm run dev:api` e `npm run dev:painel` correspondem aos comandos por workspace abaixo. Para iniciar ambos no mesmo terminal, use `npm run dev`; concurrently encerra o outro processo quando um termina. Os atalhos não iniciam PostgreSQL nem executam migrations, seeds ou resets. A sincronização normal da API continua sujeita a `SYNC_INTERVAL_MIN`.
+
 Abra dois terminais na raiz do repositório.
 
 **Terminal 1 — API:**
@@ -200,6 +202,10 @@ npm run preview -w apps/painel
 `start:prod` executa o código compilado; não define `NODE_ENV=production` por si só. `preview` serve o build local do Vite, normalmente na porta 4173, mas não deve ser usado como substituto de hospedagem. O proxy explicitamente configurado no projeto está em `server.proxy`; antes de usar preview com API, confira o comportamento/configuração de preview e a origem autorizada. Para o fluxo local suportado neste guia, prefira `dev` na porta 5173.
 
 ## Testes e qualidade
+
+Também estão disponíveis na raiz: `npm run build` (API e painel), `npm run test:api`, `npm run test:e2e` e `npm run test:web`. O último encaminha ao pacote isolado `apps/web/tests`; instalar dependências na raiz não instala as ferramentas desse pacote.
+
+`npm run check` executa `format:check`, `typecheck` e `lint:check`, sem correções, serviços ou banco. Para na primeira falha. Na Tarefa 05, dois documentos históricos apresentaram formatação pendente; TypeScript e ESLint passaram separadamente. Consulte os [comandos e resultados no README](../README.md#comandos-padronizados-na-raiz).
 
 Depois de instalar dependências e gerar o Prisma Client, na raiz:
 

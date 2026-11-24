@@ -10,6 +10,19 @@
     "node": ">=22.12.0"
   },
   "scripts": {
+    "dev:api": "npm run start:dev -w apps/api",
+    "dev:painel": "npm run dev -w apps/painel",
+    "dev": "concurrently --kill-others --names api,painel \"npm:dev:api\" \"npm:dev:painel\"",
+    "build:api": "npm run build -w apps/api",
+    "build:painel": "npm run build -w apps/painel",
+    "build": "npm run build:api && npm run build:painel",
+    "test:api": "npm test -w apps/api -- --runInBand",
+    "test:e2e": "npm run test:e2e -w apps/api -- --runInBand",
+    "test:web": "npm --prefix apps/web/tests test",
+    "typecheck": "npm run typecheck -w apps/api && npm run typecheck -w apps/painel",
+    "lint:check": "npm run lint:check -w apps/api",
+    "format:check": "prettier --check .",
+    "check": "npm run format:check && npm run typecheck && npm run lint:check",
     "format": "prettier --write .",
     "format: check": "prettier --check ."
   },
