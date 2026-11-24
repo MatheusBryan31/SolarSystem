@@ -92,7 +92,7 @@ O navegador chama `/api` na origem do painel. O proxy de desenvolvimento do Vite
 
 O login envia `{ email, senha }` a `/api/auth/login`. A resposta contém o usuário e um cookie `solarsystem_sessao`, com `HttpOnly`, `SameSite=Strict`, caminho `/api` e `Secure` em produção. O token não fica no localStorage. `/api/auth/me` consulta o usuário atual e `/api/auth/logout` remove o cookie. HttpOnly limita a leitura do token por JavaScript, mas não substitui as demais proteções da aplicação.
 
-`WEB_ORIGIN` configura o CORS da API; não muda o destino do proxy nem o cliente HTTP. Em produção, será necessário servir painel e `/api` sob uma origem coerente, com HTTPS e fallback de rotas SPA. O proxy descrito é o de desenvolvimento; `vite preview` não substitui essa configuração de publicação.
+`WEB_ORIGIN` define a origem exata autorizada pelo CORS e pela proteção CSRF. Em produção, sirva o painel e `/api` na mesma origem HTTPS, configure o proxy reverso confiável e habilite o fallback das rotas SPA. O proxy Vite atende ao desenvolvimento. Consulte a configuração de produção no [guia de instalação](docs/INSTALACAO.md#https-cors-e-csrf-em-produção).
 
 ### Protótipo HTML legado
 

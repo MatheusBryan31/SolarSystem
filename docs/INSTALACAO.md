@@ -177,11 +177,18 @@ Reinicie a API após alterar `.env`. O modo de desenvolvimento acompanha arquivo
 
 - `src/api.ts` do painel chama `/api/...` com `credentials: 'same-origin'`.
 - `apps/painel/vite.config.ts` encaminha `/api` para `http://localhost:3333`, sem remover o prefixo. O navegador acessa a origem do Vite; não precisa contornar CORS com extensões.
-- Alterar `PORT` na API exige ajustar também o destino do proxy; mudar somente `WEB_ORIGIN` não faz isso. `WEB_ORIGIN` governa apenas o CORS configurado em `main.ts`.
+- Alterar `PORT` na API exige ajustar também o destino do proxy. `WEB_ORIGIN` autoriza uma origem para CORS e para as verificações de CSRF.
 - Login envia `{ email, senha }`, recebe `{ usuario }` e cookie `solarsystem_sessao`. Cookie: HttpOnly, SameSite Strict, Path `/api`, duração `JWT_EXPIRES_IN`, Secure somente com `NODE_ENV=production`.
 - `/api/auth/me` restaura o usuário do cookie; 401 limpa o contexto React. `/api/auth/logout` responde 204 e expira o cookie. Não enviar token por Bearer nem gravá-lo no localStorage para usar o fluxo atual.
 - Use consistentemente `localhost`; `127.0.0.1` é outro host. Se testar o legado, preserve o endereço original dos cadastros.
 - Publicação requer HTTPS, encaminhamento de `/api` e fallback SPA. Não é configurada pelo servidor de desenvolvimento nem pelo comando de preview abaixo.
+
+### HTTPS, CORS e CSRF em produção
+
+- Configure `NODE_ENV=production` e `WEB_ORIGIN` com a origem pública HTTPS exata, como `https://painel.example.com`, sem barra final. Sirva painel e `/api` na mesma origem para o fluxo de cookies do navegador.
+- Termine o TLS no proxy reverso e informe seus IPs exatos em `TRUSTED_PROXY_IPS`. Restrinja a porta interna da API ao proxy. Configure o proxy de borda para remover ou sobrescrever `X-Forwarded-For`, `X-Forwarded-Host` e `X-Forwarded-Proto` recebidos do cliente e encaminhar o protocolo real. Configure a borda para redirecionar HTTP para HTTPS. A API rejeita com `403` requisições de produção que não sejam reconhecidas como HTTPS e emite HSTS por um ano para as aceitas. [Express atrás de proxies](https://expressjs.com/en/guide/behind-proxies/)
+- O cookie permanece restrito ao host, com `HttpOnly`, `SameSite=Strict` e `Path=/api`. Em produção, login e logout usam `Secure`. Em desenvolvimento, HTTP local continua disponível.
+- O CORS libera credenciais apenas para a origem configurada. Rotas de escrita, inclusive login e logout, exigem `X-CSRF-Protection: 1` e rejeitam origens divergentes ou opacas. O painel envia o cabeçalho automaticamente. Clientes de linha de comando e testes HTTP também precisam enviá-lo nas escritas. [OWASP sobre proteção CSRF por cabeçalho](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html#employing-custom-request-headers-for-ajaxapi)
 
 ### Limite de tentativas de login
 

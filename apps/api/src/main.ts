@@ -2,26 +2,23 @@ import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
+import type { Env } from './config/env';
+import { configurarHttp } from './config/http';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
-  const config = app.get(ConfigService);
+  const config = app.get(ConfigService<Env, true>);
 
-  const porta = config.getOrThrow<number>('PORT');
-  const ambiente = config.getOrThrow<string>('NODE_ENV');
+  const porta = config.get('PORT', { infer: true });
+  const ambiente = config.get('NODE_ENV', { infer: true });
 
-  app.setGlobalPrefix('api');
-  const proxies = config.getOrThrow<string[]>('TRUSTED_PROXY_IPS');
-  if (proxies.length) app.set('trust proxy', proxies);
-  // Permite que um front-end em OUTRO endereço chame a API.
-  // credentials: true = esse front pode enviar o cookie de sessão junto.
-  app.enableCors({
-    origin: config.getOrThrow<string>('WEB_ORIGIN'),
-    credentials: true,
-    exposedHeaders: ['Retry-After'],
+  configurarHttp(app, {
+    NODE_ENV: ambiente,
+    WEB_ORIGIN: config.get('WEB_ORIGIN', { infer: true }),
+    TRUSTED_PROXY_IPS: config.get('TRUSTED_PROXY_IPS', { infer: true }),
   });
 
   await app.listen(porta);
-  console.log(`SolarSystem API em http://localhost:${porta}/api (${ambiente})`);
+  console.log(`SolarSystem API na porta ${porta} (${ambiente})`);
 }
 void bootstrap();

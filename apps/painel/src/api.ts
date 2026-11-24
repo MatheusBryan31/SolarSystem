@@ -33,10 +33,14 @@ export const quandoSessaoExpirar = (fn: () => void) => {
 export async function api<T>(caminho: string, opcoes: { metodo?: string; corpo?: unknown } = {}): Promise<T> {
   const versaoDaRequisicao = versaoDaSessao;
   const alteraSessao = caminho === '/auth/login' || caminho === '/auth/logout';
+  const metodo = (opcoes.metodo ?? 'GET').toUpperCase();
   const resposta = await fetch(`/api${caminho}`, {
-    method: opcoes.metodo ?? 'GET',
+    method: metodo,
     credentials: 'same-origin', // envia o cookie de sessão (o painel e a API têm a mesma origem, via proxy)
-    headers: opcoes.corpo !== undefined ? { 'Content-Type': 'application/json' } : undefined,
+    headers: {
+      ...(opcoes.corpo !== undefined && { 'Content-Type': 'application/json' }),
+      ...(!['GET', 'HEAD', 'OPTIONS'].includes(metodo) && { 'X-CSRF-Protection': '1' }),
+    },
     body: opcoes.corpo !== undefined ? JSON.stringify(opcoes.corpo) : undefined,
   });
 

@@ -30,6 +30,9 @@ test('painel recupera sessão, reautentica na rota anterior e confirma logout', 
   await page.route('**/api/**', async (route) => {
     const { pathname } = new URL(route.request().url());
     const responder = (status, json) => route.fulfill({ status, json });
+    if (route.request().method() === 'POST' && route.request().headers()['x-csrf-protection'] !== '1') {
+      return responder(403, { message: 'Cabeçalho CSRF ausente' });
+    }
     if (pathname === '/api/auth/me') {
       if (indisponivel) return responder(503, { message: 'Indisponível' });
       return autenticado ? responder(200, usuario) : responder(401, { message: 'Faça login' });

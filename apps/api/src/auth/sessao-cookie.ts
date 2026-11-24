@@ -4,7 +4,6 @@ import type { CookieOptions, Request } from 'express';
  * A SESSÃO MORA NUM COOKIE httpOnly.
  * O navegador guarda o token e o envia sozinho em toda chamada à API,
  * mas o JavaScript da página NÃO consegue lê-lo (document.cookie não o mostra).
- * Assim, mesmo que alguém consiga injetar um script na página (XSS), não há token para roubar.
  */
 export const NOME_DO_COOKIE = 'solarsystem_sessao';
 
@@ -12,7 +11,7 @@ export const NOME_DO_COOKIE = 'solarsystem_sessao';
 export function opcoesDoCookie(producao: boolean, segundos?: number): CookieOptions {
   return {
     httpOnly: true, // invisível para o JavaScript da página
-    sameSite: 'strict', // só vai junto em requisições feitas pelo próprio site: barra o CSRF
+    sameSite: 'strict',
     secure: producao, // em produção, só trafega por HTTPS
     path: '/api', // só é enviado nas chamadas à API
     ...(segundos !== undefined && { maxAge: segundos * 1000 }), // o Express usa milissegundos

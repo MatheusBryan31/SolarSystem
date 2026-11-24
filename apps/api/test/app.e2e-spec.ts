@@ -10,6 +10,7 @@ import { AppController } from '../src/app.controller';
 import { AppService } from '../src/app.service';
 import { AuthModule } from '../src/auth/auth.module';
 import { NOME_DO_COOKIE } from '../src/auth/sessao-cookie';
+import { configurarHttp } from '../src/config/http';
 import { PlantsModule } from '../src/plants/plants.module';
 import { PrismaModule } from '../src/prisma/prisma.module';
 import { PrismaService } from '../src/prisma/prisma.service';
@@ -22,6 +23,8 @@ const OPERADOR = '22222222-2222-4222-8222-222222222222';
 const CLIENTE = '33333333-3333-4333-8333-333333333333';
 const USINA = '44444444-4444-4444-8444-444444444444';
 const DONO = '55555555-5555-4555-8555-555555555555';
+const ORIGEM_LOCAL = 'http://localhost:5173';
+const ORIGEM_PUBLICA = 'https://painel.example.test';
 
 interface TestUser {
   id: string;
@@ -60,7 +63,7 @@ describe('API HTTP — saúde, sessão e permissões com Prisma isolado', () => 
     passwordHash = await hash(SENHA, 4); // Custo baixo apenas nas fixtures, compare real.
   });
 
-  beforeEach(async () => {
+  async function iniciarApp(ambiente: 'development' | 'production', proxies: string[] = []) {
     // Não importar AppModule: evita .env, banco e bootstrap do SyncScheduler.
     // Controllers, serviços, validação, JWT e ambos os guards permanecem reais.
     const module = await Test.createTestingModule({
@@ -71,7 +74,7 @@ describe('API HTTP — saúde, sessão e permissões com Prisma isolado', () => 
           ignoreEnvVars: true,
           load: [
             () => ({
-              NODE_ENV: 'test',
+              NODE_ENV: ambiente,
               JWT_SECRET: 'segredo-exclusivo-dos-testes-nao-usar-em-producao',
               JWT_EXPIRES_IN: 60,
             }),
@@ -90,10 +93,17 @@ describe('API HTTP — saúde, sessão e permissões com Prisma isolado', () => 
       .useValue(prisma)
       .compile();
     app = module.createNestApplication<NestExpressApplication<App>>();
-    app.setGlobalPrefix('api'); // Mesmo prefixo de main.ts, sem executar bootstrap.
+    configurarHttp(app, {
+      NODE_ENV: ambiente,
+      WEB_ORIGIN: ambiente === 'production' ? ORIGEM_PUBLICA : ORIGEM_LOCAL,
+      TRUSTED_PROXY_IPS: proxies,
+    });
     await app.init();
     jwt = app.get(JwtService);
+  }
 
+  beforeEach(async () => {
+    await iniciarApp('development');
     jest.resetAllMocks();
     users = [
       { id: ADMIN, name: 'Admin teste', email: 'admin@example.test', role: Role.ADMIN, clientId: null },
@@ -148,12 +158,117 @@ describe('API HTTP — saúde, sessão e permissões com Prisma isolado', () => 
   async function login(email = 'admin@example.test') {
     const response = await request(app.getHttpServer())
       .post('/api/auth/login')
+      .set('X-CSRF-Protection', '1')
       .send({ email, senha: SENHA })
       .expect(200);
     const setCookie = response.get('Set-Cookie')?.[0];
     if (!setCookie) throw new Error('Login não emitiu cookie');
     return { response, setCookie, cookie: setCookie.split(';')[0] };
   }
+
+  it('permite CORS com credenciais somente para a origem exata configurada', async () => {
+    const preflight = (origem: string) =>
+      request(app.getHttpServer())
+        .options('/api/auth/login')
+        .set('Origin', origem)
+        .set('Access-Control-Request-Method', 'POST')
+        .set('Access-Control-Request-Headers', 'content-type,x-csrf-protection');
+
+    const permitido = await preflight(ORIGEM_LOCAL)
+      .expect(204)
+      .expect('Access-Control-Allow-Origin', ORIGEM_LOCAL)
+      .expect('Access-Control-Allow-Credentials', 'true')
+      .expect('Vary', /\bOrigin\b/);
+    expect(permitido.get('Access-Control-Allow-Headers')?.toLowerCase()).toContain('x-csrf-protection');
+
+    for (const origem of ['null', 'http://localhost:5174', 'http://painel.localhost:5173']) {
+      const negado = await preflight(origem);
+      expect(negado.get('Access-Control-Allow-Origin')).toBeUndefined();
+      expect(negado.get('Access-Control-Allow-Credentials')).toBeUndefined();
+    }
+  });
+
+  it('bloqueia login, logout e escrita autenticada sem proteção CSRF ou com origem indevida', async () => {
+    const { cookie } = await login();
+    prisma.user.findUnique.mockClear();
+    const negado = (origem: string) =>
+      request(app.getHttpServer())
+        .post('/api/auth/logout')
+        .set('Cookie', cookie)
+        .set('Origin', origem)
+        .set('X-CSRF-Protection', '1');
+
+    const loginNegado = await request(app.getHttpServer())
+      .post('/api/auth/login')
+      .set('Origin', ORIGEM_LOCAL)
+      .send({ email: 'admin@example.test', senha: SENHA })
+      .expect(403)
+      .expect('Access-Control-Allow-Origin', ORIGEM_LOCAL);
+    expect(loginNegado.get('Set-Cookie')).toBeUndefined();
+    for (const origem of ['null', 'http://localhost:5174']) {
+      const logoutNegado = await negado(origem).expect(403);
+      expect(logoutNegado.get('Set-Cookie')).toBeUndefined();
+    }
+    await request(app.getHttpServer())
+      .patch(`/api/plants/${USINA}`)
+      .set('Cookie', cookie)
+      .set('Origin', ORIGEM_LOCAL)
+      .send({ name: 'Mudança' })
+      .expect(403);
+    expect(prisma.user.findUnique).not.toHaveBeenCalled();
+    expect(prisma.plant.update).not.toHaveBeenCalled();
+
+    await request(app.getHttpServer()).get('/api/auth/me').set('Cookie', cookie).expect(200);
+    await request(app.getHttpServer())
+      .post('/api/auth/logout')
+      .set('Origin', ORIGEM_LOCAL)
+      .set('X-CSRF-Protection', '1')
+      .set('Cookie', cookie)
+      .expect(204);
+  });
+
+  it('em produção rejeita HTTP e ignora indicação de HTTPS de um proxy sem confiança', async () => {
+    await app.close();
+    await iniciarApp('production');
+    const resposta = await request(app.getHttpServer())
+      .post('/api/auth/login')
+      .set('X-Forwarded-Proto', 'https')
+      .set('X-CSRF-Protection', '1')
+      .send({ email: 'admin@example.test', senha: SENHA })
+      .expect(403);
+    expect(resposta.get('Set-Cookie')).toBeUndefined();
+    expect(resposta.get('Strict-Transport-Security')).toBeUndefined();
+    expect(prisma.user.findUnique).not.toHaveBeenCalled();
+  });
+
+  it('em produção reconhece HTTPS pelo proxy permitido e emite e limpa cookie Secure', async () => {
+    await app.close();
+    await iniciarApp('production', ['127.0.0.1', '::1']);
+    await request(app.getHttpServer()).get('/api/health').set('X-Forwarded-Proto', 'http').expect(403);
+    const loginSeguro = await request(app.getHttpServer())
+      .post('/api/auth/login')
+      .set('X-Forwarded-Proto', 'https')
+      .set('Origin', ORIGEM_PUBLICA)
+      .set('X-CSRF-Protection', '1')
+      .send({ email: 'admin@example.test', senha: SENHA })
+      .expect('Access-Control-Allow-Origin', ORIGEM_PUBLICA)
+      .expect('Strict-Transport-Security', 'max-age=31536000')
+      .expect(200);
+    const logoutSeguro = await request(app.getHttpServer())
+      .post('/api/auth/logout')
+      .set('X-Forwarded-Proto', 'https')
+      .set('Origin', ORIGEM_PUBLICA)
+      .set('X-CSRF-Protection', '1')
+      .expect(204);
+    for (const resposta of [loginSeguro, logoutSeguro]) {
+      const cookie = resposta.get('Set-Cookie')?.[0];
+      for (const atributo of ['Secure', 'HttpOnly', 'SameSite=Strict', 'Path=/api']) {
+        expect(cookie).toContain(atributo);
+      }
+      expect(cookie).not.toContain('Domain=');
+    }
+    expect(logoutSeguro.get('Set-Cookie')?.[0]).toContain(`${NOME_DO_COOKIE}=;`);
+  });
 
   it.each([
     ['admin@example.test', 201],
@@ -163,6 +278,7 @@ describe('API HTTP — saúde, sessão e permissões com Prisma isolado', () => 
     const { cookie } = await login(email);
     const response = await request(app.getHttpServer())
       .post('/api/plants')
+      .set('X-CSRF-Protection', '1')
       .set('Cookie', cookie)
       .send({ name: 'Minha usina', capacityKwp: 30 })
       .expect(status);
@@ -186,7 +302,12 @@ describe('API HTTP — saúde, sessão e permissões com Prisma isolado', () => 
     { name: 'Usina teste', capacityKwp: -1 },
   ])('não aceita controle de identidade/telemetria ou capacidade inválida: %j', async (body) => {
     const { cookie } = await login();
-    await request(app.getHttpServer()).post('/api/plants').set('Cookie', cookie).send(body).expect(400);
+    await request(app.getHttpServer())
+      .post('/api/plants')
+      .set('X-CSRF-Protection', '1')
+      .set('Cookie', cookie)
+      .send(body)
+      .expect(400);
     expect(prisma.plant.create).not.toHaveBeenCalled();
   });
 
@@ -195,6 +316,7 @@ describe('API HTTP — saúde, sessão e permissões com Prisma isolado', () => 
     prisma.plant.findUnique.mockResolvedValue({ id: USINA, revision: 2 });
     await request(app.getHttpServer())
       .patch(`/api/plants/${USINA}`)
+      .set('X-CSRF-Protection', '1')
       .set('Cookie', cookie)
       .send({ revision: 1, name: 'Nome novo' })
       .expect(409);
@@ -205,6 +327,7 @@ describe('API HTTP — saúde, sessão e permissões com Prisma isolado', () => 
     const { cookie } = await login('operator@example.test');
     await request(app.getHttpServer())
       .post(`/api/plants/${USINA}/${route}`)
+      .set('X-CSRF-Protection', '1')
       .set('Cookie', cookie)
       .send({ revision: 0, integrationId: ADMIN, externalId: '001', reason: 'Teste seguro' })
       .expect(403);
@@ -252,6 +375,9 @@ describe('API HTTP — saúde, sessão e permissões com Prisma isolado', () => 
     expect(setCookie).toMatch(new RegExp(`^${NOME_DO_COOKIE}=`));
     for (const flag of ['HttpOnly', 'SameSite=Strict', 'Path=/api', 'Max-Age=60'])
       expect(setCookie).toContain(flag);
+    expect(setCookie).not.toContain('Secure');
+    expect(setCookie).not.toContain('Domain=');
+    expect(response.get('Strict-Transport-Security')).toBeUndefined();
     expect(JSON.stringify(response.body)).not.toContain(SENHA);
     expect(JSON.stringify(response.body)).not.toContain(passwordHash);
   });
@@ -259,6 +385,7 @@ describe('API HTTP — saúde, sessão e permissões com Prisma isolado', () => 
   it('login normaliza e-mail usando o schema real', async () => {
     await request(app.getHttpServer())
       .post('/api/auth/login')
+      .set('X-CSRF-Protection', '1')
       .send({ email: ' ADMIN@EXAMPLE.TEST ', senha: SENHA })
       .expect(200);
   });
@@ -271,6 +398,7 @@ describe('API HTTP — saúde, sessão e permissões com Prisma isolado', () => 
         Array.from({ length: 8 }, (_, indice) =>
           request(app.getHttpServer())
             .post('/api/auth/login')
+            .set('X-CSRF-Protection', '1')
             .set('X-Forwarded-For', `192.0.2.${indice + 1}`)
             .send({
               email: indice % 2 ? ' ADMIN@EXAMPLE.TEST ' : 'admin@example.test',
@@ -296,6 +424,7 @@ describe('API HTTP — saúde, sessão e permissões com Prisma isolado', () => 
       agora += 59_000;
       await request(app.getHttpServer())
         .post('/api/auth/login')
+        .set('X-CSRF-Protection', '1')
         .send({ email: 'admin@example.test', senha: SENHA })
         .expect('Retry-After', '1')
         .expect(429);
@@ -309,14 +438,23 @@ describe('API HTTP — saúde, sessão e permissões com Prisma isolado', () => 
   it('limita a origem mesmo com corpos inválidos e mantém a sessão existente', async () => {
     const { cookie } = await login();
     for (let tentativa = 0; tentativa < 59; tentativa++) {
-      await request(app.getHttpServer()).post('/api/auth/login').send({}).expect(400);
+      await request(app.getHttpServer())
+        .post('/api/auth/login')
+        .set('X-CSRF-Protection', '1')
+        .send({})
+        .expect(400);
     }
     await request(app.getHttpServer())
       .post('/api/auth/login')
+      .set('X-CSRF-Protection', '1')
       .send({ email: 'operator@example.test', senha: SENHA })
       .expect(429);
     await request(app.getHttpServer()).get('/api/auth/me').set('Cookie', cookie).expect(200);
-    await request(app.getHttpServer()).post('/api/auth/logout').set('Cookie', cookie).expect(204);
+    await request(app.getHttpServer())
+      .post('/api/auth/logout')
+      .set('X-CSRF-Protection', '1')
+      .set('Cookie', cookie)
+      .expect(204);
   });
 
   it('separa clientes atrás de um proxy explicitamente confiável', async () => {
@@ -324,6 +462,7 @@ describe('API HTTP — saúde, sessão e permissões com Prisma isolado', () => 
     const tentar = (origem: string, senha: string) =>
       request(app.getHttpServer())
         .post('/api/auth/login')
+        .set('X-CSRF-Protection', '1')
         .set('X-Forwarded-For', origem)
         .send({ email: 'admin@example.test', senha });
 
@@ -338,7 +477,11 @@ describe('API HTTP — saúde, sessão e permissões com Prisma isolado', () => 
     { email: 'admin@example.test', senha: 'incorreta' },
     { email: 'inexistente@example.test', senha: SENHA },
   ])('login inválido não emite cookie e mantém mensagem genérica: $email', async (body) => {
-    const response = await request(app.getHttpServer()).post('/api/auth/login').send(body).expect(401);
+    const response = await request(app.getHttpServer())
+      .post('/api/auth/login')
+      .set('X-CSRF-Protection', '1')
+      .send(body)
+      .expect(401);
     expect((response.body as { message: unknown }).message).toBe('E-mail ou senha incorretos');
     expect(response.get('Set-Cookie')).toBeUndefined();
   });
@@ -347,6 +490,7 @@ describe('API HTTP — saúde, sessão e permissões com Prisma isolado', () => 
     users[0].active = false;
     await request(app.getHttpServer())
       .post('/api/auth/login')
+      .set('X-CSRF-Protection', '1')
       .send({ email: users[0].email, senha: SENHA })
       .expect(401);
   });
@@ -354,7 +498,11 @@ describe('API HTTP — saúde, sessão e permissões com Prisma isolado', () => 
   it.each([{ email: 'invalido', senha: SENHA }, { email: 'admin@example.test', senha: '' }, {}])(
     'entrada inválida é 400: %j',
     async (body) => {
-      await request(app.getHttpServer()).post('/api/auth/login').send(body).expect(400);
+      await request(app.getHttpServer())
+        .post('/api/auth/login')
+        .set('X-CSRF-Protection', '1')
+        .send(body)
+        .expect(400);
       expect(prisma.user.findUnique).not.toHaveBeenCalled();
     },
   );
@@ -399,10 +547,19 @@ describe('API HTTP — saúde, sessão e permissões com Prisma isolado', () => 
     const expirado = jwt.sign({ sub: CLIENTE, role: Role.CLIENT }, { expiresIn: -1 });
     await agent.get('/api/auth/me').set('Cookie', `${NOME_DO_COOKIE}=${expirado}`).expect(401);
     for (let tentativa = 0; tentativa < 2; tentativa++) {
-      await agent.post('/api/auth/login').send(credenciais).expect('Cache-Control', 'no-store').expect(200);
+      await agent
+        .post('/api/auth/login')
+        .set('X-CSRF-Protection', '1')
+        .send(credenciais)
+        .expect('Cache-Control', 'no-store')
+        .expect(200);
       const sessao = await agent.get('/api/auth/me').expect('Cache-Control', 'no-store').expect(200);
       expect(sessao.body).toMatchObject({ id: CLIENTE, role: Role.CLIENT, clientId: DONO });
-      await agent.post('/api/auth/logout').expect('Cache-Control', 'no-store').expect(204);
+      await agent
+        .post('/api/auth/logout')
+        .set('X-CSRF-Protection', '1')
+        .expect('Cache-Control', 'no-store')
+        .expect(204);
       await agent.get('/api/auth/me').expect(401);
     }
   });
@@ -420,9 +577,13 @@ describe('API HTTP — saúde, sessão e permissões com Prisma isolado', () => 
 
   it('logout remove o cookie do agente e bloqueia sua próxima requisição', async () => {
     const agent = request.agent(app.getHttpServer());
-    await agent.post('/api/auth/login').send({ email: 'admin@example.test', senha: SENHA }).expect(200);
+    await agent
+      .post('/api/auth/login')
+      .set('X-CSRF-Protection', '1')
+      .send({ email: 'admin@example.test', senha: SENHA })
+      .expect(200);
     await agent.get('/api/auth/me').expect(200);
-    const response = await agent.post('/api/auth/logout').expect(204);
+    const response = await agent.post('/api/auth/logout').set('X-CSRF-Protection', '1').expect(204);
     expect(response.text).toBe('');
     const expired = response.get('Set-Cookie')?.[0];
     expect(expired).toBeDefined();
@@ -435,9 +596,10 @@ describe('API HTTP — saúde, sessão e permissões com Prisma isolado', () => 
   });
 
   it('logout é público e repetível com cookie ausente ou inválido', async () => {
-    await request(app.getHttpServer()).post('/api/auth/logout').expect(204);
+    await request(app.getHttpServer()).post('/api/auth/logout').set('X-CSRF-Protection', '1').expect(204);
     await request(app.getHttpServer())
       .post('/api/auth/logout')
+      .set('X-CSRF-Protection', '1')
       .set('Cookie', `${NOME_DO_COOKIE}=invalido`)
       .expect(204);
   });
@@ -460,6 +622,7 @@ describe('API HTTP — saúde, sessão e permissões com Prisma isolado', () => 
     const { cookie } = await login(email);
     await request(app.getHttpServer())
       .patch(`/api/plants/${USINA}/client`)
+      .set('X-CSRF-Protection', '1')
       .set('Cookie', cookie)
       .send({ clientId: null })
       .expect(status);
