@@ -1,5 +1,5 @@
 import { BadRequestException, ConflictException } from '@nestjs/common';
-import { project, snapshot, telemetry, Snapshot, overridesSchema } from './plant-domain';
+import { project, snapshot, telemetry, Snapshot, overridesSchema, readOverrides } from './plant-domain';
 
 const remote: Snapshot = {
   externalId: '001',
@@ -15,6 +15,20 @@ const remote: Snapshot = {
 };
 
 describe('Política do cadastro único', () => {
+  it('preserva metadados históricos sem relaxar a validação de entradas novas', () => {
+    const legacy = { name: 'A', state: 'minas gerais', capacityKwp: -3 };
+    expect(project(remote, readOverrides(legacy))).toMatchObject(legacy);
+    expect(overridesSchema.safeParse({ name: 'A' }).success).toBe(false);
+    expect(overridesSchema.safeParse({ state: 'minas gerais' }).success).toBe(false);
+    expect(overridesSchema.safeParse({ capacityKwp: -3 }).success).toBe(false);
+    expect(() => readOverrides({ clientId: 'outro-cliente' })).toThrow();
+  });
+  it('compara instantes equivalentes entre fusos e rejeita divergência de valores', () => {
+    const previous = telemetry(remote, null).lastSample;
+    const equivalent = { ...remote, lastDataAt: '2026-11-23T09:00:00-03:00' };
+    expect(telemetry(equivalent, previous).lastSample).toEqual(previous);
+    expect(() => telemetry({ ...equivalent, currentPowerKw: 1 }, previous)).toThrow(ConflictException);
+  });
   it('mantém nome/capacidade manuais e null explícito, sem apagar metadados remotos', () => {
     expect(project(remote, { name: 'Meu cadastro', capacityKwp: 30, city: null })).toEqual({
       name: 'Meu cadastro',

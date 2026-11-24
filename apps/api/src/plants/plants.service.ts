@@ -17,7 +17,8 @@ import {
   metadata,
   metadataSchema,
   NO_TELEMETRY,
-  overridesSchema,
+  readOverrides,
+  readMetadata,
   project,
   TELEMETRY_MAX_AGE_MS,
 } from './plant-domain';
@@ -139,7 +140,7 @@ export class PlantsService {
       if (plant.revision !== input.revision)
         throw new ConflictException('Usina alterada. Recarregue antes de salvar.');
       const { revision, useRemote, ...changes } = input;
-      const overrides = { ...overridesSchema.parse(plant.manualOverrides), ...changes };
+      const overrides = { ...readOverrides(plant.manualOverrides), ...changes };
       const link = await tx.plantExternalLink.findFirst({ where: { plantId: id, state: 'ACTIVE' } });
       if (useRemote.length && !link) throw new BadRequestException('Usina sem fonte ativa para esses campos');
       for (const key of useRemote) {
@@ -147,7 +148,7 @@ export class PlantsService {
           throw new BadRequestException('Não edite e remova o override do mesmo campo');
         delete overrides[key];
       }
-      const remote = link ? metadataSchema.parse(link.remoteMetadata) : metadata(plant);
+      const remote = link ? readMetadata(link.remoteMetadata) : metadata(plant);
       const effective = project(remote, overrides);
       const updated = await tx.plant.update({
         where: { id },

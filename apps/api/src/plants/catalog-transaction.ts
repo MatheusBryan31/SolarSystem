@@ -24,7 +24,7 @@ export async function catalogTransaction<T>(
           throw new BadRequestException('Referência inexistente ou alterada durante a operação');
         if (error.code === 'P2025') throw new NotFoundException('Registro não encontrado');
         if (error.code === 'P2034' && attempt < 2) continue;
-        if (['P2002', 'P2034'].includes(error.code))
+        if (['P2002', 'P2004', 'P2034'].includes(error.code))
           throw new ConflictException('Conflito no catálogo. Recarregue os dados antes de tentar novamente.');
       }
       throw error;

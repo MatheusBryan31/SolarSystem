@@ -17,6 +17,23 @@ export const metadataSchema = z
 export const overridesSchema = metadataSchema.partial();
 export type Metadata = z.infer<typeof metadataSchema>;
 export type Overrides = z.infer<typeof overridesSchema>;
+// O schema anterior permitia strings sem limites e capacidades negativas.
+// Ler/projetar esses registros não pode apagá-los nem quebrar GET após o backfill.
+// Entradas novas continuam passando pelo metadataSchema restritivo nos DTOs.
+const storedMetadataSchema = z
+  .object({
+    name: z.string(),
+    city: z.string().nullable(),
+    state: z.string().nullable(),
+    capacityKwp: z.number().finite().nullable(),
+  })
+  .strict();
+export function readOverrides(value: unknown): Overrides {
+  return storedMetadataSchema.partial().parse(value);
+}
+export function readMetadata(value: unknown): Metadata {
+  return storedMetadataSchema.parse(value);
+}
 const sampleSchema = z
   .object({
     status: z.enum(HealthStatus),
@@ -47,7 +64,7 @@ export function json(value: unknown): Prisma.InputJsonObject {
 }
 
 export function metadata(value: Metadata): Metadata {
-  return metadataSchema.parse({
+  return storedMetadataSchema.parse({
     name: value.name,
     city: value.city,
     state: value.state,
@@ -56,7 +73,7 @@ export function metadata(value: Metadata): Metadata {
 }
 
 export function project(remote: Metadata, overrides: Overrides): Metadata {
-  return metadataSchema.parse({ ...metadata(remote), ...overridesSchema.parse(overrides) });
+  return storedMetadataSchema.parse({ ...metadata(remote), ...readOverrides(overrides) });
 }
 
 export function snapshot(value: UsinaLida, now: Date): Snapshot {
@@ -83,6 +100,9 @@ export function telemetry(next: Snapshot, previous: unknown) {
     lastDataAt: next.lastDataAt,
   });
   const old = previous ? sampleSchema.parse(previous) : null;
+  // Identidade temporal é o instante, não sua representação textual/fuso.
+  if (sample.lastDataAt) sample.lastDataAt = new Date(sample.lastDataAt).toISOString();
+  if (old?.lastDataAt) old.lastDataAt = new Date(old.lastDataAt).toISOString();
   if (sample.lastDataAt && old?.lastDataAt) {
     if (Date.parse(sample.lastDataAt) < Date.parse(old.lastDataAt))
       throw new ConflictException('Leitura anterior à última amostra aceita');

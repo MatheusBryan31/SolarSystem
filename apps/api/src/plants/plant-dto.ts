@@ -1,5 +1,5 @@
 import { Prisma } from '@prisma/client';
-import { NO_TELEMETRY, overridesSchema, TELEMETRY_MAX_AGE_MS } from './plant-domain';
+import { NO_TELEMETRY, readOverrides, TELEMETRY_MAX_AGE_MS } from './plant-domain';
 
 export const includePlant = {
   client: { select: { id: true, name: true } },
@@ -12,7 +12,7 @@ export const includePlant = {
 
 export function plantDto(plant: Prisma.PlantGetPayload<{ include: typeof includePlant }>, now = new Date()) {
   const { externalLinks, ...record } = plant;
-  const overrides = overridesSchema.parse(plant.manualOverrides ?? {});
+  const overrides = readOverrides(plant.manualOverrides ?? {});
   const monitoring = !plant.integrationId
     ? 'UNLINKED'
     : !plant.integration?.enabled || plant.integration.archivedAt

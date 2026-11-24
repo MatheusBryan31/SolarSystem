@@ -9,8 +9,8 @@ export const listarUsinasSchema = z.object({
   porPagina: z.coerce.number().int().min(1).max(100).default(20),
 });
 
-// Por enquanto, o único dado NOSSO numa usina é o vínculo com o cliente.
-// O resto (nome, potência...) vem da plataforma e seria sobrescrito na próxima sincronização.
+// Vínculo comercial é administrado pelo SolarSystem; nunca vem do adaptador.
+// Metadados manuais usam overrides. Telemetria continua exclusiva da fonte ativa.
 export const vincularClienteSchema = z.object({
   clientId: z.string().uuid('clientId deve ser um UUID').nullable(), // null = desvincular
 });

@@ -1,6 +1,6 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { metadata, json, overridesSchema, project, Snapshot, telemetry } from './plant-domain';
+import { metadata, json, readOverrides, project, Snapshot, telemetry } from './plant-domain';
 
 @Injectable()
 export class PlantCatalogService {
@@ -74,7 +74,7 @@ export class PlantCatalogService {
     await tx.plant.update({
       where: { id: link.plantId },
       data: {
-        ...project(metadata(next), overridesSchema.parse(link.plant.manualOverrides)),
+        ...project(metadata(next), readOverrides(link.plant.manualOverrides)),
         ...sample.fields,
         revision: { increment: 1 },
       },
@@ -140,7 +140,7 @@ export class PlantCatalogService {
     await tx.plant.update({
       where: { id: plantId },
       data: {
-        ...project(remote, overridesSchema.parse(plant.manualOverrides)),
+        ...project(remote, readOverrides(plant.manualOverrides)),
         integrationId: key.integrationId,
         externalId: key.externalId,
         revision: { increment: 1 },
