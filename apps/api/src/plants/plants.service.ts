@@ -33,15 +33,10 @@ export class PlantsService {
     private readonly catalog: PlantCatalogService,
   ) {}
 
-  // O MESMO isolamento da aula 12: CLIENT só enxerga as usinas do próprio cliente
-  private filtroDoUsuario(usuario: UsuarioAutenticado): Prisma.PlantWhereInput {
-    if (usuario.role !== Role.CLIENT) return {};
-    // CLIENT sem cliente vinculado: um id impossível garante lista vazia
-    return { clientId: usuario.clientId ?? '00000000-0000-0000-0000-000000000000' };
-  }
-
   async listar({ busca, status, pagina, porPagina }: ListarUsinasDto, usuario: UsuarioAutenticado) {
-    const where: Prisma.PlantWhereInput = { ...this.filtroDoUsuario(usuario) };
+    const cliente = usuario.role === Role.CLIENT;
+    if (cliente && !usuario.clientId) return { itens: [], total: 0, pagina, porPagina };
+    const where: Prisma.PlantWhereInput = cliente ? { clientId: usuario.clientId } : {};
     if (status) {
       const fresh: Prisma.PlantWhereInput = {
         integration: { enabled: true, archivedAt: null },
@@ -79,18 +74,26 @@ export class PlantsService {
         take: porPagina,
       }),
     ]);
-    return { itens: itens.map((item) => plantDto(item)), total, pagina, porPagina };
+    return { itens: itens.map((item) => this.projetar(item, cliente)), total, pagina, porPagina };
   }
 
   async buscarPorId(id: string, usuario: UsuarioAutenticado) {
     // findFirst (e não findUnique) porque o where combina o id COM o filtro do usuário.
     // Usina de outro cliente = 404, como na aula 12.
+    const cliente = usuario.role === Role.CLIENT;
+    if (cliente && !usuario.clientId) throw new NotFoundException('Usina não encontrada');
     const usina = await this.prisma.plant.findFirst({
-      where: { id, ...this.filtroDoUsuario(usuario) },
+      where: { id, ...(cliente ? { clientId: usuario.clientId } : {}) },
       include: incluir,
     });
     if (!usina) throw new NotFoundException('Usina não encontrada');
-    return plantDto(usina);
+    return this.projetar(usina, cliente);
+  }
+
+  private projetar(usina: Parameters<typeof plantDto>[0], cliente: boolean) {
+    const dto = plantDto(usina);
+    // Metadados da conta remota são internos. O vínculo próprio continua disponível para medições.
+    return cliente ? { ...dto, integrationId: null, externalId: null, integration: null } : dto;
   }
 
   async vincularCliente(id: string, clientId: string | null, usuario: UsuarioAutenticado) {

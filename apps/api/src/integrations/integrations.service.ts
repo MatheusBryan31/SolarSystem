@@ -48,7 +48,9 @@ export class IntegrationsService {
       await this.registry.obter(dados.provider).testarConexao(dados.credentials);
     } catch (erro) {
       if (erro instanceof ErroDaPlataforma) {
-        throw new BadRequestException(`Não foi possível conectar: ${erro.message}`);
+        throw new BadRequestException(
+          'Não foi possível conectar à plataforma. Confira os dados da integração.',
+        );
       }
       throw erro;
     }

@@ -574,6 +574,15 @@ describe('API HTTP — saúde, sessão e permissões com Prisma isolado', () => 
     expect(prisma.user.findUnique).not.toHaveBeenCalled();
   });
 
+  it('token assinado sem identificador de usuário é recusado antes de consultar o banco', async () => {
+    const token = jwt.sign({ role: Role.ADMIN });
+    await request(app.getHttpServer())
+      .get('/api/auth/me')
+      .set('Cookie', `${NOME_DO_COOKIE}=${token}`)
+      .expect(401);
+    expect(prisma.user.findUnique).not.toHaveBeenCalled();
+  });
+
   it('cookie com codificação inválida retorna 401 sem consultar usuários', async () => {
     await request(app.getHttpServer()).get('/api/auth/me').set('Cookie', `${NOME_DO_COOKIE}=%ZZ`).expect(401);
     expect(prisma.user.findUnique).not.toHaveBeenCalled();

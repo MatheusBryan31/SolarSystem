@@ -1,7 +1,7 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 import { PrismaService } from '../prisma/prisma.service';
 import type { JwtPayload, UsuarioAutenticado } from './auth.types';
 import { IS_PUBLIC_KEY } from './public.decorator';
@@ -37,6 +37,9 @@ export class AuthGuard implements CanActivate {
     } catch {
       throw new UnauthorizedException('Sessão inválida ou expirada');
     }
+    if (typeof payload?.sub !== 'string' || !payload.sub) {
+      throw new UnauthorizedException('Sessão inválida ou expirada');
+    }
 
     // 4. Confere no banco: o usuário ainda existe e está ativo?
     const usuario = await this.prisma.user.findUnique({
@@ -63,6 +66,7 @@ export class AuthGuard implements CanActivate {
       role: usuario.role,
       clientId: usuario.clientId,
     };
+    ctx.switchToHttp().getResponse<Response>().setHeader('Cache-Control', 'private, no-store');
     return true;
   }
 }

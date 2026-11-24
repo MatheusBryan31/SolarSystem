@@ -15,15 +15,17 @@ export class MeasurementsService {
     input: { inverterId?: string; sourceLinkId?: string; includeSimulated: boolean },
   ) {
     if (user.role === Role.CLIENT && !user.clientId) throw new NotFoundException('Usina não encontrada');
+    const plantScope = user.role === Role.CLIENT ? { clientId: user.clientId } : undefined;
+    const viaPlant = plantScope ? { plant: plantScope } : {};
     const plant = await this.prisma.plant.findFirst({
-      where: { id: plantId, ...(user.role === Role.CLIENT ? { clientId: user.clientId } : {}) },
+      where: { id: plantId, ...plantScope },
       select: { id: true },
     });
     if (!plant) throw new NotFoundException('Usina não encontrada');
     if (
       input.inverterId &&
       !(await this.prisma.inverter.findFirst({
-        where: { id: input.inverterId, plantId },
+        where: { id: input.inverterId, plantId, ...viaPlant },
         select: { id: true },
       }))
     )
@@ -31,7 +33,7 @@ export class MeasurementsService {
     if (
       input.sourceLinkId &&
       !(await this.prisma.plantExternalLink.findFirst({
-        where: { id: input.sourceLinkId, plantId },
+        where: { id: input.sourceLinkId, plantId, ...viaPlant },
         select: { id: true },
       }))
     )
@@ -41,7 +43,7 @@ export class MeasurementsService {
       inverterId: input.inverterId ?? null,
       ...(input.sourceLinkId ? { sourceLinkId: input.sourceLinkId } : {}),
       ...(input.includeSimulated ? {} : { isSimulated: false }),
-      ...(user.role === Role.CLIENT ? { plant: { clientId: user.clientId } } : {}),
+      ...viaPlant,
     } satisfies Prisma.MeasurementWhereInput;
   }
 

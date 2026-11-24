@@ -101,7 +101,9 @@ export class AlertsService {
     // Isolamento: CLIENT só vê alertas das PRÓPRIAS usinas.
     // (Alertas de integração não têm usina, então o cliente nem os enxerga: são assunto interno.)
     if (usuario.role === Role.CLIENT) {
-      where.plant = { clientId: usuario.clientId ?? '00000000-0000-0000-0000-000000000000' };
+      if (!usuario.clientId) return { itens: [], total: 0, pagina, porPagina };
+      where.plant = { clientId: usuario.clientId };
+      where.type = { in: ['PLANT_OFFLINE', 'PLANT_FAULT'] };
     }
 
     const [total, itens] = await this.prisma.$transaction([
@@ -114,7 +116,15 @@ export class AlertsService {
         take: porPagina,
       }),
     ]);
-    return { itens, total, pagina, porPagina };
+    return {
+      itens:
+        usuario.role === Role.CLIENT
+          ? itens.map((item) => ({ ...item, integrationId: null, integration: null }))
+          : itens,
+      total,
+      pagina,
+      porPagina,
+    };
   }
 
   // "Reconhecer" = alguém da equipe viu e assumiu o problema

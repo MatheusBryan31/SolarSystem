@@ -2,6 +2,7 @@ import { BadGatewayException, BadRequestException, ConflictException } from '@ne
 import { IntegrationsService } from './integrations.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { ProviderRegistry } from '../providers/provider-registry';
+import { ErroDaPlataforma } from '../providers/provider.types';
 import { AlertsService } from '../alerts/alerts.service';
 import { PlantCatalogService } from '../plants/plant-catalog.service';
 
@@ -9,11 +10,11 @@ describe('Sincronização controlada do catálogo', () => {
   const db = {
     $queryRaw: jest.fn(),
     $transaction: jest.fn(),
-    integration: { findUnique: jest.fn(), update: jest.fn() },
+    integration: { findUnique: jest.fn(), update: jest.fn(), create: jest.fn() },
     alert: { findFirst: jest.fn(), create: jest.fn(), updateMany: jest.fn() },
     plantDiscovery: { findFirst: jest.fn(), update: jest.fn() },
   };
-  const adapter = { listarUsinas: jest.fn() };
+  const adapter = { listarUsinas: jest.fn(), testarConexao: jest.fn() };
   const registry = { obter: jest.fn() };
   const alerts = { avaliarUsinasTx: jest.fn() };
   const catalog = { apply: jest.fn() };
@@ -87,6 +88,13 @@ describe('Sincronização controlada do catálogo', () => {
     await expect(service.sincronizar('i')).rejects.toThrow(BadGatewayException);
     expect(JSON.stringify(db.integration.update.mock.calls)).not.toContain('segredo-super-secreto');
     expect(JSON.stringify(db.alert.create.mock.calls)).not.toContain('segredo-super-secreto');
+  });
+  it('a criação também oculta a mensagem original do provedor', async () => {
+    adapter.testarConexao.mockRejectedValue(new ErroDaPlataforma('segredo-no-erro'));
+    await expect(service.criar({ name: 'Teste', provider: 'DEMO', credentials: {} })).rejects.toThrow(
+      'Não foi possível conectar à plataforma. Confira os dados da integração.',
+    );
+    expect(db.integration.create).not.toHaveBeenCalled();
   });
   it('importação exige revisar a versão atual da descoberta', async () => {
     db.plantDiscovery.findFirst.mockResolvedValue({ id: 'd', revision: 2, resolvedAt: null });

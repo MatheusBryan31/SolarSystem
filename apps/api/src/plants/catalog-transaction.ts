@@ -13,7 +13,7 @@ export async function catalogTransaction<T>(
     try {
       return await prisma.$transaction(
         async (tx) => {
-          await tx.$queryRaw`SELECT pg_advisory_xact_lock(7419260301::bigint)`;
+          await tx.$queryRaw`SELECT pg_advisory_xact_lock(7419260301::bigint)::text`;
           return work(tx);
         },
         { maxWait: 10000, timeout: 15000 },

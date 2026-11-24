@@ -34,6 +34,10 @@ const select = {
   updatedAt: true,
 } satisfies Prisma.InverterSelect;
 
+function inverterDto(item: Prisma.InverterGetPayload<{ select: typeof select }>, user: UsuarioAutenticado) {
+  return user.role === Role.CLIENT ? { ...item, integrationId: null, externalId: null } : item;
+}
+
 @Injectable()
 export class InvertersService {
   constructor(private readonly prisma: PrismaService) {}
@@ -72,7 +76,7 @@ export class InvertersService {
         skip: (input.pagina - 1) * input.porPagina,
         take: input.porPagina,
       });
-      return { itens, total, ...input };
+      return { itens: itens.map((item) => inverterDto(item, user)), total, ...input };
     });
   }
 
@@ -88,7 +92,7 @@ export class InvertersService {
       select,
     });
     if (!item) throw new NotFoundException('Inversor não encontrado');
-    return item;
+    return inverterDto(item, user);
   }
 
   async criar(plantId: string, input: CriarInversorDto, user: UsuarioAutenticado) {
