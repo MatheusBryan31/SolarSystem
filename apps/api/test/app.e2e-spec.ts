@@ -1,6 +1,6 @@
-import { INestApplication } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { Test } from '@nestjs/testing';
 import { Role } from '@prisma/client';
 import { hash } from 'bcryptjs';
@@ -34,7 +34,7 @@ interface TestUser {
 }
 
 describe('API HTTP — saúde, sessão e permissões com Prisma isolado', () => {
-  let app: INestApplication<App>;
+  let app: NestExpressApplication<App>;
   let jwt: JwtService;
   let passwordHash: string;
   let users: TestUser[];
@@ -58,6 +58,9 @@ describe('API HTTP — saúde, sessão e permissões com Prisma isolado', () => 
 
   beforeAll(async () => {
     passwordHash = await hash(SENHA, 4); // Custo baixo apenas nas fixtures, compare real.
+  });
+
+  beforeEach(async () => {
     // Não importar AppModule: evita .env, banco e bootstrap do SyncScheduler.
     // Controllers, serviços, validação, JWT e ambos os guards permanecem reais.
     const module = await Test.createTestingModule({
@@ -86,13 +89,11 @@ describe('API HTTP — saúde, sessão e permissões com Prisma isolado', () => 
       .overrideProvider(PrismaService)
       .useValue(prisma)
       .compile();
-    app = module.createNestApplication();
+    app = module.createNestApplication<NestExpressApplication<App>>();
     app.setGlobalPrefix('api'); // Mesmo prefixo de main.ts, sem executar bootstrap.
     await app.init();
     jwt = app.get(JwtService);
-  });
 
-  beforeEach(() => {
     jest.resetAllMocks();
     users = [
       { id: ADMIN, name: 'Admin teste', email: 'admin@example.test', role: Role.ADMIN, clientId: null },
@@ -140,7 +141,7 @@ describe('API HTTP — saúde, sessão e permissões com Prisma isolado', () => 
     );
   });
 
-  afterAll(async () => {
+  afterEach(async () => {
     await app?.close();
   });
 
@@ -260,6 +261,77 @@ describe('API HTTP — saúde, sessão e permissões com Prisma isolado', () => 
       .post('/api/auth/login')
       .send({ email: ' ADMIN@EXAMPLE.TEST ', senha: SENHA })
       .expect(200);
+  });
+
+  it('limita tentativas concorrentes por origem e conta normalizada e libera após a janela', async () => {
+    let agora = Date.now();
+    const relogio = jest.spyOn(Date, 'now').mockImplementation(() => agora);
+    try {
+      const respostas = await Promise.all(
+        Array.from({ length: 8 }, (_, indice) =>
+          request(app.getHttpServer())
+            .post('/api/auth/login')
+            .set('X-Forwarded-For', `192.0.2.${indice + 1}`)
+            .send({
+              email: indice % 2 ? ' ADMIN@EXAMPLE.TEST ' : 'admin@example.test',
+              senha: 'incorreta',
+            }),
+        ),
+      );
+      expect(respostas.filter((resposta) => resposta.status === 401)).toHaveLength(5);
+      const bloqueadas = respostas.filter((resposta) => resposta.status === 429);
+      expect(bloqueadas).toHaveLength(3);
+      expect(prisma.user.findUnique).toHaveBeenCalledTimes(5);
+      for (const resposta of bloqueadas) {
+        expect(resposta.get('Retry-After')).toBe('60');
+        expect(resposta.get('Cache-Control')).toBe('no-store');
+        expect(resposta.get('Set-Cookie')).toBeUndefined();
+        expect(resposta.body).toMatchObject({
+          statusCode: 429,
+          message: 'Muitas tentativas de login. Tente novamente em instantes.',
+        });
+      }
+
+      await login('operator@example.test');
+      agora += 59_000;
+      await request(app.getHttpServer())
+        .post('/api/auth/login')
+        .send({ email: 'admin@example.test', senha: SENHA })
+        .expect('Retry-After', '1')
+        .expect(429);
+      agora += 1000;
+      await login();
+    } finally {
+      relogio.mockRestore();
+    }
+  });
+
+  it('limita a origem mesmo com corpos inválidos e mantém a sessão existente', async () => {
+    const { cookie } = await login();
+    for (let tentativa = 0; tentativa < 59; tentativa++) {
+      await request(app.getHttpServer()).post('/api/auth/login').send({}).expect(400);
+    }
+    await request(app.getHttpServer())
+      .post('/api/auth/login')
+      .send({ email: 'operator@example.test', senha: SENHA })
+      .expect(429);
+    await request(app.getHttpServer()).get('/api/auth/me').set('Cookie', cookie).expect(200);
+    await request(app.getHttpServer()).post('/api/auth/logout').set('Cookie', cookie).expect(204);
+  });
+
+  it('separa clientes atrás de um proxy explicitamente confiável', async () => {
+    app.set('trust proxy', ['127.0.0.1', '::1']);
+    const tentar = (origem: string, senha: string) =>
+      request(app.getHttpServer())
+        .post('/api/auth/login')
+        .set('X-Forwarded-For', origem)
+        .send({ email: 'admin@example.test', senha });
+
+    for (let tentativa = 0; tentativa < 5; tentativa++) {
+      await tentar('192.0.2.1', 'incorreta').expect(401);
+    }
+    await tentar('192.0.2.200, 192.0.2.1', SENHA).expect(429);
+    await tentar('192.0.2.2', SENHA).expect(200);
   });
 
   it.each([

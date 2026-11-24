@@ -1,10 +1,11 @@
-import { Body, Controller, Get, Header, HttpCode, Post, Res } from '@nestjs/common';
+import { Body, Controller, Get, Header, HttpCode, Post, Res, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Response } from 'express';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
 import { AuthService } from './auth.service';
 import type { UsuarioAutenticado } from './auth.types';
 import { CurrentUser } from './current-user.decorator';
+import { LoginRateLimitGuard } from './login-rate-limit.guard';
 import { loginSchema, type LoginDto } from './login.schema';
 import { Public } from './public.decorator';
 import { NOME_DO_COOKIE, opcoesDoCookie } from './sessao-cookie';
@@ -22,6 +23,7 @@ export class AuthController {
 
   @Public()
   @Post('login')
+  @UseGuards(LoginRateLimitGuard)
   @Header('Cache-Control', 'no-store')
   @HttpCode(200) // login não cria nada: 200 OK em vez do 201 padrão do POST
   async login(

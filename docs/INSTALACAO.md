@@ -183,6 +183,14 @@ Reinicie a API após alterar `.env`. O modo de desenvolvimento acompanha arquivo
 - Use consistentemente `localhost`; `127.0.0.1` é outro host. Se testar o legado, preserve o endereço original dos cadastros.
 - Publicação requer HTTPS, encaminhamento de `/api` e fallback SPA. Não é configurada pelo servidor de desenvolvimento nem pelo comando de preview abaixo.
 
+### Limite de tentativas de login
+
+O login aceita até 5 tentativas em 60 segundos por IP e e-mail normalizado, com um teto de 60 tentativas por IP no mesmo intervalo. Ao atingir o limite, a API responde com `429` e `Retry-After` em segundos. A espera termina automaticamente e as sessões existentes continuam válidas.
+
+Em conexões diretas, deixe `TRUSTED_PROXY_IPS` vazio. Atrás de um proxy reverso, informe somente os IPs exatos dos proxies controlados, separados por vírgula, e configure o proxy de borda para descartar cabeçalhos `X-Forwarded-For` fornecidos pelo cliente e informar o IP real. Sem essa configuração, a API usa o endereço da conexão recebida, que pode ser compartilhado por todos os usuários do proxy. Para o proxy Vite local, use `127.0.0.1,::1` somente quando a API e o proxy estiverem na mesma máquina de desenvolvimento.
+
+Os contadores ficam em memória por processo. Em uma implantação com várias réplicas, aplique um limite compartilhado no proxy de borda para obter uma cota única entre instâncias.
+
 ## Build e preview
 
 Na raiz:

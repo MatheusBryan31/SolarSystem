@@ -20,6 +20,7 @@ test('painel recupera sessão, reautentica na rota anterior e confirma logout', 
   const paginaVazia = { itens: [], total: 0, pagina: 1, porPagina: 100 };
   let autenticado = false;
   let indisponivel = true;
+  let limitarLogin = true;
   let falharLogout = true;
   const chegadaAtrasada = Promise.withResolvers();
   const liberarAtrasada = Promise.withResolvers();
@@ -34,6 +35,9 @@ test('painel recupera sessão, reautentica na rota anterior e confirma logout', 
       return autenticado ? responder(200, usuario) : responder(401, { message: 'Faça login' });
     }
     if (pathname === '/api/auth/login') {
+      if (limitarLogin) {
+        return route.fulfill({ status: 429, headers: { 'Retry-After': '3' }, json: { statusCode: 429 } });
+      }
       const { email, senha } = route.request().postDataJSON();
       if (email !== usuario.email || senha !== 'correta') {
         return responder(401, { message: 'E-mail ou senha incorretos' });
@@ -70,6 +74,12 @@ test('painel recupera sessão, reautentica na rota anterior e confirma logout', 
   indisponivel = false;
   await page.getByRole('button', { name: 'Tentar novamente' }).click();
   await page.waitForURL('**/login');
+  await entrar('correta');
+  await page.getByRole('alert').filter({ hasText: 'Tente novamente em 3 s.' }).waitFor();
+  const botaoEntrar = page.getByRole('button', { name: 'Entrar', exact: true });
+  assert.equal(await botaoEntrar.isDisabled(), true);
+  limitarLogin = false;
+  await page.locator('button[type="submit"]:enabled').waitFor();
   await entrar('incorreta');
   await page.getByRole('alert').filter({ hasText: 'E-mail ou senha incorretos' }).waitFor();
   await entrar('correta');

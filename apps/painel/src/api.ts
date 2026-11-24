@@ -14,6 +14,7 @@ export class ErroDaApi extends Error {
   constructor(
     public readonly status: number,
     mensagem: string,
+    public readonly retryAfterSeconds?: number,
   ) {
     super(mensagem);
   }
@@ -48,9 +49,12 @@ export async function api<T>(caminho: string, opcoes: { metodo?: string; corpo?:
   if (!resposta.ok) {
     // A API manda { message: "..." } (ou uma lista de mensagens)
     const mensagem = (dados as { message?: string | string[] } | null)?.message;
+    const retryAfter = resposta.status === 429 ? resposta.headers.get('Retry-After') : null;
+    const segundos = retryAfter && /^\d+$/.test(retryAfter) ? Number(retryAfter) : undefined;
     throw new ErroDaApi(
       resposta.status,
       Array.isArray(mensagem) ? mensagem.join('; ') : (mensagem ?? 'Erro inesperado. Tente novamente.'),
+      segundos && segundos <= 2_147_483 ? segundos : undefined,
     );
   }
   return dados as T;

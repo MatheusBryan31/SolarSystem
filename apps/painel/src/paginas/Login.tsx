@@ -1,4 +1,5 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
+import { ErroDaApi } from '../api';
 import { useAuth } from '../auth';
 import { Icone, type NomeIcone } from '../componentes/Icone';
 import { Logo } from '../componentes/Logo';
@@ -16,15 +17,35 @@ export function Login() {
   const [mostrarSenha, setMostrarSenha] = useState(false);
   const [erro, setErro] = useState('');
   const [enviando, setEnviando] = useState(false);
+  const [espera, setEspera] = useState<number>();
+
+  useEffect(() => {
+    if (espera === undefined) return;
+    const timer = setTimeout(() => {
+      setEspera(undefined);
+      setErro('');
+    }, espera * 1000);
+    return () => clearTimeout(timer);
+  }, [espera]);
 
   async function enviar(evento: FormEvent) {
     evento.preventDefault(); // impede o navegador de recarregar a página
+    if (enviando || espera !== undefined) return;
     setErro('');
     setEnviando(true);
     try {
       await entrar(email, senha); // deu certo: o App percebe o usuário e troca para as telas internas
     } catch (e) {
-      setErro(e instanceof Error ? e.message : 'Não foi possível entrar');
+      if (e instanceof ErroDaApi && e.status === 429) {
+        setEspera(e.retryAfterSeconds);
+        setErro(
+          e.retryAfterSeconds
+            ? `Muitas tentativas de login. Tente novamente em ${e.retryAfterSeconds} s.`
+            : 'Muitas tentativas de login. Aguarde um momento e tente novamente.',
+        );
+      } else {
+        setErro(e instanceof Error ? e.message : 'Não foi possível entrar');
+      }
       setEnviando(false);
     }
   }
@@ -104,7 +125,7 @@ export function Login() {
             </p>
           )}
 
-          <button className="botao" type="submit" disabled={enviando}>
+          <button className="botao" type="submit" disabled={enviando || espera !== undefined}>
             {enviando ? 'Entrando...' : 'Entrar'} <Icone nome="seta" tamanho={18} />
           </button>
 

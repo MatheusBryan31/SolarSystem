@@ -1,3 +1,4 @@
+import { isIP } from 'node:net';
 import { z } from 'zod';
 
 // O "contrato": quais variáveis existem e que formato cada uma deve ter
@@ -8,6 +9,11 @@ export const envSchema = z.object({
   JWT_SECRET: z.string().min(32, 'JWT_SECRET precisa ter pelo menos 32 caracteres'),
   JWT_EXPIRES_IN: z.coerce.number().int().positive().default(28800),
   WEB_ORIGIN: z.string().default('http://localhost:5173'),
+  TRUSTED_PROXY_IPS: z
+    .string()
+    .default('')
+    .transform((valor) => (valor.trim() ? valor.split(',').map((ip) => ip.trim()) : []))
+    .refine((ips) => ips.every((ip) => isIP(ip) !== 0), 'Informe IPs exatos separados por vírgula'),
   SYNC_INTERVAL_MIN: z.coerce.number().int().min(0).max(1440).default(10), // De quantos em quantos minutos a coleta automática roda (0 = desligada)
 });
 
