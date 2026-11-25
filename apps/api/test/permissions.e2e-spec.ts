@@ -31,6 +31,9 @@ import { PrismaService } from '../src/prisma/prisma.service';
 import { ProviderRegistry } from '../src/providers/provider-registry';
 import { UsersController } from '../src/users/users.controller';
 import { UsersService } from '../src/users/users.service';
+import { AlertConfiguration, AlertConfigurationController } from '../src/alerts/alert-configuration';
+import { ReportsController } from '../src/reports/reports.controller';
+import { ReportsService } from '../src/reports/reports.service';
 
 const id = '11111111-1111-4111-8111-111111111111';
 const email = 'teste@example.test';
@@ -129,6 +132,7 @@ const routes: Rota[] = [
     body: { revision: 0, confirmSerialNumber: 'SN', reason: 'Teste' },
   },
   { method: 'get', path: '/plants/:plantId/measurements', allowed: todos, status: 200, query: range },
+  { method: 'get', path: '/plants/:plantId/measurements/sources', allowed: todos, status: 200 },
   {
     method: 'get',
     path: '/plants/:plantId/measurements/aggregations',
@@ -137,6 +141,52 @@ const routes: Rota[] = [
     query: { ...range, sourceLinkId: id, period: 'day' },
   },
   { method: 'get', path: '/alerts', allowed: todos, status: 200 },
+  { method: 'get', path: '/alerts/:id/history', allowed: todos, status: 200 },
+  {
+    method: 'patch',
+    path: '/alerts/:id/resolve',
+    allowed: equipe,
+    status: 200,
+    body: { reason: 'Teste de encerramento' },
+  },
+  { method: 'get', path: '/plants/:plantId/alert-policy', allowed: admin, status: 200 },
+  {
+    method: 'patch',
+    path: '/plants/:plantId/alert-policy',
+    allowed: admin,
+    status: 200,
+    body: { revision: 0, generationEnabled: true },
+  },
+  { method: 'get', path: '/alerts/notification-settings', allowed: admin, status: 200 },
+  {
+    method: 'patch',
+    path: '/alerts/notification-settings',
+    allowed: admin,
+    status: 200,
+    body: { revision: 0, enabled: false },
+  },
+  { method: 'get', path: '/alerts/notifications', allowed: admin, status: 200 },
+  {
+    method: 'get',
+    path: '/plants/:plantId/reports',
+    allowed: todos,
+    status: 200,
+    query: { ...range, sourceLinkId: id, period: 'month' },
+  },
+  {
+    method: 'get',
+    path: '/plants/:plantId/reports/csv',
+    allowed: todos,
+    status: 200,
+    query: { ...range, sourceLinkId: id, period: 'day' },
+  },
+  {
+    method: 'get',
+    path: '/plants/:plantId/reports/pdf',
+    allowed: todos,
+    status: 200,
+    query: { ...range, sourceLinkId: id, period: 'year' },
+  },
   { method: 'patch', path: '/alerts/:id/ack', allowed: equipe, status: 200 },
   { method: 'get', path: '/providers', allowed: equipe, status: 200 },
   { method: 'get', path: '/integrations', allowed: equipe, status: 200 },
@@ -166,6 +216,8 @@ const routes: Rota[] = [
 ];
 
 const controllers = [
+  AlertConfigurationController,
+  ReportsController,
   AppController,
   AlertsController,
   ClientsController,
@@ -176,6 +228,8 @@ const controllers = [
   UsersController,
 ];
 const services = [
+  AlertConfiguration,
+  ReportsService,
   AppService,
   AlertsService,
   ClientsService,
@@ -191,7 +245,12 @@ function double(service: Type) {
   return Object.fromEntries(
     Object.getOwnPropertyNames(service.prototype as object)
       .filter((key) => key !== 'constructor')
-      .map((key) => [key, jest.fn(() => ({ ok: true }))]),
+      .map((key) => [
+        key,
+        jest.fn(() =>
+          service === ReportsService && ['pdf', 'csv'].includes(key) ? Buffer.from('fixture') : { ok: true },
+        ),
+      ]),
   );
 }
 

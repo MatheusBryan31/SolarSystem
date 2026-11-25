@@ -22,7 +22,16 @@ test('painel operacional: cadastros, inversores, alarmes, relatórios, permissõ
   let role = 'ADMIN',
     failClients = true,
     inversores = [],
-    ack = false;
+    ack = false,
+    resolved = false;
+  let mailSettings = {
+    enabled: false,
+    recipients: [],
+    statuses: ['OPEN', 'RESOLVED'],
+    revision: 0,
+    workerEnabled: false,
+    smtpConfigured: false,
+  };
   const writes = [],
     calls = [];
   const client = {
@@ -137,7 +146,44 @@ test('painel operacional: cadastros, inversores, alarmes, relatórios, permissõ
     else if (p === '/api/plants/p1/inverters/inv1' && method === 'DELETE') {
       inversores = [];
       data = { id: 'inv1', archived: true };
-    } else if (p === '/api/alerts/a1/ack') {
+    } else if (p === '/api/alerts/a1/resolve') {
+      resolved = true;
+      data = { id: 'a1', status: 'RESOLVED' };
+    } else if (p === '/api/alerts/a1/history')
+      data = envelope([
+        { id: 'ev1', status: 'OPEN', createdAt: '2026-01-01T12:00:00Z', reason: null, isSimulated: true },
+        ...(resolved
+          ? [
+              {
+                id: 'ev2',
+                status: 'RESOLVED',
+                createdAt: '2026-01-01T13:00:00Z',
+                reason: 'Inspeção concluída',
+                isSimulated: true,
+              },
+            ]
+          : []),
+      ]);
+    else if (p === '/api/alerts/notification-settings') {
+      if (method === 'PATCH')
+        mailSettings = { ...mailSettings, ...req.postDataJSON(), revision: mailSettings.revision + 1 };
+      data = mailSettings;
+    } else if (p === '/api/alerts/notifications') data = envelope([]);
+    else if (p === '/api/plants/p1/alert-policy')
+      data = {
+        communicationMinutes: 60,
+        generationEnabled: false,
+        lowPowerRatio: 0.05,
+        highPowerRatio: 1.2,
+        durationMinutes: 10,
+        minimumSamples: 3,
+        dayStartHour: 8,
+        dayEndHour: 17,
+        timeZone: 'America/Sao_Paulo',
+        allowSimulated: false,
+        revision: 0,
+      };
+    else if (p === '/api/alerts/a1/ack') {
       ack = true;
       data = {};
     } else if (p === '/api/alerts')
@@ -146,7 +192,7 @@ test('painel operacional: cadastros, inversores, alarmes, relatórios, permissõ
           id: 'a1',
           type: 'PLANT_OFFLINE',
           severity: 'WARNING',
-          status: ack ? 'ACKNOWLEDGED' : 'OPEN',
+          status: resolved ? 'RESOLVED' : ack ? 'ACKNOWLEDGED' : 'OPEN',
           message: 'Falha de comunicação',
           openedAt: '2026-01-01T12:00:00Z',
           plant: { id: plant.id, name: plant.name },
@@ -165,7 +211,17 @@ test('painel operacional: cadastros, inversores, alarmes, relatórios, permissõ
     else if (p === '/api/integrations' && method === 'POST') {
       data = { id: 'i2', ...req.postDataJSON() };
       status = 201;
-    } else if (p === '/api/plants/p1/measurements/aggregations')
+    } else if (p === '/api/plants/p1/reports/pdf') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/pdf',
+        body: Buffer.from('%PDF-1.4\nfixture de download'),
+      });
+      return;
+    } else if (p === '/api/plants/p1/reports/csv') {
+      await route.fulfill({ status: 200, contentType: 'text/csv', body: 'Periodo;Potencia\n2026-01;3' });
+      return;
+    } else if (p === '/api/plants/p1/reports')
       data = {
         buckets: [
           {
@@ -178,6 +234,11 @@ test('painel operacional: cadastros, inversores, alarmes, relatórios, permissõ
           },
         ],
       };
+    else if (p === '/api/plants/p1/measurements/sources')
+      data = [
+        { id: 'link1', provider: 'DEMO', state: 'ACTIVE', linkedAt: '2026-11-24T12:00:00Z' },
+        { id: 'historical', provider: 'DEMO', state: 'DETACHED', linkedAt: '2026-10-01T12:00:00Z' },
+      ];
     else if (p === '/api/plants/p1/measurements')
       data = envelope(
         url.searchParams.get('includeSimulated') === 'true'
@@ -256,6 +317,12 @@ test('painel operacional: cadastros, inversores, alarmes, relatórios, permissõ
   await page.goto(origin + 'alarmes');
   await page.getByRole('button', { name: 'Reconhecer', exact: true }).click();
   await page.getByText('ACKNOWLEDGED', { exact: false }).waitFor();
+  await page.getByRole('button', { name: 'Resolver', exact: true }).click();
+  await page.getByLabel('Motivo da resolução').fill('Inspeção concluída');
+  await page.getByRole('button', { name: 'Confirmar resolução' }).click();
+  await page.getByText('RESOLVED', { exact: false }).waitFor();
+  await page.getByRole('button', { name: 'Histórico', exact: true }).click();
+  await page.getByText('Inspeção concluída', { exact: false }).waitFor();
   await page.goto(origin + 'relatorios?usina=p1');
   await page.getByRole('button', { name: 'Consultar relatório' }).click();
   await page.getByText('Sem medições no intervalo e filtros informados.').waitFor();
@@ -268,7 +335,19 @@ test('painel operacional: cadastros, inversores, alarmes, relatórios, permissõ
   await page.getByLabel('Apresentação').selectOption('month');
   await page.getByRole('button', { name: 'Consultar relatório' }).click();
   await page.getByRole('cell', { name: '2026-01', exact: true }).waitFor();
-  assert.ok(calls.some((c) => c.p.endsWith('/aggregations') && c.query.includes('sourceLinkId=link1')));
+  assert.ok(calls.some((c) => c.p.endsWith('/reports') && c.query.includes('sourceLinkId=link1')));
+  await page.getByRole('img', { name: 'Gráfico de pico de potência por período' }).waitFor();
+  const pdfDownload = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Exportar relatório PDF' }).click();
+  assert.equal((await pdfDownload).suggestedFilename(), 'solarsystem-month.pdf');
+  await page.getByLabel('Fonte do relatório').selectOption('historical');
+  await page.getByRole('button', { name: 'Consultar relatório' }).click();
+  await page.getByRole('cell', { name: '2026-01', exact: true }).waitFor();
+  assert.ok(calls.some((c) => c.p.endsWith('/reports') && c.query.includes('sourceLinkId=historical')));
+  await page.getByLabel('Fonte do relatório').selectOption('historical');
+  await page.getByRole('button', { name: 'Consultar relatório' }).click();
+  await page.getByRole('cell', { name: '2026-01', exact: true }).waitFor();
+  assert.ok(calls.some((c) => c.p.endsWith('/reports') && c.query.includes('sourceLinkId=historical')));
   await page.goto(origin + 'configuracoes');
   await page.getByLabel('Nome da conta').fill('Conta Nova');
   await page.getByLabel('Plataforma', { exact: false }).selectOption('DEMO');
@@ -276,6 +355,18 @@ test('painel operacional: cadastros, inversores, alarmes, relatórios, permissõ
   await page.getByRole('button', { name: 'Cadastrar integração' }).click();
   await page.getByText('Integração cadastrada.', { exact: false }).waitFor();
   assert.equal(writes.find((w) => w.p === '/api/integrations').body.credentials.quantidade, '2');
+  await page.getByLabel('Habilitar notificações de alarmes').check();
+  await page.getByLabel('Destinatários (um por linha)', { exact: true }).fill('ops@example.test');
+  await page.getByRole('button', { name: 'Salvar notificações' }).click();
+  await page.getByText('Configuração salva.', { exact: false }).waitFor();
+  assert.equal(
+    writes.find((w) => w.p === '/api/alerts/notification-settings').body.recipients[0],
+    'ops@example.test',
+  );
+  await page.getByLabel('Usina da política').selectOption('p1');
+  await page.getByLabel('Detectar geração anormal').check();
+  await page.getByRole('button', { name: 'Salvar política' }).click();
+  await page.getByText('Política de alertas salva.', { exact: true }).waitFor();
   for (const width of [1366, 683, 390, 320]) {
     await page.setViewportSize({ width, height: 900 });
     for (const route of [

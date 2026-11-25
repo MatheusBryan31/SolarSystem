@@ -77,7 +77,9 @@ export interface Descoberta {
 
 export interface Alerta {
   id: string;
-  type: 'PLANT_OFFLINE' | 'PLANT_FAULT' | 'SYNC_FAILED';
+  type: 'PLANT_OFFLINE' | 'PLANT_FAULT' | 'SYNC_FAILED' | 'GENERATION_ABNORMAL';
+  isSimulated?: boolean;
+  resolvedAt?: string | null;
   severity: 'WARNING' | 'CRITICAL';
   status: 'OPEN' | 'ACKNOWLEDGED' | 'RESOLVED';
   message: string;

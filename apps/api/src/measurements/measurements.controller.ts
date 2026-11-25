@@ -13,6 +13,10 @@ import { MeasurementsService } from './measurements.service';
 @Controller('plants/:plantId/measurements')
 export class MeasurementsController {
   constructor(private readonly service: MeasurementsService) {}
+  @Get('sources')
+  sources(@Param('plantId', ParseUUIDPipe) id: string, @CurrentUser() user: UsuarioAutenticado) {
+    return this.service.sources(id, user);
+  }
   @Get()
   history(
     @Param('plantId', ParseUUIDPipe) id: string,

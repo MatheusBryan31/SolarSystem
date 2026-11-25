@@ -13,7 +13,7 @@ Implementação em `apps/painel`, preservando o shell, tokens de cor, tipografia
 | Inversores `/inversores?usina=:id` | GET/POST/PATCH `/plants/:id/inverters`; DELETE individual com revisão, confirmação de série e motivo para arquivamento por ADMIN                                               |
 | Clientes `/clientes`               | Listagem paginada/busca, consulta individual, POST/PATCH, limpeza explícita de campos opcionais e DELETE sujeito à proteção de vínculos do servidor                            |
 | Usuários `/usuarios`               | Gestão ADMIN com busca/perfil/paginação; POST/PATCH, vínculo obrigatório para CLIENT, senha de criação/troca opcional na edição e ativação/desativação                         |
-| Alarmes `/alarmes`                 | GET `/alerts` por situação/página, filtro textual da página atual e PATCH `/alerts/:id/ack` pela equipe                                                                        |
+| Alarmes `/alarmes`                 | GET `/alerts` por tipo/situa??o/p?gina; reconhecimento, resolu??o justificada e hist?rico por epis?dio                                                                         |
 | Relatórios `/relatorios?usina=:id` | GET `/plants/:id/measurements` paginado ou `/aggregations` diário/mensal/anual; recorte UTC, fuso civil, opt-in DEMO e CSV da página consultada                                |
 | Configurações `/configuracoes`     | Perfil, link para troca de senha existente, GET `/providers` e `/integrations`, criação ADMIN de integração com os campos do provedor, pausa/ativação/arquivamento com revisão |
 
@@ -44,13 +44,13 @@ O único provedor atual é DEMO. A visão geral informa a simulação; páginas 
 - Filtros de início/fim são explicitamente UTC; linhas de leitura usam o fuso do navegador. Agregações usam o fuso informado no formulário.
 - Não somar potência nem acumuladores. Energia de período desconhecida aparece como —; agregações mostram pico observado, energia observada, exclusões e ausência de garantia de cobertura completa.
 - O adaptador atual não fornece energia de período; essa coluna/agregação pode permanecer sem valor. Não foi calculada geração sintética para preenchê-la.
-- Agregações utilizam o `activeLink` disponibilizado pela consulta da usina. Usina sem fonte ativa pode consultar leituras históricas, mas o formulário não agrega fontes antigas arbitrariamente.
-- Leituras aceitam até 366 dias e agregações têm o limite de 50.000 amostras do servidor. Erros/limites são exibidos; não há truncamento anunciado como relatório completo.
-- CSV exporta somente as linhas da página consultada, com essa indicação no botão. Preserva desconhecidos vazios, identifica simulação, escapa aspas e protege prefixos de fórmula. Não há promessa de PDF ou exportação completa de toda a base.
+- Relatórios agrupados usam `/plants/:id/reports` e permitem selecionar fontes atuais ou históricas autorizadas, mesmo após desvinculação. Não misturam fontes automaticamente.
+- Leituras aceitam até 366 dias; relatórios SQL aceitam até 3.660 dias e não usam o limite de 50.000 amostras do endpoint antigo de agregações, preservado para compatibilidade.
+- CSV de leituras exporta somente a página consultada. Relatórios diários/mensais/anuais oferecem gráfico, CSV completo do recorte e PDF paginado. Desconhecidos, simulação e ausência de garantia de cobertura são preservados. Veja [contratos, regras e homologação](ALARMES_RELATORIOS.md).
 
 ## Configurações disponíveis
 
-Não há endpoint de preferências globais/tema/tarifas/notificações; por isso, não foram criados controles que aparentem salvar essas informações. Configurações implementa a conta e as integrações efetivamente suportadas. Credenciais são enviadas ao criar, não recuperadas para edição nem exibidas como valor já cadastrado. Somente plataformas retornadas por `/providers` são oferecidas.
+Configurações implementa conta, integrações e, para ADMIN, políticas de alarmes por usina, destinatários/eventos de e-mail e histórico paginado de envios. Notificações dependem de habilitação no painel e no servidor, com SMTP; DEMO nunca envia. Credenciais são enviadas ao criar, não recuperadas para edição nem exibidas como valor já cadastrado. Somente plataformas retornadas por `/providers` são oferecidas. Tema e tarifas globais continuam sem endpoint próprio.
 
 ## Testes realizados
 

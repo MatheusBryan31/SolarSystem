@@ -116,6 +116,7 @@ export class IntegrationsService {
               type: 'SYNC_FAILED',
               severity: 'WARNING',
               message: ERRO_COLETA,
+              isSimulated: integracao.provider === 'DEMO',
             },
           });
       });
@@ -145,7 +146,7 @@ export class IntegrationsService {
       });
       const resolved = await tx.alert.updateMany({
         where: { integrationId: id, type: 'SYNC_FAILED', status: { not: 'RESOLVED' } },
-        data: { status: 'RESOLVED', resolvedAt: agora },
+        data: { status: 'RESOLVED', resolvedAt: agora, resolutionReason: 'AUTO_SYNC_RECOVERY' },
       });
       const alerts = await this.alerts.avaliarUsinasTx(tx, id, agora);
       return {

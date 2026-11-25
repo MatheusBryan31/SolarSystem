@@ -26,9 +26,11 @@ O painel React já possui login real e Visão geral integrada à API. Sua adoç�
 
 ## Funcionalidades implementadas
 
-**API:** saúde em `/api/health`; login, sessão e logout; gestão de usuários/clientes conforme perfil; cadastro/edição manual de usinas, vínculo com cliente e com plataforma, desvinculação segura e histórico de identidades; descobertas remotas com importação explícita, pausa/arquivamento de integrações e alertas. Perfis `ADMIN`, `OPERATOR` e `CLIENT`, com isolamento de usinas/alertas por cliente. Ainda não há gestão independente de inversores equivalente ao legado. O novo catálogo exige a migration descrita em [Implementação de usinas](docs/IMPLEMENTACAO_USINAS.md), que não foi aplicada ao banco do usuário.
+**API:** saúde em `/api/health`; login, sessão e logout; gestão de usuários/clientes conforme perfil; cadastro/edição manual de usinas, vínculo com cliente e com plataforma, desvinculação segura e histórico de identidades; descobertas remotas com importação explícita, pausa/arquivamento de integrações, inversores e medições persistidas. Alarmes oferecem reconhecimento, resolução e histórico; relatórios diários/mensais/anuais têm exportação CSV/PDF e e-mails de alarmes são configuráveis. Perfis `ADMIN`, `OPERATOR` e `CLIENT` preservam isolamento por cliente. Veja [núcleo da API](docs/NUCLEO_API.md) e [alarmes e relatórios](docs/ALARMES_RELATORIOS.md), incluindo migrations preparadas e requisitos de ativação.
 
 **Painel React:** rotas `/login`, `/` e `/usinas`, formulário com mostrar/ocultar senha, sessão consultada na abertura, layout com usuário/perfil e Sair; Visão geral com indicadores, ranking, status e alertas consultados a cada minuto. As consultas percorrem as páginas disponíveis e os indicadores distinguem ausência de leitura atual de zero. A gestão de usinas separa cadastro manual, identidade remota e origem dos campos.
+
+O [painel operacional](docs/PAINEL_OPERACIONAL.md) inclui cadastro/detalhes, inversores, clientes, usuários, alarmes, relatórios e configurações. Relatórios consultam fontes atuais/históricas, mostram gráficos e exportam dados persistidos. ADMIN pode configurar políticas e destinatários; o envio depende de SMTP e worker explicitamente habilitados. DEMO não envia notificações reais.
 
 **HTML legado:** cadastro/edição local de usinas, adição/edição/remoção de inversores, busca e filtros, consulta e alteração local de alarmes, relatórios e exportação resumida em CSV, configurações informativas, menu e modal de perfil compartilhados.
 
@@ -40,11 +42,11 @@ O painel React já possui login real e Visão geral integrada à API. Sua adoç�
 
 ## Funcionalidades pendentes
 
-- Completar no React Detalhes, Inversores, Alarmes completos, Relatórios, Configurações e modal de perfil. A rota `/usinas` já oferece cadastro/edição manual, origem dos campos e associação explícita com descobertas remotas, com reconexão pelo histórico.
+- Homologar os fluxos do painel com API/PostgreSQL isolados e revisar critérios de descontinuação do legado.
 - Definir compatibilidade dos cadastros locais e contratos de escrita necessários, com backup integral e aprovação antes de migrar.
 - Adaptadores para Sungrow, Growatt, Huawei, Deye/Solarman, GoodWe e demais fabricantes.
-- Cadastro público real, recuperação de senha, confirmação por e-mail e notificações por e-mail.
-- Histórico temporal real, demais indicadores planejados, ampliação dos testes do painel e configuração de CI/publicação.
+- Cadastro público real e confirmação por e-mail. Recuperação de senha e notificações implementadas dependem de SMTP/configuração e homologação de entrega.
+- Medições de fabricantes reais, energia explícita de período quando fornecida, demais indicadores planejados, carga/retenção e configuração de CI/publicação.
 
 ## Estrutura de pastas
 
@@ -163,6 +165,7 @@ Na validação da Tarefa 03: **31 E2E e 26 unitários aprovados**, em Node 24.22
 
 ## Documentação
 
+- [Alarmes, notificações configuráveis, relatórios CSV/PDF e homologação](docs/ALARMES_RELATORIOS.md).
 - [Painel React operacional, integrações e testes de páginas](docs/PAINEL_OPERACIONAL.md).
 - [Revisão atual do núcleo da API, correções, testes e pendências](docs/NUCLEO_API.md).
 - [Instalação no Windows e solução de problemas](docs/INSTALACAO.md).

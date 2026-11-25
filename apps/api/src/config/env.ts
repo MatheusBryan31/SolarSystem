@@ -29,6 +29,12 @@ export const envSchema = z
       ])
       .default(''),
     PASSWORD_RESET_FROM: z.union([z.literal(''), z.email()]).default(''),
+    ALERT_EMAIL_FROM: z.union([z.literal(''), z.email()]).default(''),
+    ALERT_EMAIL_WORKER_ENABLED: z
+      .enum(['true', 'false'])
+      .default('false')
+      .transform((value) => value === 'true'),
+    ALERT_EVALUATION_INTERVAL_SECONDS: z.coerce.number().int().min(0).max(3600).default(60),
     WEB_ORIGIN: z
       .string()
       .default('http://localhost:5173')
@@ -47,9 +53,17 @@ export const envSchema = z
     path: ['WEB_ORIGIN'],
     message: 'Em produção, WEB_ORIGIN deve usar HTTPS',
   })
-  .refine(({ SMTP_URL, PASSWORD_RESET_FROM }) => Boolean(SMTP_URL) === Boolean(PASSWORD_RESET_FROM), {
-    path: ['SMTP_URL'],
-    message: 'Configure SMTP_URL e PASSWORD_RESET_FROM em conjunto',
+  .refine(
+    ({ SMTP_URL, PASSWORD_RESET_FROM, ALERT_EMAIL_FROM }) =>
+      Boolean(SMTP_URL) === Boolean(PASSWORD_RESET_FROM || ALERT_EMAIL_FROM),
+    {
+      path: ['SMTP_URL'],
+      message: 'Configure SMTP_URL e pelo menos um remetente em conjunto',
+    },
+  )
+  .refine((value) => !value.ALERT_EMAIL_WORKER_ENABLED || Boolean(value.SMTP_URL && value.ALERT_EMAIL_FROM), {
+    path: ['ALERT_EMAIL_WORKER_ENABLED'],
+    message: 'Ativar o worker exige SMTP_URL e ALERT_EMAIL_FROM',
   });
 
 // O TypeScript deduz o tipo a partir do contrato: não precisamos escrevê-lo duas vezes

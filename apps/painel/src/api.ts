@@ -30,7 +30,10 @@ export const quandoSessaoExpirar = (fn: () => void) => {
   };
 };
 
-export async function api<T>(caminho: string, opcoes: { metodo?: string; corpo?: unknown } = {}): Promise<T> {
+export async function api<T>(
+  caminho: string,
+  opcoes: { metodo?: string; corpo?: unknown; binario?: boolean } = {},
+): Promise<T> {
   const versaoDaRequisicao = versaoDaSessao;
   const alteraSessao = [
     '/auth/login',
@@ -59,6 +62,7 @@ export async function api<T>(caminho: string, opcoes: { metodo?: string; corpo?:
     ouvintesDaSessao.forEach((fn) => fn());
   }
 
+  if (resposta.ok && opcoes.binario) return (await resposta.blob()) as T;
   const dados: unknown = await resposta.json().catch(() => null); // 204 não tem corpo
   if (!resposta.ok) {
     // A API manda { message: "..." } (ou uma lista de mensagens)

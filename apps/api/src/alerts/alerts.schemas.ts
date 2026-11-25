@@ -1,7 +1,9 @@
-import { AlertStatus } from '@prisma/client';
+import { AlertStatus, AlertType } from '@prisma/client';
 import { z } from 'zod';
 
 export const listarAlertasSchema = z.object({
+  type: z.enum(AlertType).optional(),
+  plantId: z.string().uuid().optional(),
   status: z.enum(AlertStatus, 'Status inválido').optional(),
   // Atalho para a tela principal: só o que ainda precisa de atenção (OPEN + ACKNOWLEDGED)
   ativos: z

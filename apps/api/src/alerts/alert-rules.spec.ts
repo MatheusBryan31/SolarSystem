@@ -22,6 +22,10 @@ describe('avaliarUsina', () => {
   it('status FAULT gera PLANT_FAULT', () => {
     const condicoes = avaliarUsina({ name: 'A', status: 'FAULT', lastDataAt: minutosAtras(1) }, AGORA);
     expect(condicoes.map((c) => c.tipo)).toEqual(['PLANT_FAULT']);
+    expect(avaliarUsina({ name: 'A', status: 'FAULT', lastDataAt: minutosAtras(-5) }, AGORA)).toEqual([]);
+    expect(
+      avaliarUsina({ name: 'A', status: 'FAULT', lastDataAt: minutosAtras(61) }, AGORA).map((c) => c.tipo),
+    ).toEqual(['PLANT_OFFLINE']);
   });
 
   it('usina que nunca enviou dados é considerada sem comunicação', () => {

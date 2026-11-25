@@ -16,6 +16,7 @@ import { PrismaModule } from '../src/prisma/prisma.module';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { UsersModule } from '../src/users/users.module';
 import { MeasurementsModule } from '../src/measurements/measurements.module';
+import { ReportsModule } from '../src/reports/reports.module';
 
 const SENHA = 'SenhaApenasParaTeste123';
 const ADMIN = '11111111-1111-4111-8111-111111111111';
@@ -72,7 +73,7 @@ describe('API HTTP — saúde, sessão e permissões com Prisma isolado', () => 
         ConfigModule.forRoot({
           isGlobal: true,
           ignoreEnvFile: true,
-          ignoreEnvVars: true,
+          skipProcessEnv: true,
           load: [
             () => ({
               NODE_ENV: ambiente,
@@ -86,6 +87,7 @@ describe('API HTTP — saúde, sessão e permissões com Prisma isolado', () => 
         UsersModule,
         PlantsModule,
         MeasurementsModule,
+        ReportsModule,
       ],
       controllers: [AppController],
       providers: [AppService],
@@ -766,6 +768,61 @@ describe('API HTTP — saúde, sessão e permissões com Prisma isolado', () => 
   });
   it('histórico exige sessão autenticada', async () => {
     await request(app.getHttpServer()).get(`/api/plants/${USINA}/measurements`).expect(401);
+  });
+  it('CSV e PDF de relatório usam medições autorizadas, com arquivos e headers reais', async () => {
+    const { cookie } = await login('client@example.test');
+    prisma.plantExternalLink.findFirst.mockResolvedValue({ id: ADMIN });
+    prisma.$queryRaw.mockResolvedValue([
+      {
+        bucket: '2026-01',
+        samples: 2,
+        usableSamples: 2,
+        peakPowerKw: 3,
+        observedPeriodEnergyKwh: null,
+        acceptedPeriods: 0,
+        excludedPeriods: 0,
+        simulated: false,
+        coverage: 'NOT_ESTABLISHED',
+      },
+    ]);
+    const query = {
+      from: '2026-01-01T00:00:00Z',
+      to: '2026-02-01T00:00:00Z',
+      period: 'month',
+      sourceLinkId: ADMIN,
+    };
+    const csv = await request(app.getHttpServer())
+      .get(`/api/plants/${USINA}/reports/csv`)
+      .set('Cookie', cookie)
+      .query(query)
+      .expect(200)
+      .expect('Content-Type', /text\/csv/)
+      .expect('Cache-Control', 'private, no-store');
+    expect(csv.text).toContain('Energia de períodos observados');
+    const pdf = await request(app.getHttpServer())
+      .get(`/api/plants/${USINA}/reports/pdf`)
+      .set('Cookie', cookie)
+      .query(query)
+      .expect(200)
+      .expect('Content-Type', 'application/pdf')
+      .expect('Content-Disposition', /attachment/);
+    expect(Buffer.isBuffer(pdf.body)).toBe(true);
+    expect((pdf.body as Buffer).subarray(0, 5).toString()).toBe('%PDF-');
+    const sql = (prisma.$queryRaw.mock.calls[0] as [{ values: unknown[] }])[0];
+    expect(sql.values).toContain(DONO);
+  });
+  it('relatório não autentica usuário anônimo nem permite fonte/usina alheia', async () => {
+    const path = `/api/plants/${USINA}/reports/pdf`;
+    const query = {
+      from: '2026-01-01T00:00:00Z',
+      to: '2026-02-01T00:00:00Z',
+      period: 'month',
+      sourceLinkId: ADMIN,
+    };
+    await request(app.getHttpServer()).get(path).query(query).expect(401);
+    const { cookie } = await login('client@example.test');
+    prisma.plant.findFirst.mockResolvedValue(null);
+    await request(app.getHttpServer()).get(path).set('Cookie', cookie).query(query).expect(404);
   });
   it('histórico valida datas e fuso no transporte HTTP', async () => {
     const { cookie } = await login();

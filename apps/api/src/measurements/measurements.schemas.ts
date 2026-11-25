@@ -29,6 +29,7 @@ export const aggregationSchema = filters
       .string()
       .max(100)
       .default('UTC')
+      .refine((value) => !value.startsWith('+') && !value.startsWith('-'), 'Use nome de fuso IANA ou UTC')
       .refine((value) => {
         try {
           new Intl.DateTimeFormat('en', { timeZone: value }).format();

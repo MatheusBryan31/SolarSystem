@@ -21,15 +21,20 @@ export interface UsinaParaRegras {
   lastDataAt: Date | null;
 }
 
-export function avaliarUsina(usina: UsinaParaRegras, agora: Date): Condicao[] {
+export function avaliarUsina(
+  usina: UsinaParaRegras,
+  agora: Date,
+  communicationMinutes = MINUTOS_SEM_DADOS,
+): Condicao[] {
   const condicoes: Condicao[] = [];
 
   const minutosSemDados = usina.lastDataAt
     ? (agora.getTime() - usina.lastDataAt.getTime()) / 60_000
     : Number.POSITIVE_INFINITY;
+  if (minutosSemDados < 0) return condicoes;
 
   // Regra 1: a plataforma diz que está offline OU os dados pararam de chegar
-  if (usina.status === 'OFFLINE' || minutosSemDados > MINUTOS_SEM_DADOS) {
+  if (usina.status === 'OFFLINE' || minutosSemDados > communicationMinutes) {
     const desde = Number.isFinite(minutosSemDados)
       ? `há ${Math.round(minutosSemDados)} minutos`
       : 'desde o cadastro (nunca enviou dados)';
@@ -40,12 +45,12 @@ export function avaliarUsina(usina: UsinaParaRegras, agora: Date): Condicao[] {
     });
   }
 
-  // Regra 2: o inversor reportou falha
-  if (usina.status === 'FAULT') {
+  // Regra 2: a fonte reportou estado de falha da usina
+  if (usina.status === 'FAULT' && minutosSemDados >= 0 && minutosSemDados <= communicationMinutes) {
     condicoes.push({
       tipo: 'PLANT_FAULT',
       severidade: 'CRITICAL',
-      mensagem: `A usina ${usina.name} reportou falha no inversor`,
+      mensagem: `A usina ${usina.name} reportou estado de falha`,
     });
   }
 

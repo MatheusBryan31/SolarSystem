@@ -1074,3 +1074,11 @@ h2 {
     padding: 18px;
   }
 }
+.grafico-relatorio {
+  margin: 16px 0;
+  max-width: 100%;
+  overflow-x: auto;
+}
+.grafico-relatorio svg {
+  min-width: 640px;
+}

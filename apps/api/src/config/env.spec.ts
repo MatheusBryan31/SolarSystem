@@ -7,6 +7,36 @@ const base = {
 };
 
 describe('configuração da origem web', () => {
+  it('mantém entrega de alertas desabilitada por padrão', () => {
+    expect(validateEnv(base).ALERT_EMAIL_WORKER_ENABLED).toBe(false);
+    expect(validateEnv(base).ALERT_EVALUATION_INTERVAL_SECONDS).toBe(60);
+  });
+  it('não permite habilitar entrega sem SMTP e remetente próprios', () => {
+    expect(() => validateEnv({ ...base, ALERT_EMAIL_WORKER_ENABLED: 'true' })).toThrow(
+      'ALERT_EMAIL_WORKER_ENABLED',
+    );
+    expect(() =>
+      validateEnv({
+        ...base,
+        SMTP_URL: 'smtp://localhost:1025',
+        PASSWORD_RESET_FROM: 'reset@example.test',
+        ALERT_EMAIL_WORKER_ENABLED: 'true',
+      }),
+    ).toThrow('ALERT_EMAIL_WORKER_ENABLED');
+    expect(
+      validateEnv({
+        ...base,
+        SMTP_URL: 'smtp://localhost:1025',
+        ALERT_EMAIL_FROM: 'alerts@example.test',
+        ALERT_EMAIL_WORKER_ENABLED: 'true',
+      }).ALERT_EMAIL_WORKER_ENABLED,
+    ).toBe(true);
+  });
+  it('rejeita intervalo negativo sem desativar validação', () => {
+    expect(() => validateEnv({ ...base, ALERT_EVALUATION_INTERVAL_SECONDS: -1 })).toThrow(
+      'ALERT_EVALUATION_INTERVAL_SECONDS',
+    );
+  });
   it('usa a origem HTTP local por padrão em desenvolvimento', () => {
     expect(validateEnv(base).WEB_ORIGIN).toBe('http://localhost:5173');
   });

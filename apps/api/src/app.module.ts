@@ -12,6 +12,7 @@ import { PlantsModule } from './plants/plants.module';
 import { AlertsModule } from './alerts/alerts.module';
 import { InvertersModule } from './inverters/inverters.module';
 import { MeasurementsModule } from './measurements/measurements.module';
+import { ReportsModule } from './reports/reports.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { MeasurementsModule } from './measurements/measurements.module';
     AlertsModule,
     InvertersModule,
     MeasurementsModule,
+    ReportsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

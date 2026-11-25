@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Link } from 'react-router';
 import { api } from '../api';
+import { AlertSettings } from '../componentes/AlertSettings';
 import { useAuth } from '../auth';
 import { Estado, mensagem, Titulo, useDados } from '../componentes/Dados';
 import type { Integracao } from '../tipos';
@@ -161,6 +162,7 @@ export function Configuracoes() {
           </form>
         </section>
       )}
+      {admin && <AlertSettings />}
     </div>
   );
 }

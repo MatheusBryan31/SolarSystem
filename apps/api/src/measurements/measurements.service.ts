@@ -3,11 +3,43 @@ import { Prisma, Role } from '@prisma/client';
 import type { UsuarioAutenticado } from '../auth/auth.types';
 import { PrismaService } from '../prisma/prisma.service';
 import { aggregateReadings } from './measurement-aggregation';
+import { reportAggregationSql } from './report-aggregation.sql';
 import type { AggregationQuery, HistoryQuery } from './measurements.schemas';
 
 @Injectable()
 export class MeasurementsService {
   constructor(private readonly prisma: PrismaService) {}
+  async sources(plantId: string, user: UsuarioAutenticado) {
+    await this.scope(plantId, user, { includeSimulated: false });
+    const links = await this.prisma.plantExternalLink.findMany({
+      where: { plantId, ...(user.role === Role.CLIENT ? { plant: { clientId: user.clientId ?? '' } } : {}) },
+      select: {
+        id: true,
+        state: true,
+        linkedAt: true,
+        detachedAt: true,
+        integration: { select: { provider: true } },
+      },
+      orderBy: { linkedAt: 'desc' },
+    });
+    return links.map(({ integration, ...link }) => ({ ...link, provider: integration.provider }));
+  }
+  async reportAggregate(plantId: string, input: AggregationQuery, user: UsuarioAutenticado) {
+    await this.scope(plantId, user, input);
+    const buckets = await this.prisma.$queryRaw<ReturnType<typeof aggregateReadings>>(
+      reportAggregationSql(plantId, input, user),
+    );
+    return {
+      from: input.from,
+      to: input.to,
+      period: input.period,
+      timeZone: input.timeZone,
+      sourceLinkId: input.sourceLinkId,
+      inverterId: input.inverterId ?? null,
+      includesSimulated: input.includeSimulated,
+      buckets,
+    };
+  }
 
   private async scope(
     plantId: string,

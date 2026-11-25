@@ -45,17 +45,17 @@ model Client {
 }
 
 model User {
-  id                 String   @id @default(uuid())
-  name               String
-  email              String   @unique
-  passwordHash       String   @map("password_hash") // Não é a senha real
-  role               Role     @default(OPERATOR)
-  active             Boolean  @default(true)
-  clientId           String?  @map("client_id") // só usuários clientes têm
-  client             Client?  @relation(fields: [clientId], references: [id], onDelete: SetNull)
-  createdAt          DateTime @default(now()) @map("created_at")
-  updatedAt          DateTime @updatedAt @map("updated_at")
-  acknowledgedAlerts Alert[] // alertas que este usuário reconheceu
+  id                     String    @id @default(uuid())
+  name                   String
+  email                  String    @unique
+  passwordHash           String    @map("password_hash") // Não é a senha real
+  role                   Role      @default(OPERATOR)
+  active                 Boolean   @default(true)
+  clientId               String?   @map("client_id") // só usuários clientes têm
+  client                 Client?   @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  createdAt              DateTime  @default(now()) @map("created_at")
+  updatedAt              DateTime  @updatedAt @map("updated_at")
+  acknowledgedAlerts     Alert[] // alertas que este usuário reconheceu
   sessionVersion         Int       @default(0) @map("session_version")
   passwordResetDigest    String?   @unique @map("password_reset_digest")
   passwordResetExpiresAt DateTime? @map("password_reset_expires_at") @db.Timestamptz(3)
@@ -93,7 +93,7 @@ model Integration {
   id          String       @id @default(uuid())
   provider    ProviderType
   name        String
-  credentials Json         // Envelope autenticado. Nunca sai pela API.
+  credentials Json // Envelope autenticado. Nunca sai pela API.
   enabled     Boolean      @default(true)
   archivedAt  DateTime?    @map("archived_at")
   revision    Int          @default(0)
@@ -161,6 +161,7 @@ model Plant {
   discoveries   PlantDiscovery[]
   auditEvents   PlantAuditEvent[]
   measurements  Measurement[]
+  alertPolicy   AlertPolicy?
   inverters     Inverter[]
 
   @@unique([integrationId, externalId]) // a mesma usina nunca entra duas vezes
@@ -301,6 +302,7 @@ enum AlertType {
   PLANT_OFFLINE // usina parou de enviar dados
   PLANT_FAULT // inversor reportou falha
   SYNC_FAILED // não conseguimos falar com a plataforma
+  GENERATION_ABNORMAL
 }
 
 // Quão grave é
@@ -317,6 +319,9 @@ enum AlertStatus {
 }
 
 model Alert {
+  isSimulated      Boolean       @default(false) @map("is_simulated")
+  resolutionReason String?       @map("resolution_reason")
+  events           AlertEvent[]
   id               String        @id @default(uuid())
   type             AlertType
   severity         AlertSeverity
@@ -337,4 +342,72 @@ model Alert {
   @@index([status])
   @@index([plantId, type, status]) // acelera a pergunta "já existe alerta aberto disto?"
   @@map("alerts")
+}
+
+model AlertPolicy {
+  plantId              String  @id @map("plant_id")
+  communicationMinutes Int     @default(60) @map("communication_minutes")
+  generationEnabled    Boolean @default(false) @map("generation_enabled")
+  lowPowerRatio        Float   @default(0.05) @map("low_power_ratio")
+  highPowerRatio       Float   @default(1.2) @map("high_power_ratio")
+  durationMinutes      Int     @default(10) @map("duration_minutes")
+  minimumSamples       Int     @default(3) @map("minimum_samples")
+  dayStartHour         Int     @default(8) @map("day_start_hour")
+  dayEndHour           Int     @default(17) @map("day_end_hour")
+  timeZone             String  @default("America/Sao_Paulo") @map("time_zone")
+  allowSimulated       Boolean @default(false) @map("allow_simulated")
+  revision             Int     @default(0)
+  plant                Plant   @relation(fields: [plantId], references: [id], onDelete: Restrict)
+
+  @@map("alert_policies")
+}
+
+model AlertEvent {
+  id          String       @id @default(uuid())
+  alertId     String       @map("alert_id")
+  status      AlertStatus
+  actorId     String?      @map("actor_id")
+  reason      String?
+  isSimulated Boolean      @default(false) @map("is_simulated")
+  createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  alert       Alert        @relation(fields: [alertId], references: [id], onDelete: Restrict)
+  emails      AlertEmail[]
+
+  @@index([alertId, createdAt])
+  @@map("alert_events")
+}
+
+model AlertNotificationSettings {
+  id         String        @id @default("default")
+  enabled    Boolean       @default(false)
+  recipients String[]      @default([])
+  statuses   AlertStatus[] @default([OPEN, RESOLVED])
+  revision   Int           @default(0)
+
+  @@map("alert_notification_settings")
+}
+
+enum AlertEmailStatus {
+  PENDING
+  SENDING
+  SENT
+  FAILED
+  UNKNOWN
+  SKIPPED
+}
+
+model AlertEmail {
+  id          String           @id @default(uuid())
+  eventId     String           @map("event_id")
+  recipient   String
+  status      AlertEmailStatus @default(PENDING)
+  createdAt   DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
+  attemptedAt DateTime?        @map("attempted_at") @db.Timestamptz(3)
+  sentAt      DateTime?        @map("sent_at") @db.Timestamptz(3)
+  failureCode String?          @map("failure_code")
+  event       AlertEvent       @relation(fields: [eventId], references: [id], onDelete: Restrict)
+
+  @@unique([eventId, recipient])
+  @@index([status, createdAt])
+  @@map("alert_emails")
 }
