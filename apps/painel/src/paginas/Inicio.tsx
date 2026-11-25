@@ -22,22 +22,43 @@ export function Inicio() {
   const [usinas, setUsinas] = useState<Usina[] | null>(null);
   const [alertas, setAlertas] = useState<Alerta[]>([]);
   const [erro, setErro] = useState('');
+  const [tentativa, setTentativa] = useState(0);
 
   useEffect(() => {
+    let active = true;
     const carregar = () =>
       Promise.all([listarTudo<Usina>('/plants'), listarTudo<Alerta>('/alerts?ativos=true')])
         .then(([u, a]) => {
+          if (!active) return;
           setUsinas(u);
           setAlertas(a);
           setErro('');
         })
-        .catch((e: unknown) => setErro(e instanceof Error ? e.message : 'Falha ao carregar'));
+        .catch((e: unknown) => {
+          if (active) setErro(e instanceof Error ? e.message : 'Falha ao carregar');
+        });
     void carregar();
     const timer = setInterval(carregar, 60_000); // a coleta roda a cada 10 min; o painel confere a cada 1
-    return () => clearInterval(timer);
-  }, []);
+    return () => {
+      active = false;
+      clearInterval(timer);
+    };
+  }, [tentativa]);
 
-  if (erro) return <p className="erro">{erro}</p>;
+  if (erro)
+    return (
+      <div role="alert" className="erro">
+        {erro}
+        <button
+          onClick={() => {
+            setErro('');
+            setTentativa((v) => v + 1);
+          }}
+        >
+          Tentar novamente
+        </button>
+      </div>
+    );
   if (!usinas) return <div className="carregando">Carregando dados das usinas...</div>;
 
   // ===== Os números (calculados a partir das usinas) =====
@@ -77,7 +98,7 @@ export function Inicio() {
       icone: 'raio',
       cor: 'azul',
       rotulo: 'Potência instalada',
-      valor: f.capacidade(capacidadeTotal),
+      valor: usinas.some((u) => u.capacityKwp !== null) ? f.capacidade(capacidadeTotal) : '—',
       detalhe: temPotencia
         ? `${f.potencia(potenciaAgora)} nas leituras disponíveis`
         : 'Sem leitura atual de potência',
@@ -105,6 +126,10 @@ export function Inicio() {
 
   return (
     <div className="visao-geral">
+      <p className="aviso-simulacao">
+        O catálogo atual da API suporta apenas DEMO. As leituras dessas integrações são simuladas. Campos sem
+        leitura não representam geração zero.
+      </p>
       <section className="faixa">
         <div>
           <span className="selo">
@@ -136,7 +161,7 @@ export function Inicio() {
           <Icone nome="usina" tamanho={40} />
           <h2>Nenhuma usina por aqui ainda</h2>
           <p className="sutil">
-            Assim que uma integração for cadastrada e sincronizada, as usinas aparecem nesta tela.
+            Cadastre uma usina manual ou revise e confirme uma descoberta de integração para começar.
           </p>
         </section>
       ) : (

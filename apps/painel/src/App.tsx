@@ -5,6 +5,12 @@ import { Inicio } from './paginas/Inicio';
 import { Login } from './paginas/Login';
 import { FormularioSenha, RecuperarSenha } from './paginas/Senha';
 import { Usinas } from './paginas/Usinas';
+import { UsinaDetalhes } from './paginas/UsinaDetalhes';
+import { Inversores } from './paginas/Inversores';
+import { Cadastros } from './paginas/Cadastros';
+import { Alarmes } from './paginas/Alarmes';
+import { Relatorios } from './paginas/Relatorios';
+import { Configuracoes } from './paginas/Configuracoes';
 
 // O MAPA DO PAINEL: qual endereço mostra qual tela
 export function App() {
@@ -51,13 +57,26 @@ export function App() {
   // Logado: as telas internas, todas dentro do Layout (menu lateral + topo)
   const retorno: unknown = local.state?.retorno;
   const destino =
-    typeof retorno === 'string' && /^\/(?:usinas|alterar-senha)?(?:[?#]|$)/.test(retorno) ? retorno : '/';
+    typeof retorno === 'string' &&
+    /^\/(?:usinas(?:\/[a-zA-Z0-9-]+)?|inversores|clientes|usuarios|alarmes|relatorios|configuracoes|alterar-senha)?(?:[?#]|$)/.test(
+      retorno,
+    )
+      ? retorno
+      : '/';
   return (
     <Routes>
       <Route path="/login" element={<Navigate to={destino} replace />} />
       <Route element={<Layout />}>
         <Route path="/" element={<Inicio />} />
         <Route path="/usinas" element={<Usinas />} />
+        <Route path="/usinas/cadastro" element={<UsinaDetalhes nova />} />
+        <Route path="/usinas/:id" element={<UsinaDetalhes />} />
+        <Route path="/inversores" element={<Inversores />} />
+        <Route path="/clientes" element={<Cadastros />} />
+        <Route path="/usuarios" element={<Cadastros usuarios />} />
+        <Route path="/alarmes" element={<Alarmes />} />
+        <Route path="/relatorios" element={<Relatorios />} />
+        <Route path="/configuracoes" element={<Configuracoes />} />
         <Route path="/alterar-senha" element={<FormularioSenha />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

@@ -63,11 +63,19 @@ export async function api<T>(caminho: string, opcoes: { metodo?: string; corpo?:
   if (!resposta.ok) {
     // A API manda { message: "..." } (ou uma lista de mensagens)
     const mensagem = (dados as { message?: string | string[] } | null)?.message;
+    const detalhes = (dados as { erros?: { campo?: string; mensagem?: string }[] } | null)?.erros;
+    const validacao = Array.isArray(detalhes)
+      ? detalhes
+          .filter((item) => typeof item?.mensagem === 'string')
+          .map((item) => `${item.campo ? `${item.campo}: ` : ''}${item.mensagem}`)
+          .join('; ')
+      : '';
     const retryAfter = resposta.status === 429 ? resposta.headers.get('Retry-After') : null;
     const segundos = retryAfter && /^\d+$/.test(retryAfter) ? Number(retryAfter) : undefined;
     throw new ErroDaApi(
       resposta.status,
-      Array.isArray(mensagem) ? mensagem.join('; ') : (mensagem ?? 'Erro inesperado. Tente novamente.'),
+      validacao ||
+        (Array.isArray(mensagem) ? mensagem.join('; ') : (mensagem ?? 'Erro inesperado. Tente novamente.')),
       segundos && segundos <= 2_147_483 ? segundos : undefined,
     );
   }

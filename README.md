@@ -163,6 +163,7 @@ Na validação da Tarefa 03: **31 E2E e 26 unitários aprovados**, em Node 24.22
 
 ## Documentação
 
+- [Painel React operacional, integrações e testes de páginas](docs/PAINEL_OPERACIONAL.md).
 - [Revisão atual do núcleo da API, correções, testes e pendências](docs/NUCLEO_API.md).
 - [Instalação no Windows e solução de problemas](docs/INSTALACAO.md).
 - [Estratégia de consolidação do front-end](docs/ESTRATEGIA_FRONTEND.md).

@@ -956,3 +956,121 @@ h2 {
   display: block;
   color: var(--texto-sutil);
 }
+/* Páginas operacionais: extensões do Premium Blue existente. */
+.menu-toggle {
+  display: none;
+}
+.menu {
+  overflow-y: auto;
+}
+.paginacao,
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: end;
+}
+.paginacao {
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 24px;
+}
+.filtros label {
+  flex: 1;
+  min-width: min(200px, 100%);
+}
+.campos-grade {
+  display: contents;
+}
+.catalogo-usinas textarea {
+  width: 100%;
+  min-height: 110px;
+  border: 1px solid var(--borda);
+  border-radius: 8px;
+  padding: 10px;
+  font: inherit;
+  color: var(--texto);
+  resize: vertical;
+}
+.catalogo-usinas button:not(.botao) {
+  border: 1px solid var(--borda);
+  background: var(--superficie);
+  color: var(--texto);
+  border-radius: 8px;
+  padding: 10px 14px;
+  min-height: 44px;
+  cursor: pointer;
+}
+.catalogo-usinas button:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+.catalogo-usinas a {
+  color: var(--azul-escuro);
+}
+.tabela-rolagem {
+  max-width: 100%;
+  overflow: auto;
+}
+.tabela-rolagem table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 14px;
+}
+.tabela-rolagem th,
+.tabela-rolagem td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--borda);
+}
+.linha-config {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--borda);
+}
+.aviso-simulacao {
+  padding: 12px;
+  background: var(--ambar-claro);
+  color: var(--ambar-texto);
+  border-radius: 8px;
+}
+.catalogo-usinas {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.catalogo-usinas :focus-visible,
+.menu-toggle:focus-visible {
+  outline: 3px solid var(--azul);
+  outline-offset: 3px;
+}
+@media (max-width: 800px) {
+  .menu {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
+  .menu-toggle {
+    display: block;
+    margin-left: auto;
+    border: 1px solid #7896bd;
+    border-radius: 8px;
+    padding: 10px 16px;
+    background: transparent;
+    color: white;
+  }
+  .menu nav {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  .menu nav.menu-fechado {
+    display: none;
+  }
+  .menu nav a {
+    flex: 1 0 45%;
+  }
+  .catalogo-usinas .cartao {
+    padding: 18px;
+  }
+}

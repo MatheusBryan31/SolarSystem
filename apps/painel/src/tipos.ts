@@ -25,6 +25,19 @@ export interface Pagina<T> {
 export type StatusUsina = 'ONLINE' | 'WARNING' | 'FAULT' | 'OFFLINE' | 'UNKNOWN';
 
 export interface Usina {
+  integration?: { provider: string; name: string } | null;
+  activeLink?: { id: string } | null;
+  installationType?: string | null;
+  nominalPowerKw?: number | null;
+  moduleTiltDegrees?: number | null;
+  operationStartDate?: string | null;
+  postalCode?: string | null;
+  street?: string | null;
+  addressNumber?: string | null;
+  addressComplement?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  technicalNotes?: string | null;
   id: string;
   name: string;
   city: string | null;
@@ -46,6 +59,7 @@ export interface Usina {
 }
 
 export interface Integracao {
+  provider?: string;
   id: string;
   name: string;
   revision: number;

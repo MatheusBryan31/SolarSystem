@@ -1,7 +1,9 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { Link } from 'react-router';
+import { Paginacao } from '../componentes/Dados';
 import { api, listarTudo } from '../api';
 import { useAuth } from '../auth';
-import type { Descoberta, Integracao, Usina } from '../tipos';
+import type { Descoberta, Integracao, Pagina, Usina } from '../tipos';
 
 const campos = ['name', 'city', 'state', 'capacityKwp'] as const;
 type Campo = (typeof campos)[number];
@@ -38,6 +40,12 @@ export function Usinas() {
   const staff = usuario?.role !== 'CLIENT';
   const admin = usuario?.role === 'ADMIN';
   const [usinas, setUsinas] = useState<Usina[]>([]);
+  const [pagina, setPagina] = useState(1),
+    [busca, setBusca] = useState(''),
+    [status, setStatus] = useState(''),
+    [total, setTotal] = useState(0),
+    [loading, setLoading] = useState(true);
+  const generation = useRef(0);
   const [integracoes, setIntegracoes] = useState<Integracao[]>([]);
   const [clientes, setClientes] = useState<{ id: string; name: string }[]>([]);
   const [integrationId, setIntegrationId] = useState('');
@@ -50,18 +58,34 @@ export function Usinas() {
   const [aviso, setAviso] = useState('');
 
   async function carregar() {
-    const [plants, integrations, clients] = await Promise.all([
-      listarTudo<Usina>('/plants'),
-      staff ? api<Integracao[]>('/integrations') : Promise.resolve([]),
-      staff ? listarTudo<{ id: string; name: string }>('/clients') : Promise.resolve([]),
-    ]);
-    setUsinas(plants);
-    setIntegracoes(integrations);
-    setClientes(clients);
+    const current = ++generation.current;
+    setLoading(true);
+    try {
+      const [plants, integrations, clients] = await Promise.all([
+        api<Pagina<Usina>>(
+          `/plants?pagina=${pagina}&porPagina=20&busca=${encodeURIComponent(busca)}${status ? `&status=${status}` : ''}`,
+        ),
+        staff ? api<Integracao[]>('/integrations') : Promise.resolve([]),
+        staff ? listarTudo<{ id: string; name: string }>('/clients') : Promise.resolve([]),
+      ]);
+      if (current !== generation.current) return;
+      setUsinas(plants.itens);
+      setTotal(plants.total);
+      setErro('');
+      setIntegracoes(integrations);
+      setClientes(clients);
+    } catch (error) {
+      if (current === generation.current) throw error;
+    } finally {
+      if (current === generation.current) setLoading(false);
+    }
   }
   useEffect(() => {
     void carregar().catch((e: unknown) => setErro(e instanceof Error ? e.message : 'Falha ao carregar'));
-  }, [usuario?.id]);
+    return () => {
+      generation.current++;
+    };
+  }, [usuario?.id, pagina, busca, status]);
   useEffect(() => {
     let active = true;
     setDescobertas([]);
@@ -155,6 +179,7 @@ export function Usinas() {
             Cadastrar usina
           </button>
         )}
+        {staff && <Link to="/usinas/cadastro">Cadastro completo</Link>}
       </header>
       {erro && (
         <p className="erro" role="alert">
@@ -250,13 +275,46 @@ export function Usinas() {
         </section>
       )}
       <section className="cartao">
-        <h2>Cadastros ({usinas.length})</h2>
+        <h2>Cadastros ({total})</h2>
+        <div className="filtros">
+          <label>
+            Buscar usina
+            <input
+              value={busca}
+              onChange={(e) => {
+                setBusca(e.target.value);
+                setPagina(1);
+              }}
+            />
+          </label>
+          <label>
+            Status
+            <select
+              value={status}
+              onChange={(e) => {
+                setStatus(e.target.value);
+                setPagina(1);
+              }}
+            >
+              <option value="">Todos</option>
+              {['ONLINE', 'WARNING', 'FAULT', 'OFFLINE', 'UNKNOWN'].map((s) => (
+                <option key={s}>{s}</option>
+              ))}
+            </select>
+          </label>
+        </div>
+        {loading && <p role="status">Carregando usinas…</p>}
         {!usinas.length && <p>Nenhuma usina cadastrada.</p>}
         <ul className="catalogo-lista">
           {usinas.map((plant) => (
             <li key={plant.id}>
               <div>
-                <strong>{plant.name}</strong>
+                <strong>
+                  <Link to={`/usinas/${plant.id}`}>{plant.name}</Link>
+                </strong>
+                {plant.integration?.provider === 'DEMO' && (
+                  <p className="aviso-simulacao">Leituras simuladas · DEMO</p>
+                )}
                 <p>
                   {plant.origin === 'MANUAL' ? 'Cadastro manual' : 'Importada'} •{' '}
                   {monitoramento[plant.monitoring]} • {plant.capacityKwp ?? '—'} kWp
@@ -312,6 +370,7 @@ export function Usinas() {
             </li>
           ))}
         </ul>
+        <Paginacao pagina={pagina} total={total} mudar={setPagina} />
       </section>
       {historico && (
         <section className="cartao">

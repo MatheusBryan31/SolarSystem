@@ -15,9 +15,10 @@ const nomeDoPerfil: Record<Perfil, string> = {
 // A "moldura" das telas internas: menu à esquerda, topo, e o <Outlet/> (onde entra a tela da vez)
 export function Layout() {
   const { usuario, sair } = useAuth();
-  const [alertasAtivos, setAlertasAtivos] = useState(0);
+  const [alertasAtivos, setAlertasAtivos] = useState<number | null>(null);
   const [saindo, setSaindo] = useState(false);
   const [erroAoSair, setErroAoSair] = useState(false);
+  const [menuAberto, setMenuAberto] = useState(false);
 
   async function encerrarSessao() {
     setSaindo(true);
@@ -35,7 +36,7 @@ export function Layout() {
     const contar = () =>
       api<Pagina<Alerta>>('/alerts?ativos=true&porPagina=1')
         .then((r) => setAlertasAtivos(r.total))
-        .catch(() => {});
+        .catch(() => setAlertasAtivos(null));
     void contar();
     const timer = setInterval(contar, 60_000);
     return () => clearInterval(timer);
@@ -48,12 +49,50 @@ export function Layout() {
     <div className="app">
       <aside className="menu">
         <Logo />
-        <nav>
+        <button
+          className="menu-toggle"
+          aria-expanded={menuAberto}
+          aria-controls="navegacao-principal"
+          onClick={() => setMenuAberto(!menuAberto)}
+        >
+          Menu
+        </button>
+        <nav
+          id="navegacao-principal"
+          aria-label="Principal"
+          className={menuAberto ? 'menu-aberto' : 'menu-fechado'}
+          onClick={() => setMenuAberto(false)}
+        >
           <NavLink to="/" end>
             <Icone nome="painel" /> Visão geral
           </NavLink>
           <NavLink to="/usinas">
             <Icone nome="usina" /> Usinas
+          </NavLink>
+          {usuario.role !== 'CLIENT' && (
+            <NavLink to="/usinas/cadastro">
+              <Icone nome="usina" /> Cadastro
+            </NavLink>
+          )}
+          <NavLink to="/inversores">
+            <Icone nome="raio" /> Inversores
+          </NavLink>
+          <NavLink to="/clientes">
+            <Icone nome="usina" /> Clientes
+          </NavLink>
+          {usuario.role === 'ADMIN' && (
+            <NavLink to="/usuarios">
+              <Icone nome="cadeado" /> Usuários
+            </NavLink>
+          )}
+          <NavLink to="/alarmes">
+            <Icone nome="alerta" /> Alarmes
+          </NavLink>
+          <NavLink to="/relatorios">
+            <Icone nome="grafico" /> Relatórios
+          </NavLink>
+          <NavLink to="/configuracoes">
+            <Icone nome="cadeado" /> Configurações
           </NavLink>
           <NavLink to="/alterar-senha">
             <Icone nome="cadeado" /> Alterar senha
@@ -72,10 +111,17 @@ export function Layout() {
         <header className="topo">
           <span className="topo-titulo">Monitoramento de usinas solares</span>
           <div className="topo-acoes">
-            <span className="sino" title={`${alertasAtivos} alerta(s) ativo(s)`}>
+            <NavLink
+              to="/alarmes"
+              className="sino"
+              aria-label={
+                alertasAtivos === null ? 'Alarmes: contagem indisponível' : `${alertasAtivos} alarmes ativos`
+              }
+              title={alertasAtivos === null ? 'Contagem indisponível' : `${alertasAtivos} alerta(s) ativo(s)`}
+            >
               <Icone nome="sino" />
-              {alertasAtivos > 0 && <b>{alertasAtivos}</b>}
-            </span>
+              {(alertasAtivos ?? 0) > 0 && <b>{alertasAtivos}</b>}
+            </NavLink>
             <span className="avatar pequeno">{inicial}</span>
             <button className="botao-sair" type="button" disabled={saindo} onClick={encerrarSessao}>
               <Icone nome="sair" tamanho={18} /> {saindo ? 'Saindo...' : 'Sair'}
