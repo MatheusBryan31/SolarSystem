@@ -1,7 +1,7 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma, Role } from '@prisma/client';
 import type { UsuarioAutenticado } from '../auth/auth.types';
-import { ehViolacaoDeUnicidade } from '../common/prisma-errors';
+import { ehViolacaoDeUnicidade, relancarErroDeReferencia } from '../common/prisma-errors';
 import { transacaoComAuditoria } from '../common/audit-transaction';
 import { PrismaService } from '../prisma/prisma.service';
 import type { AtualizarClienteDto, CriarClienteDto, ListarClientesDto } from './clients.schemas';
@@ -70,7 +70,7 @@ export class ClientsService {
       if (ehViolacaoDeUnicidade(erro)) {
         throw new ConflictException('Já existe um cliente com este CPF/CNPJ');
       }
-      throw erro; // qualquer outro erro segue adiante (vira 500)
+      relancarErroDeReferencia(erro);
     }
   }
 
@@ -84,13 +84,26 @@ export class ClientsService {
       if (ehViolacaoDeUnicidade(erro)) {
         throw new ConflictException('Já existe um cliente com este CPF/CNPJ');
       }
-      throw erro;
+      relancarErroDeReferencia(erro);
     }
   }
 
   async remover(id: string) {
-    await this.buscarPorId(id);
-    // Os usuários desse cliente ficam com clientId nulo (onDelete: SetNull, aula 10)
-    await transacaoComAuditoria(this.prisma, (tx) => tx.client.delete({ where: { id } }));
+    try {
+      await transacaoComAuditoria(this.prisma, async (tx) => {
+        // FOR UPDATE também bloqueia novos vínculos por FK até o commit.
+        const rows = await tx.$queryRaw<{ id: string }[]>`SELECT id FROM clients WHERE id = ${id} FOR UPDATE`;
+        if (!rows.length) throw new NotFoundException('Cliente não encontrado');
+        const users = await tx.user.count({ where: { clientId: id } });
+        const plants = await tx.plant.count({ where: { clientId: id } });
+        if (users || plants)
+          throw new ConflictException(
+            'Cliente possui usuários ou usinas vinculados. Revise os vínculos antes de excluir.',
+          );
+        await tx.client.delete({ where: { id } });
+      });
+    } catch (erro) {
+      relancarErroDeReferencia(erro);
+    }
   }
 }

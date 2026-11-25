@@ -5,7 +5,6 @@ import { Test } from '@nestjs/testing';
 import { PrismaClient, Role } from '@prisma/client';
 import { randomUUID } from 'node:crypto';
 import request from 'supertest';
-import type { App } from 'supertest/types';
 import { AlertsModule } from '../src/alerts/alerts.module';
 import { AuthModule } from '../src/auth/auth.module';
 import { NOME_DO_COOKIE } from '../src/auth/sessao-cookie';
@@ -25,7 +24,7 @@ const suite = database ? describe : describe.skip;
 
 suite('Isolamento de clientes via HTTP e PostgreSQL', () => {
   let prisma: PrismaClient;
-  let app: NestExpressApplication<App>;
+  let app: NestExpressApplication;
   let jwt: JwtService;
   const range = { from: '2026-01-01T00:00:00Z', to: '2026-01-02T00:00:00Z', includeSimulated: 'true' };
   const zero = '00000000-0000-0000-0000-000000000000';
@@ -65,7 +64,7 @@ suite('Isolamento de clientes via HTTP e PostgreSQL', () => {
       .overrideProvider(PrismaService)
       .useValue(prisma)
       .compile();
-    app = module.createNestApplication<NestExpressApplication<App>>();
+    app = module.createNestApplication<NestExpressApplication>();
     configurarHttp(app, { NODE_ENV: 'test', WEB_ORIGIN: 'http://localhost:5173', TRUSTED_PROXY_IPS: [] });
     await app.init();
     jwt = app.get(JwtService);

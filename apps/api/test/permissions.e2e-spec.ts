@@ -6,7 +6,6 @@ import type { NestExpressApplication } from '@nestjs/platform-express';
 import { Test } from '@nestjs/testing';
 import { Role } from '@prisma/client';
 import request from 'supertest';
-import type { App } from 'supertest/types';
 import { AlertsController } from '../src/alerts/alerts.controller';
 import { AlertsService } from '../src/alerts/alerts.service';
 import { AppController } from '../src/app.controller';
@@ -197,7 +196,7 @@ function double(service: Type) {
 }
 
 describe('Matriz HTTP de autorização', () => {
-  let app: NestExpressApplication<App>;
+  let app: NestExpressApplication;
   let jwt: JwtService;
   const findUnique = jest.fn(({ where: { id: role } }: { where: { id: Role } }) => ({
     id: role,
@@ -237,7 +236,7 @@ describe('Matriz HTTP de autorização', () => {
       .overrideProvider(PasswordService)
       .useValue(double(PasswordService))
       .compile();
-    app = module.createNestApplication<NestExpressApplication<App>>();
+    app = module.createNestApplication<NestExpressApplication>();
     configurarHttp(app, { NODE_ENV: 'test', WEB_ORIGIN: 'http://localhost:5173', TRUSTED_PROXY_IPS: [] });
     await app.init();
     jwt = app.get(JwtService);

@@ -6,7 +6,6 @@ import { Test } from '@nestjs/testing';
 import { Role } from '@prisma/client';
 import { hash } from 'bcryptjs';
 import request from 'supertest';
-import type { App } from 'supertest/types';
 import { AppController } from '../src/app.controller';
 import { AppService } from '../src/app.service';
 import { AuthModule } from '../src/auth/auth.module';
@@ -39,14 +38,14 @@ interface TestUser {
 }
 
 describe('API HTTP — saúde, sessão e permissões com Prisma isolado', () => {
-  let app: NestExpressApplication<App>;
+  let app: NestExpressApplication;
   let jwt: JwtService;
   let passwordHash: string;
   let users: TestUser[];
   const prisma = {
     $queryRaw: jest.fn(),
     $transaction: jest.fn(),
-    user: { findUnique: jest.fn(), count: jest.fn(), findMany: jest.fn() },
+    user: { findUnique: jest.fn(), count: jest.fn(), findMany: jest.fn(), update: jest.fn() },
     plant: {
       count: jest.fn(),
       findMany: jest.fn(),
@@ -94,7 +93,7 @@ describe('API HTTP — saúde, sessão e permissões com Prisma isolado', () => 
       .overrideProvider(PrismaService)
       .useValue(prisma)
       .compile();
-    app = module.createNestApplication<NestExpressApplication<App>>();
+    app = module.createNestApplication<NestExpressApplication>();
     configurarHttp(app, {
       NODE_ENV: ambiente,
       WEB_ORIGIN: ambiente === 'production' ? ORIGEM_PUBLICA : ORIGEM_LOCAL,
@@ -723,6 +722,47 @@ describe('API HTTP — saúde, sessão e permissões com Prisma isolado', () => 
     users[0].role = Role.CLIENT;
     await request(app.getHttpServer()).get('/api/users').set('Cookie', cookie).expect(403);
     expect(prisma.user.findMany).not.toHaveBeenCalled();
+  });
+  it('desativar e reativar usuário não ressuscita sua sessão antiga', async () => {
+    prisma.user.update.mockImplementation(
+      ({
+        where,
+        data,
+      }: {
+        where: { id: string };
+        data: { active?: boolean; sessionVersion?: { increment: number } };
+      }) => {
+        const target = users.find((item) => item.id === where.id)!;
+        if (data.active !== undefined) target.active = data.active;
+        if (data.sessionVersion) target.sessionVersion += data.sessionVersion.increment;
+        return Promise.resolve({ id: target.id, active: target.active });
+      },
+    );
+    const operator = await login('operator@example.test');
+    const admin = await login();
+    for (const active of [false, true]) {
+      await request(app.getHttpServer())
+        .patch(`/api/users/${OPERADOR}`)
+        .set('Cookie', admin.cookie)
+        .set('X-CSRF-Protection', '1')
+        .send({ active })
+        .expect(200);
+      await request(app.getHttpServer()).get('/api/auth/me').set('Cookie', operator.cookie).expect(401);
+    }
+    const fresh = await login('operator@example.test');
+    await request(app.getHttpServer()).get('/api/auth/me').set('Cookie', fresh.cookie).expect(200);
+  });
+  it('payload excessivo retorna 413 genérico sem ecoar dados', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/api/auth/login')
+      .set('X-CSRF-Protection', '1')
+      .send({ email: 'a@example.test', senha: 'x'.repeat(110000) })
+      .expect(413);
+    expect(response.body).toEqual({
+      statusCode: 413,
+      message: 'Corpo da requisição excede o limite permitido.',
+    });
+    expect(prisma.user.findUnique).not.toHaveBeenCalled();
   });
   it('histórico exige sessão autenticada', async () => {
     await request(app.getHttpServer()).get(`/api/plants/${USINA}/measurements`).expect(401);

@@ -6,13 +6,16 @@ export const criarClienteSchema = z.object({
     .string()
     .trim()
     .regex(/^(\d{11}|\d{14})$/, 'Informe CPF (11) ou CNPJ (14 dígitos), só números')
+    .nullable()
     .optional(),
-  email: z.string().trim().toLowerCase().email('E-mail inválido').optional(),
-  phone: z.string().trim().max(20, 'Telefone muito longo').optional(),
+  email: z.string().trim().toLowerCase().email('E-mail inválido').nullable().optional(),
+  phone: z.string().trim().max(20, 'Telefone muito longo').nullable().optional(),
 });
 
 // PATCH: os mesmos campos, todos opcionais (altera só o que vier)
-export const atualizarClienteSchema = criarClienteSchema.partial();
+export const atualizarClienteSchema = criarClienteSchema
+  .partial()
+  .refine((input) => Object.keys(input).length > 0, 'Envie ao menos um campo para alterar');
 
 // Filtros da listagem: chegam pela URL (?busca=...&pagina=2), sempre como TEXTO
 export const listarClientesSchema = z.object({

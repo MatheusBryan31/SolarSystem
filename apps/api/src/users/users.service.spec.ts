@@ -23,9 +23,11 @@ describe('UsersService', () => {
   // Tipamos os argumentos para o ESLint saber o formato de mock.calls
   type ArgsEscrita = { data: Record<string, unknown>; select: Record<string, unknown> };
   const prismaFalso = {
+    $queryRaw: jest.fn(),
     $transaction: jest.fn(),
     user: {
       findUnique: jest.fn(),
+      count: jest.fn(),
       create: jest.fn<Promise<unknown>, [ArgsEscrita]>(),
       update: jest.fn<Promise<unknown>, [ArgsEscrita]>(),
     },
@@ -90,6 +92,67 @@ describe('UsersService', () => {
   });
 
   describe('atualizar', () => {
+    it.each([
+      { active: false },
+      { active: true },
+      { role: Role.ADMIN },
+      { email: 'novo@teste.com' },
+      { clientId: CLIENTE_ID, role: Role.CLIENT },
+    ])('revoga sessões ao alterar acesso/identidade: %j', async (changes) => {
+      prismaFalso.user.findUnique.mockResolvedValue({
+        id: OUTRO_ID,
+        role: Role.OPERATOR,
+        clientId: null,
+        active: changes.active === true ? false : true,
+        email: 'antigo@teste.com',
+      });
+      prismaFalso.client.findUnique.mockResolvedValue({ id: CLIENTE_ID });
+      await service.atualizar(OUTRO_ID, changes, admin);
+      expect(prismaFalso.user.update.mock.calls[0][0].data).toMatchObject({
+        sessionVersion: { increment: 1 },
+        passwordResetDigest: null,
+        passwordResetExpiresAt: null,
+      });
+    });
+    it('edição de nome não revoga sessão nem modifica perfil', async () => {
+      prismaFalso.user.findUnique.mockResolvedValue({
+        id: OUTRO_ID,
+        role: Role.OPERATOR,
+        clientId: null,
+        active: true,
+      });
+      await service.atualizar(OUTRO_ID, { name: 'Novo nome' }, admin);
+      const data = prismaFalso.user.update.mock.calls[0][0].data;
+      expect(data).not.toHaveProperty('sessionVersion');
+      expect(data).not.toHaveProperty('role');
+    });
+    it('não permite remover o último administrador ativo e lê sob lock', async () => {
+      prismaFalso.user.findUnique.mockResolvedValue({
+        id: OUTRO_ID,
+        role: Role.ADMIN,
+        clientId: null,
+        active: true,
+      });
+      prismaFalso.user.count.mockResolvedValue(1);
+      await expect(service.atualizar(OUTRO_ID, { active: false }, admin)).rejects.toBeInstanceOf(
+        ConflictException,
+      );
+      expect(prismaFalso.user.update).not.toHaveBeenCalled();
+      expect(prismaFalso.$queryRaw.mock.invocationCallOrder[0]).toBeLessThan(
+        prismaFalso.user.findUnique.mock.invocationCallOrder[0],
+      );
+    });
+    it('permite rebaixar outro administrador quando há mais de um ativo', async () => {
+      prismaFalso.user.findUnique.mockResolvedValue({
+        id: OUTRO_ID,
+        role: Role.ADMIN,
+        clientId: null,
+        active: true,
+      });
+      prismaFalso.user.count.mockResolvedValue(2);
+      await service.atualizar(OUTRO_ID, { role: Role.OPERATOR }, admin);
+      expect(prismaFalso.user.update).toHaveBeenCalled();
+    });
     it('impede o admin de desativar a si mesmo', async () => {
       prismaFalso.user.findUnique.mockResolvedValue({ id: ADMIN_ID, role: Role.ADMIN, clientId: null });
       await expect(service.atualizar(ADMIN_ID, { active: false }, admin)).rejects.toBeInstanceOf(

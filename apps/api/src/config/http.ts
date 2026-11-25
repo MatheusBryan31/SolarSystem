@@ -53,6 +53,11 @@ export function configurarHttp(
   app.useBodyParser('json');
   app.useBodyParser('urlencoded', { extended: true });
   app.use((erro: unknown, _req: Request, res: Response, next: NextFunction) => {
+    if (erro && typeof erro === 'object' && 'type' in erro && erro.type === 'entity.too.large') {
+      res.set('Cache-Control', 'no-store');
+      res.status(413).json({ statusCode: 413, message: 'Corpo da requisição excede o limite permitido.' });
+      return;
+    }
     if (erro && typeof erro === 'object' && 'type' in erro && erro.type === 'entity.parse.failed') {
       res.set('Cache-Control', 'no-store');
       res.status(400).json({ statusCode: 400, message: 'Formato do corpo da requisição inválido.' });

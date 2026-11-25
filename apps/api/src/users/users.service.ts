@@ -3,7 +3,7 @@ import { Prisma, Role } from '@prisma/client';
 import { hash } from 'bcryptjs';
 import type { UsuarioAutenticado } from '../auth/auth.types';
 import { transacaoComAuditoria } from '../common/audit-transaction';
-import { ehViolacaoDeUnicidade } from '../common/prisma-errors';
+import { ehViolacaoDeUnicidade, relancarErroDeReferencia } from '../common/prisma-errors';
 import { PrismaService } from '../prisma/prisma.service';
 import type { AtualizarUsuarioDto, CriarUsuarioDto, ListarUsuariosDto } from './users.schemas';
 
@@ -67,7 +67,7 @@ export class UsersService {
       );
     } catch (erro) {
       if (ehViolacaoDeUnicidade(erro)) throw new ConflictException('Já existe um usuário com este e-mail');
-      throw erro;
+      relancarErroDeReferencia(erro);
     }
   }
 
@@ -76,58 +76,80 @@ export class UsersService {
     { senha, clientId, ...dados }: AtualizarUsuarioDto,
     quemPede: UsuarioAutenticado,
   ) {
-    const atual = await this.buscarPorId(id); // 404 se não existir
-
-    // Trava anti-tranca: o admin não pode desativar nem rebaixar a si mesmo
-    if (id === quemPede.id) {
-      if (dados.active === false)
-        throw new BadRequestException('Você não pode desativar o seu próprio usuário');
-      if (dados.role && dados.role !== Role.ADMIN) {
-        throw new BadRequestException('Você não pode remover o seu próprio perfil de administrador');
-      }
-    }
-
-    // Calcula como o usuário FICARÁ depois da alteração e valida esse estado final
-    const roleFinal = dados.role ?? atual.role;
-    let clientIdFinal: string | null;
-    if (clientId !== undefined)
-      clientIdFinal = clientId; // veio no corpo (pode ser null)
-    else if (roleFinal !== Role.CLIENT)
-      clientIdFinal = null; // deixou de ser CLIENT: desvincula sozinho
-    else clientIdFinal = atual.clientId; // continua CLIENT: mantém o vínculo
-    const vinculo = await this.validarVinculo(roleFinal, clientIdFinal);
-
+    const passwordHash = senha ? await hash(senha, CUSTO_BCRYPT) : undefined;
     try {
-      const passwordHash = senha ? await hash(senha, CUSTO_BCRYPT) : undefined;
-      return await transacaoComAuditoria(this.prisma, (tx) =>
-        tx.user.update({
+      return await transacaoComAuditoria(this.prisma, async (tx) => {
+        // Serializa mudanças de acesso, inclusive de dois administradores distintos.
+        // O estado usado na validação é lido DEPOIS do lock, dentro da transação.
+        await tx.$queryRaw`SELECT pg_advisory_xact_lock(7419260302::bigint)::text`;
+        const atual = await tx.user.findUnique({ where: { id }, select: camposPublicos });
+        if (!atual) throw new NotFoundException('Usuário não encontrado');
+
+        // Trava anti-tranca: o admin não pode desativar nem rebaixar a si mesmo
+        if (id === quemPede.id) {
+          if (dados.active === false)
+            throw new BadRequestException('Você não pode desativar o seu próprio usuário');
+          if (dados.role && dados.role !== Role.ADMIN) {
+            throw new BadRequestException('Você não pode remover o seu próprio perfil de administrador');
+          }
+        }
+
+        // Calcula como o usuário FICARÁ depois da alteração e valida esse estado final
+        const roleFinal = dados.role ?? atual.role;
+        let clientIdFinal: string | null;
+        if (clientId !== undefined)
+          clientIdFinal = clientId; // veio no corpo (pode ser null)
+        else if (roleFinal !== Role.CLIENT)
+          clientIdFinal = null; // deixou de ser CLIENT: desvincula sozinho
+        else clientIdFinal = atual.clientId; // continua CLIENT: mantém o vínculo
+        const vinculo = await this.validarVinculo(roleFinal, clientIdFinal, tx);
+        if (
+          atual.role === Role.ADMIN &&
+          atual.active &&
+          (roleFinal !== Role.ADMIN || dados.active === false)
+        ) {
+          const administradores = await tx.user.count({ where: { role: Role.ADMIN, active: true } });
+          if (administradores <= 1)
+            throw new ConflictException('Não é possível remover o último administrador ativo');
+        }
+        const revogarSessoes =
+          Boolean(passwordHash) ||
+          roleFinal !== atual.role ||
+          vinculo !== atual.clientId ||
+          (dados.active !== undefined && dados.active !== atual.active) ||
+          (dados.email !== undefined && dados.email !== atual.email);
+
+        return tx.user.update({
           where: { id },
           data: {
             ...dados,
             clientId: vinculo,
-            ...(passwordHash ? { passwordHash, sessionVersion: { increment: 1 } } : {}),
-            ...(senha || dados.email !== undefined || dados.active === false
-              ? { passwordResetDigest: null, passwordResetExpiresAt: null }
-              : {}),
+            ...(passwordHash ? { passwordHash } : {}),
+            ...(revogarSessoes ? { sessionVersion: { increment: 1 } } : {}),
+            ...(revogarSessoes ? { passwordResetDigest: null, passwordResetExpiresAt: null } : {}),
           },
           select: camposPublicos,
-        }),
-      );
+        });
+      });
     } catch (erro) {
       if (ehViolacaoDeUnicidade(erro)) throw new ConflictException('Já existe um usuário com este e-mail');
-      throw erro;
+      relancarErroDeReferencia(erro);
     }
   }
 
   // Regra: CLIENT precisa de um cliente existente; ADMIN e OPERATOR não podem ter cliente
-  private async validarVinculo(role: Role, clientId: string | null): Promise<string | null> {
+  private async validarVinculo(
+    role: Role,
+    clientId: string | null,
+    db: Pick<Prisma.TransactionClient, 'client'> = this.prisma,
+  ): Promise<string | null> {
     if (role !== Role.CLIENT) {
       if (clientId)
         throw new BadRequestException('Apenas usuários com perfil CLIENT podem ter um cliente vinculado');
       return null;
     }
     if (!clientId) throw new BadRequestException('Usuários com perfil CLIENT precisam de um clientId');
-    const existe = await this.prisma.client.findUnique({ where: { id: clientId }, select: { id: true } });
+    const existe = await db.client.findUnique({ where: { id: clientId }, select: { id: true } });
     if (!existe) throw new BadRequestException('O cliente informado não existe');
     return clientId;
   }
