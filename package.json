@@ -7,7 +7,7 @@
     "apps/*"
   ],
   "engines": {
-    "node": ">=22.12.0"
+    "node": ">=22.22.0"
   },
   "scripts": {
     "dev:api": "npm run start:dev -w apps/api",
@@ -19,6 +19,10 @@
     "test:api": "npm test -w apps/api -- --runInBand",
     "test:e2e": "npm run test:e2e -w apps/api -- --runInBand",
     "test:web": "npm --prefix apps/web/tests test",
+    "test:painel": "npm test -w apps/painel",
+    "test:sql": "node scripts/test-sql.cjs",
+    "test:ops": "node --test scripts/tests/*.test.cjs",
+    "perf:check": "node scripts/check-bundle.cjs",
     "typecheck": "npm run typecheck -w apps/api && npm run typecheck -w apps/painel",
     "lint:check": "npm run lint:check -w apps/api",
     "format:check": "prettier --check .",
@@ -35,7 +39,12 @@
     "url": "https://github.com/MatheusBryan31/SolarSystem/issues"
   },
   "homepage": "https://github.com/MatheusBryan31/SolarSystem#readme",
+  "overrides": {
+    "deepmerge-ts": "8.0.2",
+    "effect": "3.22.5"
+  },
   "devDependencies": {
+    "axe-core": "4.14.1",
     "concurrently": "^10.0.7",
     "prettier": "^3.10.1"
   }

@@ -3,6 +3,7 @@ const assert = require('node:assert/strict');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const { chromium } = require('../../web/tests/node_modules/playwright');
+const { accessibility } = require('./quality.cjs');
 
 test('painel operacional: cadastros, inversores, alarmes, relatórios, permissões e reflow', async (t) => {
   const { createServer } = await import(pathToFileURL(require.resolve('vite')).href);
@@ -388,6 +389,7 @@ test('painel operacional: cadastros, inversores, alarmes, relatórios, permissõ
         await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1),
         `overflow ${route} @ ${width}`,
       );
+      if ([1366, 320].includes(width)) await accessibility(page, `${route || '/'} @ ${width}`);
     }
   }
   if (process.env.PAINEL_SCREENSHOT_DIR) {

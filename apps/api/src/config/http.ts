@@ -13,10 +13,16 @@ export function configurarHttp(
 ) {
   app.setGlobalPrefix('api');
   app.set('trust proxy', TRUSTED_PROXY_IPS.length ? TRUSTED_PROXY_IPS : false);
+  app.disable('x-powered-by');
   app.use(correlacionarRequisicao);
   app.useGlobalFilters(new ApiExceptionFilter());
 
   app.use((req: Request, res: Response, next: NextFunction) => {
+    res.set({
+      'X-Content-Type-Options': 'nosniff',
+      'X-Frame-Options': 'DENY',
+      'Referrer-Policy': 'no-referrer',
+    });
     if (NODE_ENV === 'production') {
       if (!req.secure) {
         res.set('Cache-Control', 'no-store');

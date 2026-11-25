@@ -169,6 +169,14 @@ describe('API HTTP — saúde, sessão e permissões com Prisma isolado', () => 
     return { response, setCookie, cookie: setCookie.split(';')[0] };
   }
 
+  it('retorna headers defensivos sem revelar Express', async () => {
+    const response = await request(app.getHttpServer()).get('/api/health')
+      .expect('X-Content-Type-Options', 'nosniff')
+      .expect('X-Frame-Options', 'DENY')
+      .expect('Referrer-Policy', 'no-referrer');
+    expect(response.get('X-Powered-By')).toBeUndefined();
+  });
+
   it('permite CORS com credenciais somente para a origem exata configurada', async () => {
     const preflight = (origem: string) =>
       request(app.getHttpServer())

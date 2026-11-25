@@ -3,6 +3,7 @@ const assert = require('node:assert/strict');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const { chromium } = require('../../web/tests/node_modules/playwright');
+const { accessibility } = require('./quality.cjs');
 
 test('painel recupera sessão, reautentica na rota anterior e confirma logout', async (t) => {
   const { createServer } = await import(pathToFileURL(require.resolve('vite')).href);

@@ -5,7 +5,7 @@
   --azul-escuro: #0868cf;
   --azul-claro: #e7f0fd;
   --verde: #22ce69;
-  --verde-escuro: #159447;
+  --verde-escuro: #107236;
   --verde-claro: #e9f7ed;
   --ambar: #f4b323;
   --ambar-claro: #fff5d9;
@@ -126,7 +126,7 @@ h2 {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: var(--azul);
+  background: var(--azul-escuro);
   color: #fff;
   border: 0;
   border-radius: 12px;
@@ -356,7 +356,7 @@ h2 {
   color: #fff;
 }
 .menu nav a.active {
-  background: var(--azul);
+  background: var(--azul-escuro);
   color: #fff;
   box-shadow: 0 8px 20px rgb(8 120 237 / 35%);
 }

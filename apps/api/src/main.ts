@@ -13,6 +13,7 @@ async function bootstrap() {
     abortOnError: false,
   });
   const config = app.get(ConfigService<Env, true>);
+  app.enableShutdownHooks();
 
   const porta = config.get('PORT', { infer: true });
   const ambiente = config.get('NODE_ENV', { infer: true });
