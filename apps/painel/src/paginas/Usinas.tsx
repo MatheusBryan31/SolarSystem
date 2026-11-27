@@ -175,11 +175,12 @@ export function Usinas() {
           <p className="sutil">Cadastro único, com dados manuais preservados.</p>
         </div>
         {staff && (
-          <button className="botao" disabled={busy} onClick={() => abrir()}>
-            Cadastrar usina
-          </button>
+          <Link to="/usinas/cadastro">
+            <button className="botao" disabled={busy} onClick={() => abrir()}>
+              Cadastrar usina
+            </button>
+          </Link>
         )}
-        {staff && <Link to="/usinas/cadastro">Cadastro completo</Link>}
       </header>
       {erro && (
         <p className="erro" role="alert">
